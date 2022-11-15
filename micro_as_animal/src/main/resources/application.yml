@@ -1,0 +1,40 @@
+#app:
+#  deploy:
+#    version: 2.4.2
+server:
+  port: 8093
+spring:
+  application:
+    name: Animal-microservice
+#  cloud:
+#    gcp:
+#      project-id: animal-shelter-351809
+#      credentials:
+#        location: animal-shelter-351809-479e56280414.json
+      #          classpath: D:\MyProject\Website projects\Projects\animal_shelter_microservices\animals\src\main\resources\animal-shelter-351809-479e56280414.json
+#      sql:
+#        database-name: animals-db
+#        instance-connection-name: animal-shelter-351809:us-central1:animal-db
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/animal
+    username: root
+    password: root
+#    initialization-mode: always
+  profile:
+    active: mysql
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  config:
+    import: optional:configserver:http://localhost:8888
+  sleuth:
+    sampler:
+      probability: 1.0
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
