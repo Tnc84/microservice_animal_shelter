@@ -94,5 +94,3 @@ spring:
  @GetMapping("/animals/getById/{id}")
     AnimalDTO getAnimalById();
 
-0374300300
-f 151
