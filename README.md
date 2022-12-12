@@ -1,6 +1,6 @@
 
-#    The Animal Shelter application is developed in Java 17 and follows a microservice architecture. With this application, you can create a database of animals for one shelter, as well as a database for customers who need to register for authentication. Technologies%Tools used: Java 17/Spring(Record, Lombok, Mapstruct), MySQL. 
-#    For connecting them, I have created five microservices micro_as_animal, micro_as_shelter, and micro_as_user, naming-server-as, and api-gateway-as.Technologies%Tools used: Openfeign, Netflix-eureka, sleuth, Zipkin, RabbitMQ, Resilience4j.
+###    The Animal Shelter application is developed in Java 17 and follows a microservice architecture. With this application, you can create a database of animals for one shelter, as well as a database for customers who need to register for authentication. Technologies%Tools used: Java 17/Spring(Record, Lombok, Mapstruct), MySQL. 
+###    For connecting them, I have created five microservices micro_as_animal, micro_as_shelter, and micro_as_user, naming-server-as, and api-gateway-as.Technologies%Tools used: Openfeign, Netflix-eureka, sleuth, Zipkin, RabbitMQ, Resilience4j.
 
 #   For running the project must clone and run all the microservices.
     
