@@ -6,16 +6,17 @@
     
 	eureka server: localhost:8761
 
-#  animal microservice:
-	animal 8093 / 8095
-	http://localhost:8093/animals/getAll
+#  animal microservice port: 
+	8093 / 8095 
+	ex: http://localhost:8093/animals/getAll
 
-#   shelter microservice:
-	shelter 8092 / 8094
-          localhost:8092/getAll -for get all shelters
-	      localhost:8092/getAlAnimals -for getting all the animals from the shelter
+#   shelter microservice port:
+	8092 / 8094
+        ex: localhost:8092/getAll -for get all shelters
+            localhost:8092/getAlAnimals -for getting all the animals from the shelter
 
-# api-gateway 8765
-	      http://localhost:8765/shelter-microservice/shelters/getAllAnimals
-	      http://localhost:8765/animal-microservice/animals/getAll
+# api-gateway port:
+	8765
+	ex: http://localhost:8765/shelter-microservice/shelters/getAllAnimals
+	    http://localhost:8765/animal-microservice/animals/getAll
 
