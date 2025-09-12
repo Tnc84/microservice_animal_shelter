@@ -4,7 +4,7 @@ import com.tnc.userManagement.service.exception.EmailExistException;
 import com.tnc.userManagement.service.exception.EmailNotFoundException;
 import com.tnc.userManagement.service.model.UserDomain;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.List;
 
 public interface IUserService {

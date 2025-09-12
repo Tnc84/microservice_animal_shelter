@@ -4,7 +4,7 @@ import com.tnc.shelter.service.validation.OnCreate;
 import com.tnc.shelter.service.validation.OnUpdate;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Validated
 public record ShelterDTO(

@@ -4,7 +4,7 @@ import com.tnc.userManagement.service.validation.OnCreate;
 import com.tnc.userManagement.service.validation.OnUpdate;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.util.Date;
 
 @Validated

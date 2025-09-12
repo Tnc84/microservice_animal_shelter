@@ -3,7 +3,7 @@ package com.tnc.animals.service.interfaces;
 import com.tnc.animals.service.domain.AnimalDomain;
 import org.springframework.stereotype.Service;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @Service

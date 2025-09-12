@@ -1,6 +1,5 @@
 package com.tnc.shelter.service.impl;
 
-import com.sun.xml.bind.v2.TODO;
 import com.tnc.shelter.repository.entities.Shelter;
 import com.tnc.shelter.repository.interfaces.ShelterRepository;
 import com.tnc.shelter.service.domain.ShelterDomain;
