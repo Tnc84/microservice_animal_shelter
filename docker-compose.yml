@@ -1,12 +1,107 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  Shelter-microservice:
-    image: tnc1984/shms-shelter:0.0.1-SNAPSHOT-
-    mem_reservation: 700m
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: animal_shelter_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: animal_shelter
     ports:
-      - "8000:8000"
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./setup-databases.sql:/docker-entrypoint-initdb.d/setup-databases.sql
     networks:
       - animal_shelter
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Eureka Naming Server
+  naming-server:
+    build: ./naming-server-as
+    container_name: naming-server
+    ports:
+      - "8761:8761"
+    networks:
+      - animal_shelter
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway-as
+    container_name: api-gateway
+    ports:
+      - "8765:8765"
+    networks:
+      - animal_shelter
+    depends_on:
+      - naming-server
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  # Animal Microservice
+  animal-microservice:
+    build: ./micro_as_animal
+    container_name: animal-microservice
+    ports:
+      - "8093:8093"
+    networks:
+      - animal_shelter
+    depends_on:
+      - naming-server
+      - mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/animal
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+
+  # Shelter Microservice
+  shelter-microservice:
+    build: ./micro_as_shelter
+    container_name: shelter-microservice
+    ports:
+      - "8092:8092"
+    networks:
+      - animal_shelter
+    depends_on:
+      - naming-server
+      - animal-microservice
+      - mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/shelter
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+
+  # User Management Microservice
+  user-microservice:
+    build: ./micro_as_user
+    container_name: user-microservice
+    ports:
+      - "8091:8091"
+    networks:
+      - animal_shelter
+    depends_on:
+      - naming-server
+      - mysql
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_management
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+
+volumes:
+  mysql_data:
+
 networks:
   animal_shelter:
+    driver: bridge
