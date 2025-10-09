@@ -10,6 +10,13 @@ import com.tnc.shelter.service.interfaces.ShelterService;
 import com.tnc.shelter.service.validation.OnCreate;
 import com.tnc.shelter.service.validation.OnUpdate;
 import io.github.resilience4j.retry.annotation.Retry;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +33,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Shelter Management", description = "APIs for managing shelter operations and animal integration")
 //@PreAuthorize("isAuthenticated() && hasRole('MOD')")
 public class ShelterController {
 
@@ -70,7 +78,7 @@ public class ShelterController {
     @PutMapping("/update")
     @Validated(OnUpdate.class)
     public ResponseEntity<ShelterDTO> update(@Valid @RequestBody ShelterDTO shelterDTO) throws ShelterAddressException, ShelterNameException {
-        return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.add(shelterDTOMapper.toDomain(shelterDTO))));
+        return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.update(shelterDTOMapper.toDomain(shelterDTO))));
     }
 
 //    @GetMapping(value = "/{id}")
