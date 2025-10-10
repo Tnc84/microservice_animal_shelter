@@ -109,25 +109,41 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ## Security Implementation
 
-### **JWT Authentication & Authorization:**
-- **JWT Token Generation:** User Management service generates JWT tokens
+### **Enhanced JWT Authentication & Authorization:**
+- **Dual Token System:** Access tokens (15min) + Refresh tokens (7 days)
+- **HttpOnly Cookie Security:** Refresh tokens stored in secure HttpOnly cookies
 - **Token Validation:** API Gateway validates JWT tokens for all requests
 - **Role-Based Access Control:** Different access levels for different microservices
 - **Password Security:** BCrypt encryption for password storage
 - **Stateless Authentication:** JWT-based stateless security
+- **Token Management:** Automatic refresh and proper token revocation
 
-### **Security Flow:**
+### **Enhanced Security Flow:**
 1. **User Authentication:** `POST /user-management/auth/login`
-2. **JWT Token Generation:** User Management service creates JWT tokens
-3. **Token Validation:** API Gateway validates tokens for all requests
-4. **Role-Based Authorization:** Access control based on user roles
-5. **Request Forwarding:** Validated requests forwarded to microservices
+2. **Dual Token Generation:** Access token (15min) + Refresh token cookie (7 days)
+3. **Token Validation:** API Gateway validates access tokens for all requests
+4. **Automatic Refresh:** When access token expires, refresh token generates new access token
+5. **Role-Based Authorization:** Access control based on user roles
+6. **Secure Logout:** Both tokens invalidated and cookies cleared
+
+### **New Security Endpoints:**
+- `POST /auth/login` - Returns access token + HttpOnly refresh token cookie
+- `POST /auth/register` - Returns access token + HttpOnly refresh token cookie
+- `POST /auth/refresh` - Generates new access token from refresh token
+- `POST /auth/logout` - Revokes tokens and clears cookies
 
 ### **Access Control Matrix:**
 - **Public Endpoints:** `/auth/**`, `/swagger-ui/**`, `/actuator/health`
 - **User Management:** Requires `USER` role
 - **Shelter Management:** Requires `ADMIN` or `SHELTER_MANAGER` role
 - **Animal Management:** Requires `ADMIN`, `SHELTER_MANAGER`, or `VET` role
+
+### **Security Features:**
+- **Token Blacklisting:** Proper token revocation on logout
+- **Device Tracking:** IP address and device info logging
+- **Automatic Cleanup:** Expired token removal
+- **XSS Protection:** HttpOnly cookies prevent client-side access
+- **CSRF Protection:** SameSite cookie configuration
 
 ## Key Features & Patterns
 
@@ -227,11 +243,12 @@ docker-compose up -d
 
 ## API Examples
 
-### Authentication Flow:
+### Enhanced Authentication Flow:
 ```bash
-# User Registration
+# User Registration (returns access token + HttpOnly refresh token cookie)
 curl -X POST http://localhost:8765/user-management/auth/register \
   -H "Content-Type: application/json" \
+  -c cookies.txt \
   -d '{
     "firstName": "John",
     "lastName": "Doe", 
@@ -239,13 +256,22 @@ curl -X POST http://localhost:8765/user-management/auth/register \
     "password": "password123"
   }'
 
-# User Login
+# User Login (returns access token + HttpOnly refresh token cookie)
 curl -X POST http://localhost:8765/user-management/auth/login \
   -H "Content-Type: application/json" \
+  -c cookies.txt \
   -d '{
     "email": "john.doe@example.com",
     "password": "password123"
   }'
+
+# Token Refresh (uses HttpOnly cookie to get new access token)
+curl -X POST http://localhost:8765/user-management/auth/refresh \
+  -b cookies.txt
+
+# User Logout (revokes tokens and clears cookies)
+curl -X POST http://localhost:8765/user-management/auth/logout \
+  -b cookies.txt
 ```
 
 ### Through API Gateway (with JWT token):
@@ -298,22 +324,58 @@ Each microservice follows a clean architecture with:
 - **Security Layer:** JWT authentication and authorization (User Management)
 - **Filter Layer:** JWT token validation (API Gateway)
 
+## Frontend Integration
+
+### **📱 Frontend Security Guide:**
+A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUIDE.md` which includes:
+
+- **Angular Service Implementation:** Complete authentication service with dual token handling
+- **HTTP Interceptor Setup:** Automatic token management and refresh
+- **Route Guards:** Role-based access control for Angular routes
+- **API Integration Examples:** Ready-to-use code for microservices integration
+- **Security Best Practices:** XSS protection, CSRF prevention, and secure token storage
+
+### **🔧 Frontend Features:**
+- **Automatic Token Refresh:** Seamless user experience without re-login
+- **HttpOnly Cookie Support:** Secure refresh token handling
+- **Role-Based Routing:** Different access levels for different user types
+- **Error Handling:** Comprehensive error management for authentication
+- **Security Headers:** Proper CORS and security configuration
+
 ## Current Status
 
 ### **✅ Implemented Features:**
-- **JWT Security Implementation:** Complete authentication and authorization system
+- **Enhanced JWT Security:** Dual token system with access (15min) and refresh (7 days) tokens
+- **HttpOnly Cookie Security:** Refresh tokens stored in secure HttpOnly cookies
 - **Role-Based Access Control:** USER, ADMIN, SHELTER_MANAGER, VET roles
-- **API Gateway Security:** Centralized JWT token validation
-- **User Management:** Registration, login, and JWT token generation
+- **API Gateway Security:** Centralized JWT token validation with automatic refresh
+- **User Management:** Registration, login, token refresh, and secure logout
+- **Token Management:** Database-backed refresh tokens with device tracking
 - **Modern Java Features:** Records, Lombok, and Spring Boot 3.5.5
-- **Microservices Architecture:** All services with proper security integration
+- **Microservices Architecture:** All services with enhanced security integration
+- **Frontend Integration Guide:** Complete Angular implementation guide
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
-- **JWT Token Security:** Stateless authentication
+- **Enhanced JWT Security:** Dual token system with automatic refresh
 - **Password Encryption:** BCrypt for secure password storage
 - **CORS Configuration:** Frontend integration support
 - **Clean Architecture:** SOLID principles with security layers
+- **Database Security:** Refresh token storage with metadata tracking
+- **Device Tracking:** IP address and device info logging for security
+
+## Documentation
+
+### **📚 Available Documentation:**
+- **README.md:** Main project documentation with architecture overview
+- **FRONTEND_SECURITY_GUIDE.md:** Complete frontend integration guide for Angular teams
+- **API Documentation:** Swagger UI available at `http://localhost:8765/swagger-ui.html`
+
+### **🔗 Quick Links:**
+- **API Gateway:** `http://localhost:8765`
+- **Eureka Dashboard:** `http://localhost:8761`
+- **Swagger UI:** `http://localhost:8765/swagger-ui.html`
+- **Health Check:** `http://localhost:8765/actuator/health`
 
 ## Contributing
 
@@ -325,6 +387,7 @@ This project follows SOLID principles and modern microservices best practices. W
 4. Follow the existing code structure and naming conventions
 5. **Security Guidelines:** Always use JWT tokens for authentication
 6. **Testing:** Use `-DskipTests` flag during development to avoid test failures
+7. **Frontend Integration:** Refer to `FRONTEND_SECURITY_GUIDE.md` for Angular implementation
 
 ## License
 

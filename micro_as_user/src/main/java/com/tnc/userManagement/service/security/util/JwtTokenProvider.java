@@ -9,7 +9,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -21,26 +24,68 @@ public class JwtTokenProvider {
     @Value("${jwt.secret:mySecretKey}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration:432000000}")
+    @Value("${jwt.expiration:900000}") // 15 minutes
     private int jwtExpirationInMs;
+
+    @Value("${jwt.refresh-expiration:604800000}") // 7 days
+    private long refreshTokenExpirationInMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
     /**
-     * Generate JWT token from UserPrincipal
+     * Generate Access Token (15 minutes)
      */
-    public String generateJwtToken(UserPrincipal userPrincipal) {
+    public String generateAccessToken(UserPrincipal userPrincipal) {
         return generateJwtTokenFromUserPrincipal(userPrincipal);
     }
 
     /**
-     * Generate JWT token from Authentication object
+     * Generate Access Token from Authentication object
      */
-    public String generateJwtToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         return generateJwtTokenFromUserPrincipal(userPrincipal);
+    }
+
+    /**
+     * Generate Refresh Token (7 days)
+     */
+    public String generateRefreshToken(UserPrincipal userPrincipal) {
+        return Jwts.builder()
+                .subject(userPrincipal.getUsername())
+                .claim("userId", userPrincipal.getUserId())
+                .claim("tokenType", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpirationInMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    /**
+     * Generate Refresh Token from Authentication object
+     */
+    public String generateRefreshToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateRefreshToken(userPrincipal);
+    }
+
+    /**
+     * Generate both Access and Refresh tokens
+     */
+    public TokenPair generateTokenPair(UserPrincipal userPrincipal) {
+        String accessToken = generateAccessToken(userPrincipal);
+        String refreshToken = generateRefreshToken(userPrincipal);
+        return new TokenPair(accessToken, refreshToken);
+    }
+
+    /**
+     * Generate both Access and Refresh tokens from Authentication
+     */
+    public TokenPair generateTokenPair(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return generateTokenPair(userPrincipal);
     }
 
     private String generateJwtTokenFromUserPrincipal(UserPrincipal userPrincipal) {
@@ -133,4 +178,28 @@ public class JwtTokenProvider {
             return true;
         }
     }
+
+    /**
+     * Get token type from JWT token
+     */
+    public String getTokenType(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("tokenType", String.class);
+    }
+
+    /**
+     * Check if token is a refresh token
+     */
+    public boolean isRefreshToken(String token) {
+        return "refresh".equals(getTokenType(token));
+    }
+
+    /**
+     * Token Pair record for returning both tokens
+     */
+    public record TokenPair(String accessToken, String refreshToken) {}
 }
