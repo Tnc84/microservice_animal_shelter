@@ -1,5 +1,6 @@
 server:
-  port : 8091
+  port: 8091
+
 spring:
   cloud:
     config:
@@ -15,6 +16,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+# JWT Configuration
+jwt:
+  secret: mySecretKey123456789012345678901234567890
+  expiration: 432000000 # 5 days in milliseconds
 
 # Swagger/OpenAPI Configuration
 springdoc:

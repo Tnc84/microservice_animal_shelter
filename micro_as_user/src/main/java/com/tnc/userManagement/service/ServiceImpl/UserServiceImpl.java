@@ -7,6 +7,7 @@ import com.tnc.userManagement.service.exception.EmailExistException;
 import com.tnc.userManagement.service.exception.EmailNotFoundException;
 import com.tnc.userManagement.service.mapper.UserDomainMapper;
 import com.tnc.userManagement.service.model.UserDomain;
+import com.tnc.userManagement.service.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
@@ -28,15 +33,18 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 @Service
 @RequiredArgsConstructor
 @Qualifier("userDetailsService")
-public class UserServiceImpl implements IUserService {
+public class UserServiceImpl implements IUserService, UserDetailsService {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(getClass()); //getClass = this class
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final UserRepository userRepository;
     private final UserDomainMapper userDomainMapper;
 
     @Autowired
     private final EmailService emailService;
+    
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserDomain addNewUserWithSpecificRole(String firstName, String lastName, String email, String role, boolean isActive, boolean isNotActive) {
@@ -46,6 +54,7 @@ public class UserServiceImpl implements IUserService {
         userDomain.setFirstName(firstName);
         userDomain.setLastName(lastName);
         userDomain.setEmail(email);
+        userDomain.setPassword(passwordEncoder.encode(password));
         userDomain.setRole(getRoleEnumName(role).name());
         userDomain.setAuthorities(getRoleEnumName(role).getAuthorities());
         userDomain.setActive(isActive);
@@ -166,5 +175,17 @@ public class UserServiceImpl implements IUserService {
 
     private RoleEnum getRoleEnumName(String role) {
         return RoleEnum.valueOf(role.toUpperCase());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserDomain user = findByEmail(email);
+        if (user == null) {
+            LOGGER.error("No user found by email: " + email);
+            throw new UsernameNotFoundException("No user found by email: " + email);
+        } else {
+            LOGGER.info("Found user by email: " + email);
+            return new UserPrincipal(user);
+        }
     }
 }

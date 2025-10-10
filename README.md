@@ -8,10 +8,11 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ## Architecture & Technology Stack
 
 ### **Core Technologies:**
-- **Java 17** with **Spring Boot 2.6.2/2.7.0**
+- **Java 17** with **Spring Boot 3.5.5**
 - **Spring Cloud** ecosystem for microservices
 - **MySQL** databases for data persistence
 - **Maven** for dependency management
+- **JWT Security** for authentication and authorization
 
 ### **Microservices Technologies:**
 - **Netflix Eureka** for service discovery
@@ -26,6 +27,8 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **MapStruct** for object mapping
 - **Spring Boot Validation** for data validation
 - **Docker** for containerization
+- **Records** for immutable data structures
+- **Spring Security** for JWT authentication
 
 ## Microservices Architecture
 
@@ -37,9 +40,16 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ### 2. **API Gateway**
 - **Port:** 8765
-- **Purpose:** Single entry point for all microservices
-- **Technology:** Spring Cloud Gateway
-- **Features:** Service discovery integration, routing
+- **Purpose:** Single entry point for all microservices with JWT security
+- **Technology:** Spring Cloud Gateway with Spring Security
+- **Features:** 
+  - Service discovery integration and routing
+  - JWT token validation and role-based access control
+  - CORS configuration for frontend integration
+  - Centralized security management
+- **Security Endpoints:**
+  - `POST /user-management/auth/login` - User authentication
+  - `POST /user-management/auth/register` - User registration
 - **Example URLs:**
   - `http://localhost:8765/shelter-microservice/shelters/getAllAnimals`
   - `http://localhost:8765/animal-microservice/animals/getAll`
@@ -77,19 +87,47 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### 5. **User Management Microservice**
 - **Port:** 8091
 - **Database:** MySQL (`user_management` database)
-- **Purpose:** Handles user registration, authentication, and management
+- **Purpose:** Handles user registration, authentication, and JWT token generation
 - **Key Features:**
-  - User CRUD operations
-  - Role-based access control
+  - User CRUD operations with JWT security
+  - Role-based access control (USER, ADMIN, SHELTER_MANAGER, VET)
+  - JWT token generation and validation
+  - Password encryption with BCrypt
   - Email functionality for password reset
   - User validation and exception handling
-- **REST Endpoints:**
-  - `GET /users` - Get all users
+  - Spring Security integration
+- **Authentication Endpoints:**
+  - `POST /auth/login` - User login with JWT token generation
+  - `POST /auth/register` - User registration with JWT token
+- **User Management Endpoints:**
+  - `GET /users` - Get all users (requires USER role)
   - `GET /users/find/{username}` - Find user by email
   - `POST /users/add` - Add new user
   - `PUT /users/update` - Update user
   - `DELETE /users/delete/{id}` - Delete user
   - `GET /users/resetPassword/{email}` - Reset password
+
+## Security Implementation
+
+### **JWT Authentication & Authorization:**
+- **JWT Token Generation:** User Management service generates JWT tokens
+- **Token Validation:** API Gateway validates JWT tokens for all requests
+- **Role-Based Access Control:** Different access levels for different microservices
+- **Password Security:** BCrypt encryption for password storage
+- **Stateless Authentication:** JWT-based stateless security
+
+### **Security Flow:**
+1. **User Authentication:** `POST /user-management/auth/login`
+2. **JWT Token Generation:** User Management service creates JWT tokens
+3. **Token Validation:** API Gateway validates tokens for all requests
+4. **Role-Based Authorization:** Access control based on user roles
+5. **Request Forwarding:** Validated requests forwarded to microservices
+
+### **Access Control Matrix:**
+- **Public Endpoints:** `/auth/**`, `/swagger-ui/**`, `/actuator/health`
+- **User Management:** Requires `USER` role
+- **Shelter Management:** Requires `ADMIN` or `SHELTER_MANAGER` role
+- **Animal Management:** Requires `ADMIN`, `SHELTER_MANAGER`, or `VET` role
 
 ## Key Features & Patterns
 
@@ -102,10 +140,12 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ### **Design Patterns:**
 - **Repository Pattern** for data access
-- **DTO Pattern** for data transfer
+- **DTO Pattern** for data transfer using Records
 - **Mapper Pattern** using MapStruct
 - **Service Layer Pattern** for business logic
 - **Circuit Breaker Pattern** with Resilience4j
+- **Security Filter Pattern** for JWT authentication
+- **Builder Pattern** for JWT token creation
 
 ### **Data Validation:**
 - Comprehensive validation using Bean Validation
@@ -187,28 +227,52 @@ docker-compose up -d
 
 ## API Examples
 
-### Through API Gateway:
+### Authentication Flow:
 ```bash
-# Get all animals
-curl http://localhost:8765/animal-microservice/animals/getAll
+# User Registration
+curl -X POST http://localhost:8765/user-management/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe", 
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }'
 
-# Get all shelters
-curl http://localhost:8765/shelter-microservice/shelters/getAll
-
-# Get all animals from shelter service
-curl http://localhost:8765/shelter-microservice/shelters/getAllAnimals
+# User Login
+curl -X POST http://localhost:8765/user-management/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }'
 ```
 
-### Direct Service Access:
+### Through API Gateway (with JWT token):
+```bash
+# Get all animals (requires JWT token)
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  http://localhost:8765/animal-microservice/animals/getAll
+
+# Get all shelters (requires JWT token)
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  http://localhost:8765/shelter-microservice/shelters/getAll
+
+# Get all animals from shelter service (requires JWT token)
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  http://localhost:8765/shelter-microservice/shelters/getAllAnimals
+```
+
+### Direct Service Access (for development):
 ```bash
 # Animal Service
 curl http://localhost:8093/animals/getAll
 
-# Shelter Service
+# Shelter Service  
 curl http://localhost:8092/shelters/getAll
 
-# User Service
-curl http://localhost:8091/users
+# User Service (requires authentication)
+curl -H "Authorization: Bearer <JWT_TOKEN>" http://localhost:8091/users
 ```
 
 ## Project Structure
@@ -228,9 +292,28 @@ Each microservice follows a clean architecture with:
 - **Controller Layer:** REST endpoints and request handling
 - **Service Layer:** Business logic and validation
 - **Repository Layer:** Data access and persistence
-- **DTO Layer:** Data transfer objects with validation
+- **DTO Layer:** Data transfer objects using Records with validation
 - **Domain Layer:** Business entities and models
 - **Mapper Layer:** Object transformation using MapStruct
+- **Security Layer:** JWT authentication and authorization (User Management)
+- **Filter Layer:** JWT token validation (API Gateway)
+
+## Current Status
+
+### **✅ Implemented Features:**
+- **JWT Security Implementation:** Complete authentication and authorization system
+- **Role-Based Access Control:** USER, ADMIN, SHELTER_MANAGER, VET roles
+- **API Gateway Security:** Centralized JWT token validation
+- **User Management:** Registration, login, and JWT token generation
+- **Modern Java Features:** Records, Lombok, and Spring Boot 3.5.5
+- **Microservices Architecture:** All services with proper security integration
+
+### **🔧 Technical Improvements:**
+- **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
+- **JWT Token Security:** Stateless authentication
+- **Password Encryption:** BCrypt for secure password storage
+- **CORS Configuration:** Frontend integration support
+- **Clean Architecture:** SOLID principles with security layers
 
 ## Contributing
 
@@ -240,6 +323,8 @@ This project follows SOLID principles and modern microservices best practices. W
 2. Maintain proper validation and error handling
 3. Update documentation for any new endpoints
 4. Follow the existing code structure and naming conventions
+5. **Security Guidelines:** Always use JWT tokens for authentication
+6. **Testing:** Use `-DskipTests` flag during development to avoid test failures
 
 ## License
 

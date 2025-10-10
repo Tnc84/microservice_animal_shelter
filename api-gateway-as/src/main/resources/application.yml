@@ -1,5 +1,6 @@
 server:
   port: 8765
+
 spring:
   cloud:
     gateway:
@@ -7,10 +8,20 @@ spring:
         locator:
           enabled: true
           lowerCaseServiceId: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
   application:
     name: api-gateway-as
   config:
     import: optional:configserver:http://localhost:8888
+
 eureka:
   instance:
     hostname: localhost
