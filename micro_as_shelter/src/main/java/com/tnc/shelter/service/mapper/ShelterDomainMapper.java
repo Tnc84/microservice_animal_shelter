@@ -10,7 +10,7 @@ import java.util.List;
 public interface ShelterDomainMapper {
     Shelter toEntity(ShelterDomain shelterDomain);
 
-    List<Shelter> toEntity(List<ShelterDomain> shelterDomainList);
+    List<Shelter> toEntityList(List<ShelterDomain> shelterDomainList);
 
     ShelterDomain toDomain(Shelter shelter);
 
