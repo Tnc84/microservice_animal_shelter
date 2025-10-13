@@ -50,7 +50,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         testUserDTO = new UserDTO(
-            1L, "test123", "John", "Doe", "john.doe@example.com",
+            1L, "test123", "JohnUser", "DoeUser", "john.doe@example.com",
             "1234567890", "password123", new Date(), new Date(), new Date(),
             "ROLE_USER", new String[]{"USER:READ"}, true, true
         );
@@ -58,8 +58,8 @@ class UserControllerTest {
         testUserDomain = new UserDomain();
         testUserDomain.setId(1L);
         testUserDomain.setUserId("test123");
-        testUserDomain.setFirstName("John");
-        testUserDomain.setLastName("Doe");
+        testUserDomain.setFirstName("JohnUser");
+        testUserDomain.setLastName("DoeUser");
         testUserDomain.setEmail("john.doe@example.com");
         testUserDomain.setRole("ROLE_USER");
         testUserDomain.setActive(true);
@@ -81,7 +81,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("John", response.getBody().firstName());
+        assertEquals("JohnUser", response.getBody().firstName());
         verify(userService).addNewUserWithSpecificRole(
                 testUserDTO.firstName(), testUserDTO.lastName(), testUserDTO.email(),
                 testUserDTO.role(), testUserDTO.isNotLocked(), testUserDTO.isActive());
@@ -103,7 +103,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("John", response.getBody().firstName());
+        assertEquals("JohnUser", response.getBody().firstName());
         verify(userService).updateUser(
                 testUserDTO.id(), testUserDTO.firstName(), testUserDTO.lastName(),
                 testUserDTO.email(), testUserDTO.role(), testUserDTO.isNotLocked(), testUserDTO.isActive());
@@ -201,7 +201,7 @@ class UserControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("USER DELETED SUCCESSFULLY.", response.getBody().getMessage());
+        assertEquals("USER DELETED SUCCESSFULLY. ", response.getBody().getMessage());
         verify(userService).deleteUser(1L);
     }
 

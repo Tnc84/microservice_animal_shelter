@@ -41,7 +41,6 @@ class AnimalDomainMapperTest {
         testAnimalDomain.setBreed("Golden Retriever");
         testAnimalDomain.setSpecies("Dog");
         testAnimalDomain.setPhoto("buddy.jpg");
-        testAnimalDomain.setEnvironment("8080");
     }
 
     @Test
@@ -230,7 +229,6 @@ class AnimalDomainMapperTest {
         differentAnimalDomain.setBreed("German Shepherd");
         differentAnimalDomain.setSpecies("Dog");
         differentAnimalDomain.setPhoto("rex.jpg");
-        differentAnimalDomain.setEnvironment("8081");
 
         // Act
         Animal result = mapper.toEntity(differentAnimalDomain);
@@ -282,7 +280,6 @@ class AnimalDomainMapperTest {
         domain1.setBreed("Golden Retriever");
         domain1.setSpecies("Dog");
         domain1.setPhoto("buddy.jpg");
-        domain1.setEnvironment("8080");
 
         AnimalDomain domain2 = new AnimalDomain();
         domain2.setId(2L);
@@ -290,7 +287,6 @@ class AnimalDomainMapperTest {
         domain2.setBreed("Persian");
         domain2.setSpecies("Cat");
         domain2.setPhoto("whiskers.jpg");
-        domain2.setEnvironment("8081");
 
         List<AnimalDomain> animalDomains = Arrays.asList(domain1, domain2);
 

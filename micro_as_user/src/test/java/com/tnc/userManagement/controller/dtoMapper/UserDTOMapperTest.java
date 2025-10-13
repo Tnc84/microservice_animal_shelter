@@ -30,7 +30,7 @@ class UserDTOMapperTest {
         mapper = Mappers.getMapper(UserDTOMapper.class);
         
         testUserDTO = new UserDTO(
-            1L, "test123", "John", "Doe", "john.doe@example.com",
+            1L, "test123", "JohnUser", "DoeUser", "john.doe@example.com",
             "1234567890", "password123", new Date(), new Date(), new Date(),
             "ROLE_USER", new String[]{"USER:READ"}, true, true
         );
@@ -38,8 +38,8 @@ class UserDTOMapperTest {
         testUserDomain = new UserDomain();
         testUserDomain.setId(1L);
         testUserDomain.setUserId("test123");
-        testUserDomain.setFirstName("John");
-        testUserDomain.setLastName("Doe");
+        testUserDomain.setFirstName("JohnUser");
+        testUserDomain.setLastName("DoeUser");
         testUserDomain.setEmail("john.doe@example.com");
         testUserDomain.setPhone("1234567890");
         testUserDomain.setPassword("password123");
@@ -249,7 +249,7 @@ class UserDTOMapperTest {
     void toDomain_WithDifferentRole_ShouldMapCorrectly() {
         // Arrange
         UserDTO adminUserDTO = new UserDTO(
-            1L, "admin123", "Admin", "User", "admin@example.com",
+            1L, "admin123", "Admin", "UserRole", "admin@example.com",
             "1234567890", "password123", new Date(), new Date(), new Date(),
             "ROLE_ADMIN", new String[]{"ADMIN:READ", "ADMIN:WRITE"}, true, true
         );
@@ -268,12 +268,12 @@ class UserDTOMapperTest {
         // Arrange
         UserDomain userDomain1 = new UserDomain();
         userDomain1.setId(1L);
-        userDomain1.setFirstName("User1");
+        userDomain1.setFirstName("UserOne");
         userDomain1.setEmail("user1@example.com");
 
         UserDomain userDomain2 = new UserDomain();
         userDomain2.setId(2L);
-        userDomain2.setFirstName("User2");
+        userDomain2.setFirstName("UserTwo");
         userDomain2.setEmail("user2@example.com");
 
         List<UserDomain> userDomains = Arrays.asList(userDomain1, userDomain2);
@@ -284,8 +284,8 @@ class UserDTOMapperTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("User1", result.get(0).firstName());
-        assertEquals("User2", result.get(1).firstName());
+        assertEquals("UserOne", result.get(0).firstName());
+        assertEquals("UserTwo", result.get(1).firstName());
     }
 
     @Test

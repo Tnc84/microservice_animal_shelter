@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,8 +36,6 @@ class ShelterServiceImplTest {
     @Mock
     private ShelterDomainMapper shelterDomainMapper;
 
-    @Mock
-    private Environment environment;
 
     @InjectMocks
     private ShelterServiceImpl shelterService;
@@ -52,18 +49,15 @@ class ShelterServiceImplTest {
         testShelter.setId(1L);
         testShelter.setName("Test Shelter");
         testShelter.setCity("Test City");
-        testShelter.setEnvironment("8080");
 
         testShelterDomain = new ShelterDomain(1L, "Test Shelter", "Test City");
-        testShelterDomain.setEnvironment("8080");
     }
 
     @Test
-    void getShelterByName_ShouldReturnShelterWithEnvironment() {
+    void getShelterByName_ShouldReturnShelter() {
         // Arrange
         when(shelterRepository.findByName("Bucium")).thenReturn(testShelter);
         when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
-        when(environment.getProperty("local.server.port")).thenReturn("8080");
 
         // Act
         ShelterDomain result = shelterService.getShelterByName();
@@ -72,20 +66,18 @@ class ShelterServiceImplTest {
         assertNotNull(result);
         assertEquals("Test Shelter", result.getName());
         assertEquals("Test City", result.getCity());
-        assertEquals("8080", result.getEnvironment());
         verify(shelterRepository).findByName("Bucium");
         verify(shelterDomainMapper).toDomain(testShelter);
     }
 
     @Test
-    void getAll_ShouldReturnAllSheltersWithEnvironment() {
+    void getAll_ShouldReturnAllShelters() {
         // Arrange
         List<Shelter> shelters = Arrays.asList(testShelter);
         List<ShelterDomain> shelterDomains = Arrays.asList(testShelterDomain);
         
         when(shelterRepository.findAll()).thenReturn(shelters);
         when(shelterDomainMapper.toDomainList(shelters)).thenReturn(shelterDomains);
-        when(environment.getProperty("local.server.port")).thenReturn("8080");
 
         // Act
         List<ShelterDomain> result = shelterService.getAll();
@@ -93,7 +85,6 @@ class ShelterServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("8080", result.get(0).getEnvironment());
         verify(shelterRepository).findAll();
         verify(shelterDomainMapper).toDomainList(shelters);
     }
@@ -102,8 +93,8 @@ class ShelterServiceImplTest {
     void add_WithValidShelter_ShouldReturnAddedShelter() throws ShelterAddressException, ShelterNameException {
         // Arrange
         try (MockedStatic<ValidateShelter> mockedStatic = mockStatic(ValidateShelter.class)) {
-            when(environment.getProperty("local.server.port")).thenReturn("8080");
             when(shelterDomainMapper.toEntity(testShelterDomain)).thenReturn(testShelter);
+            when(shelterRepository.save(testShelter)).thenReturn(testShelter);
             when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
 
             // Act
@@ -112,7 +103,6 @@ class ShelterServiceImplTest {
             // Assert
             assertNotNull(result);
             assertEquals("Test Shelter", result.getName());
-            assertEquals("8080", result.getEnvironment());
             mockedStatic.verify(() -> ValidateShelter.validateShelter(testShelterDomain, "Test Shelter"));
             verify(shelterDomainMapper).toEntity(testShelterDomain);
             verify(shelterDomainMapper).toDomain(testShelter);
@@ -136,6 +126,7 @@ class ShelterServiceImplTest {
     void update_ShouldReturnUpdatedShelter() {
         // Arrange
         when(shelterDomainMapper.toEntity(testShelterDomain)).thenReturn(testShelter);
+        when(shelterRepository.save(testShelter)).thenReturn(testShelter);
         when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
 
         // Act
@@ -148,31 +139,4 @@ class ShelterServiceImplTest {
         verify(shelterDomainMapper).toDomain(testShelter);
     }
 
-    @Test
-    void setShelterEnvironment_ShouldSetEnvironmentFromProperties() {
-        // Act - Test through getShelterByName which uses setShelterEnvironment internally
-        when(shelterRepository.findByName("Bucium")).thenReturn(testShelter);
-        when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
-        when(environment.getProperty("local.server.port")).thenReturn("8080");
-
-        ShelterDomain result = shelterService.getShelterByName();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("8080", result.getEnvironment());
-    }
-
-    @Test
-    void setShelterEnvironment_WithNullEnvironment_ShouldSetDefault() {
-        // Act - Test through getShelterByName with null environment
-        when(shelterRepository.findByName("Bucium")).thenReturn(testShelter);
-        when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
-        when(environment.getProperty("local.server.port")).thenReturn(null);
-
-        ShelterDomain result = shelterService.getShelterByName();
-
-        // Assert
-        assertNotNull(result);
-        // Should handle null environment gracefully
-    }
 }

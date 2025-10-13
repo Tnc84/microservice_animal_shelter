@@ -29,7 +29,7 @@ class AnimalDTOMapperTest {
         mapper = Mappers.getMapper(AnimalDTOMapper.class);
         
         testAnimalDTO = new AnimalDTO(
-            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg", "8080"
+            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg"
         );
 
         testAnimalDomain = new AnimalDomain();
@@ -38,7 +38,6 @@ class AnimalDTOMapperTest {
         testAnimalDomain.setBreed("Golden Retriever");
         testAnimalDomain.setSpecies("Dog");
         testAnimalDomain.setPhoto("buddy.jpg");
-        testAnimalDomain.setEnvironment("8080");
     }
 
     @Test
@@ -53,7 +52,7 @@ class AnimalDTOMapperTest {
         assertEquals(testAnimalDomain.getBreed(), result.breed());
         assertEquals(testAnimalDomain.getSpecies(), result.species());
         assertEquals(testAnimalDomain.getPhoto(), result.photo());
-        assertEquals(testAnimalDomain.getEnvironment(), result.environment());
+        // Environment field not present in AnimalDTO
     }
 
     @Test
@@ -68,7 +67,7 @@ class AnimalDTOMapperTest {
         assertEquals(testAnimalDTO.breed(), result.getBreed());
         assertEquals(testAnimalDTO.species(), result.getSpecies());
         assertEquals(testAnimalDTO.photo(), result.getPhoto());
-        assertEquals(testAnimalDTO.environment(), result.getEnvironment());
+        // Environment field not present in AnimalDTO
     }
 
     @Test
@@ -156,14 +155,14 @@ class AnimalDTOMapperTest {
         assertNull(result.breed());
         assertNull(result.species());
         assertNull(result.photo());
-        assertNull(result.environment());
+        // Environment field not present in AnimalDTO
     }
 
     @Test
     void toDomain_WithEmptyAnimalDTO_ShouldMapCorrectly() {
         // Arrange
         AnimalDTO emptyAnimalDTO = new AnimalDTO(
-            null, null, null, null, null, null
+            null, null, null, null, null
         );
 
         // Act
@@ -176,7 +175,6 @@ class AnimalDTOMapperTest {
         assertNull(result.getBreed());
         assertNull(result.getSpecies());
         assertNull(result.getPhoto());
-        assertNull(result.getEnvironment());
     }
 
     @Test
@@ -212,7 +210,6 @@ class AnimalDTOMapperTest {
         testAnimalDomain.setBreed("Persian");
         testAnimalDomain.setSpecies("Cat");
         testAnimalDomain.setPhoto("whiskers.jpg");
-        testAnimalDomain.setEnvironment("8081");
 
         // Act
         AnimalDTO result = mapper.toDTO(testAnimalDomain);
@@ -223,14 +220,13 @@ class AnimalDTOMapperTest {
         assertEquals("Persian", result.breed());
         assertEquals("Cat", result.species());
         assertEquals("whiskers.jpg", result.photo());
-        assertEquals("8081", result.environment());
     }
 
     @Test
     void toDomain_WithDifferentAnimalDTO_ShouldMapCorrectly() {
         // Arrange
         AnimalDTO differentAnimalDTO = new AnimalDTO(
-            2L, "Rex", "German Shepherd", "Dog", "rex.jpg", "8081"
+            2L, "Rex", "German Shepherd", "Dog", "rex.jpg"
         );
 
         // Act
@@ -243,7 +239,6 @@ class AnimalDTOMapperTest {
         assertEquals("German Shepherd", result.getBreed());
         assertEquals("Dog", result.getSpecies());
         assertEquals("rex.jpg", result.getPhoto());
-        assertEquals("8081", result.getEnvironment());
     }
 
     @Test
@@ -255,7 +250,6 @@ class AnimalDTOMapperTest {
         animalDomain1.setBreed("Golden Retriever");
         animalDomain1.setSpecies("Dog");
         animalDomain1.setPhoto("buddy.jpg");
-        animalDomain1.setEnvironment("8080");
 
         AnimalDomain animalDomain2 = new AnimalDomain();
         animalDomain2.setId(2L);
@@ -263,7 +257,6 @@ class AnimalDTOMapperTest {
         animalDomain2.setBreed("Persian");
         animalDomain2.setSpecies("Cat");
         animalDomain2.setPhoto("whiskers.jpg");
-        animalDomain2.setEnvironment("8081");
 
         List<AnimalDomain> animalDomains = Arrays.asList(animalDomain1, animalDomain2);
 
@@ -281,11 +274,11 @@ class AnimalDTOMapperTest {
     void toDomainList_WithMultipleAnimalDTOs_ShouldMapCorrectly() {
         // Arrange
         AnimalDTO animalDTO1 = new AnimalDTO(
-            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg", "8080"
+            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg"
         );
 
         AnimalDTO animalDTO2 = new AnimalDTO(
-            2L, "Whiskers", "Persian", "Cat", "whiskers.jpg", "8081"
+            2L, "Whiskers", "Persian", "Cat", "whiskers.jpg"
         );
 
         List<AnimalDTO> animalDTOs = Arrays.asList(animalDTO1, animalDTO2);
@@ -309,7 +302,6 @@ class AnimalDTOMapperTest {
         animalDomainWithNulls.setBreed(null);
         animalDomainWithNulls.setSpecies(null);
         animalDomainWithNulls.setPhoto(null);
-        animalDomainWithNulls.setEnvironment(null);
 
         // Act
         AnimalDTO result = mapper.toDTO(animalDomainWithNulls);
@@ -321,14 +313,14 @@ class AnimalDTOMapperTest {
         assertNull(result.breed());
         assertNull(result.species());
         assertNull(result.photo());
-        assertNull(result.environment());
+        // Environment field not present in AnimalDTO
     }
 
     @Test
     void toDomain_WithNullFields_ShouldMapCorrectly() {
         // Arrange
         AnimalDTO animalDTOWithNulls = new AnimalDTO(
-            1L, null, null, null, null, null
+            1L, null, null, null, null
         );
 
         // Act
@@ -341,27 +333,25 @@ class AnimalDTOMapperTest {
         assertNull(result.getBreed());
         assertNull(result.getSpecies());
         assertNull(result.getPhoto());
-        assertNull(result.getEnvironment());
     }
 
     @Test
     void toDTO_WithEnvironmentField_ShouldMapCorrectly() {
         // Arrange
-        testAnimalDomain.setEnvironment("9090");
 
         // Act
         AnimalDTO result = mapper.toDTO(testAnimalDomain);
 
         // Assert
         assertNotNull(result);
-        assertEquals("9090", result.environment());
+        // Environment field not present in AnimalDTO
     }
 
     @Test
     void toDomain_WithEnvironmentField_ShouldMapCorrectly() {
         // Arrange
         AnimalDTO animalDTOWithEnvironment = new AnimalDTO(
-            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg", "9090"
+            1L, "Buddy", "Golden Retriever", "Dog", "buddy.jpg"
         );
 
         // Act
@@ -369,6 +359,6 @@ class AnimalDTOMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("9090", result.getEnvironment());
+        // Environment field not present in AnimalDTO
     }
 }

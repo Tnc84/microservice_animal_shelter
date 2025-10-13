@@ -26,4 +26,6 @@ public interface IUserService {
     List<UserDomain> getAll();
 
     UserDomain addNewUserWithSpecificRole(String firstName, String lastName, String email, String role, boolean parseBoolean, boolean parseBoolean1);
+    
+    UserDomain addNewUserWithPassword(String firstName, String lastName, String email, String password, String role, boolean isActive, boolean isNotActive);
 }

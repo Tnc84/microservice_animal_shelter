@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +19,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 /**
@@ -36,9 +34,6 @@ class AnimalServiceImplTest {
 
     @Mock
     private AnimalDomainMapper animalDomainMapper;
-
-    @Mock
-    private Environment environment;
 
     @InjectMocks
     private AnimalServiceImpl animalService;
@@ -57,7 +52,7 @@ class AnimalServiceImplTest {
     void get_WhenAnimalExists_ShouldReturnAnimalDomain() {
         // Given
         Long animalId = 1L;
-        when(animalRepository.getById(animalId)).thenReturn(testAnimal);
+        when(animalRepository.findById(animalId)).thenReturn(Optional.of(testAnimal));
         when(animalDomainMapper.toDomain(testAnimal)).thenReturn(testAnimalDomain);
 
         // When
@@ -70,7 +65,7 @@ class AnimalServiceImplTest {
         assertThat(result.getSpecies()).isEqualTo("Dog");
         assertThat(result.getBreed()).isEqualTo("Golden Retriever");
 
-        verify(animalRepository).getById(animalId);
+        verify(animalRepository).findById(animalId);
         verify(animalDomainMapper).toDomain(testAnimal);
     }
 
@@ -78,19 +73,19 @@ class AnimalServiceImplTest {
     @DisplayName("get() - Should handle null ID")
     void get_WithNullId_ShouldThrowException() {
         // Given
-        when(animalRepository.getById(null)).thenThrow(new IllegalArgumentException("ID cannot be null"));
+        when(animalRepository.findById(null)).thenThrow(new IllegalArgumentException("ID cannot be null"));
 
         // When & Then
         assertThatThrownBy(() -> animalService.get(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("ID cannot be null");
 
-        verify(animalRepository).getById(null);
+        verify(animalRepository).findById(null);
     }
 
     @Test
-    @DisplayName("getAll() - Should return all animals with environment set")
-    void getAll_ShouldReturnAllAnimalsWithEnvironment() {
+    @DisplayName("getAll() - Should return all animals")
+    void getAll_ShouldReturnAllAnimals() {
         // Given
         List<Animal> animals = Arrays.asList(
                 createTestAnimal(1L, "Buddy", "Dog", "Golden Retriever"),
@@ -103,21 +98,17 @@ class AnimalServiceImplTest {
 
         when(animalRepository.findAll()).thenReturn(animals);
         when(animalDomainMapper.toDomainList(animals)).thenReturn(animalDomains);
-        when(environment.getProperty("local.server.port")).thenReturn("8093");
 
         // When
         List<AnimalDomain> result = animalService.getAll();
 
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getEnvironment()).isEqualTo("8093");
-        assertThat(result.get(1).getEnvironment()).isEqualTo("8093");
         assertThat(result.get(0).getName()).isEqualTo("Buddy");
         assertThat(result.get(1).getName()).isEqualTo("Whiskers");
 
         verify(animalRepository).findAll();
         verify(animalDomainMapper).toDomainList(animals);
-        verify(environment).getProperty("local.server.port");
     }
 
     @Test
@@ -126,7 +117,6 @@ class AnimalServiceImplTest {
         // Given
         when(animalRepository.findAll()).thenReturn(Arrays.asList());
         when(animalDomainMapper.toDomainList(any())).thenReturn(Arrays.asList());
-        when(environment.getProperty("local.server.port")).thenReturn("8093");
 
         // When
         List<AnimalDomain> result = animalService.getAll();
@@ -226,29 +216,6 @@ class AnimalServiceImplTest {
         verify(animalDomainMapper, never()).toDomain(any());
     }
 
-    @Test
-    @DisplayName("getAll() - Should handle environment property not set")
-    void getAll_WhenEnvironmentPropertyNotSet_ShouldHandleGracefully() {
-        // Given
-        List<Animal> animals = Arrays.asList(testAnimal);
-        List<AnimalDomain> animalDomains = Arrays.asList(testAnimalDomain);
-
-        when(animalRepository.findAll()).thenReturn(animals);
-        when(animalDomainMapper.toDomainList(animals)).thenReturn(animalDomains);
-        when(environment.getProperty("local.server.port")).thenReturn(null);
-
-        // When
-        List<AnimalDomain> result = animalService.getAll();
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getEnvironment()).isNull();
-        assertThat(result.get(0).getName()).isEqualTo("Buddy");
-
-        verify(animalRepository).findAll();
-        verify(animalDomainMapper).toDomainList(animals);
-        verify(environment).getProperty("local.server.port");
-    }
 
     // Helper methods
     private Animal createTestAnimal(Long id, String name, String species, String breed) {

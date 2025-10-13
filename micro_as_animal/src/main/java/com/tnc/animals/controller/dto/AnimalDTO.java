@@ -16,8 +16,6 @@ public record AnimalDTO(
         String name,
         String breed,
         String species,
-        String photo,
-
-        String environment
+        String photo
 ) {
 }

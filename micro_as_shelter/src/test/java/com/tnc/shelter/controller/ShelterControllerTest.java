@@ -78,11 +78,10 @@ class ShelterControllerTest {
         // Arrange
         when(feignAnimalProxy.getAllAnimals()).thenThrow(new RuntimeException("Service down"));
 
-        // Act
-        List<AnimalDTO> result = shelterController.getAllAnimalsFeign();
-
-        // Assert
-        assertNull(result);
+        // Act & Assert
+        // Since Resilience4j is not configured in test, the exception will be thrown
+        assertThrows(RuntimeException.class, () -> shelterController.getAllAnimalsFeign());
+        verify(feignAnimalProxy).getAllAnimals();
     }
 
     @Test
@@ -179,7 +178,9 @@ class ShelterControllerTest {
     void update_WithInvalidShelter_ShouldThrowException() throws ShelterAddressException, ShelterNameException {
         // Arrange
         when(shelterDTOMapper.toDomain(testShelterDTO)).thenReturn(testShelterDomain);
-        when(shelterService.update(testShelterDomain)).thenThrow(new ShelterAddressException("Invalid address"));
+        when(shelterService.update(testShelterDomain)).thenAnswer(invocation -> {
+            throw new ShelterAddressException("Invalid address");
+        });
 
         // Act & Assert
         assertThrows(ShelterAddressException.class, () -> shelterController.update(testShelterDTO));

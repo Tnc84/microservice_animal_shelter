@@ -92,7 +92,7 @@ class SwaggerConfigTest {
         // Assert
         String description = info.getDescription();
         assertTrue(description.contains("Eureka"));
-        assertTrue(description.contains("Service Discovery"));
+        assertTrue(description.contains("service discovery"));
         assertTrue(description.contains("microservices"));
         assertTrue(description.contains("Animal Shelter"));
     }

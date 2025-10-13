@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +20,13 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/animals")
-@Validated
+// @Validated
 @Tag(name = "Animal Management", description = "APIs for managing animal records in the shelter system")
 //@PreAuthorize("isAuthenticated() && hasRole('USER')")
-public class AnimalController {
-
-    private final AnimalService animalService;
-    private final AnimalDTOMapper animalDTOMapper;
+public record AnimalController (
+AnimalService animalService,
+AnimalDTOMapper animalDTOMapper){
 
     @GetMapping
     @RequestMapping("/getById/{id}")

@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -55,11 +56,14 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // Manually inject the mocked password encoder
+        ReflectionTestUtils.setField(userService, "passwordEncoder", passwordEncoder);
+        
         testUser = new User();
         testUser.setId(1L);
         testUser.setUserId("test123");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
+        testUser.setFirstName("JohnUser");
+        testUser.setLastName("DoeUser");
         testUser.setEmail("john.doe@example.com");
         testUser.setPassword("encodedPassword");
         testUser.setRole(RoleEnum.ROLE_USER);
@@ -70,8 +74,8 @@ class UserServiceImplTest {
         testUserDomain = new UserDomain();
         testUserDomain.setId(1L);
         testUserDomain.setUserId("test123");
-        testUserDomain.setFirstName("John");
-        testUserDomain.setLastName("Doe");
+        testUserDomain.setFirstName("JohnUser");
+        testUserDomain.setLastName("DoeUser");
         testUserDomain.setEmail("john.doe@example.com");
         testUserDomain.setPassword("encodedPassword");
         testUserDomain.setRole("ROLE_USER");
@@ -86,15 +90,16 @@ class UserServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
 
         // Act
         UserDomain result = userService.addNewUserWithSpecificRole(
-                "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
+                "JohnUser", "DoeUser", "john.doe@example.com", "ROLE_USER", true, true);
 
         // Assert
         assertNotNull(result);
-        assertEquals("John", result.getFirstName());
-        assertEquals("Doe", result.getLastName());
+        assertEquals("JohnUser", result.getFirstName());
+        assertEquals("DoeUser", result.getLastName());
         assertEquals("john.doe@example.com", result.getEmail());
         assertEquals("ROLE_USER", result.getRole());
         assertTrue(result.isActive());
@@ -103,6 +108,7 @@ class UserServiceImplTest {
         
         verify(passwordEncoder).encode(anyString());
         verify(userRepository).save(any(User.class));
+        verify(userDomainMapper).toDomain(testUser);
     }
 
     @Test
@@ -227,6 +233,9 @@ class UserServiceImplTest {
     void resetPassword_WithValidEmail_ShouldSendEmail() throws Exception {
         // Arrange
         when(userRepository.findUserByEmail("john.doe@example.com")).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
+        when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
         doNothing().when(emailService).sendNewPasswordEmail(anyString(), anyString(), anyString());
 
         // Act
@@ -251,9 +260,9 @@ class UserServiceImplTest {
     void updateUser_WithValidData_ShouldUpdateUser() throws Exception {
         // Arrange
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(userRepository.findUserByEmail("john.doe@example.com")).thenReturn(testUser);
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
         when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
+        when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         // Act
         UserDomain result = userService.updateUser(1L, "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
@@ -270,8 +279,18 @@ class UserServiceImplTest {
     @Test
     void updateUser_WithEmailExists_ShouldThrowException() throws Exception {
         // Arrange
+        User existingUserWithEmail = new User();
+        existingUserWithEmail.setId(2L); // Different ID
+        existingUserWithEmail.setEmail("existing@example.com");
+        
+        UserDomain existingUserDomain = new UserDomain();
+        existingUserDomain.setId(2L);
+        existingUserDomain.setEmail("existing@example.com");
+        
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(userRepository.findUserByEmail("existing@example.com")).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
+        when(userRepository.findUserByEmail("existing@example.com")).thenReturn(existingUserWithEmail);
+        when(userDomainMapper.toDomain(existingUserWithEmail)).thenReturn(existingUserDomain);
 
         // Act & Assert
         assertThrows(EmailExistException.class, () -> 
@@ -284,9 +303,10 @@ class UserServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
         
         UserDomain result = userService.addNewUserWithSpecificRole(
-                "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
+                "JohnUser", "DoeUser", "john.doe@example.com", "ROLE_USER", true, true);
 
         // Assert
         assertNotNull(result);
@@ -300,9 +320,10 @@ class UserServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
         
         UserDomain result = userService.addNewUserWithSpecificRole(
-                "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
+                "JohnUser", "DoeUser", "john.doe@example.com", "ROLE_USER", true, true);
 
         // Assert
         assertNotNull(result);
@@ -316,9 +337,10 @@ class UserServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
         
         UserDomain result = userService.addNewUserWithSpecificRole(
-                "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
+                "JohnUser", "DoeUser", "john.doe@example.com", "ROLE_USER", true, true);
 
         // Assert
         assertNotNull(result);
@@ -331,6 +353,7 @@ class UserServiceImplTest {
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
         
         UserDomain result = userService.addNewUserWithSpecificRole(
                 "John", "Doe", "john.doe@example.com", "INVALID_ROLE", true, true);

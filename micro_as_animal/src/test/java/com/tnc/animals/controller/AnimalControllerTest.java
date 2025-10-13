@@ -204,6 +204,6 @@ class AnimalControllerTest {
     }
 
     private AnimalDTO createAnimalDTO(Long id, String name, String species, String breed) {
-        return new AnimalDTO(id, name, breed, species, null, null);
+        return new AnimalDTO(id, name, breed, species, null);
     }
 }

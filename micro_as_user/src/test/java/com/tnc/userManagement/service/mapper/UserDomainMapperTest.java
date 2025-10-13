@@ -33,8 +33,8 @@ class UserDomainMapperTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setUserId("test123");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
+        testUser.setFirstName("JohnUser");
+        testUser.setLastName("DoeUser");
         testUser.setEmail("john.doe@example.com");
         testUser.setPhone("1234567890");
         testUser.setPassword("encodedPassword");
@@ -48,8 +48,8 @@ class UserDomainMapperTest {
         testUserDomain = new UserDomain();
         testUserDomain.setId(1L);
         testUserDomain.setUserId("test123");
-        testUserDomain.setFirstName("John");
-        testUserDomain.setLastName("Doe");
+        testUserDomain.setFirstName("JohnUser");
+        testUserDomain.setLastName("DoeUser");
         testUserDomain.setEmail("john.doe@example.com");
         testUserDomain.setPhone("1234567890");
         testUserDomain.setPassword("encodedPassword");

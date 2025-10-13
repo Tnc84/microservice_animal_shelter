@@ -21,13 +21,13 @@ public class Shelter {
     private Long id;
     @NotBlank(message = "This field cannot be empty")
     @NotEmpty(message = "This field must not be empty.")
-    @Pattern(message = "Name should contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Pattern(message = "Name should contain only letters, numbers, spaces and hyphens.", regexp = "^[a-zA-Z0-9\\s-]+$")
     @NotNull(message = "Must not be null")
     @Length(message = "The name must be between 3 and 100 chars.", min = 3, max = 100)
     private String name;
     @NotBlank(message = "This field cannot be empty")
     @NotEmpty(message = "This field must not be empty.")
-    @Pattern(message = "Name should contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Pattern(message = "Name should contain only letters, numbers, spaces and hyphens.", regexp = "^[a-zA-Z0-9\\s-]+$")
     @NotNull(message = "Must not be null")
     @Length(message = "The name must be between 3 and 100 chars.", min = 3, max = 100)
     private String city;

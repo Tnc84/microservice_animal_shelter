@@ -9,5 +9,4 @@ public class AnimalDomain {
     private String breed;
     private String species;
     private String photo;
-    private String environment;
 }

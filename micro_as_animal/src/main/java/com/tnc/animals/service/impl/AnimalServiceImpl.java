@@ -20,17 +20,17 @@ public class AnimalServiceImpl implements AnimalService {
 
     @Override
     public AnimalDomain get(Long id) {
-        return animalDomainMapper.toDomain(animalRepository.getById(id));
+        return animalDomainMapper.toDomain(animalRepository.findById(id).orElse(null));
     }
 
     @Override
     public List<AnimalDomain> getAll() {
-        String port = environment.getProperty("local.server.port");
+        // String port = environment.getProperty("local.server.port");
         var getAnimals = animalDomainMapper.toDomainList(animalRepository.findAll());
-        for (AnimalDomain animals : getAnimals
-             ) {
-            animals.setEnvironment(port);
-        }
+        // for (AnimalDomain animals : getAnimals
+        //      ) {
+        //     animals.setEnvironment(port);
+        // }
         return getAnimals;
     }
 
@@ -44,9 +44,9 @@ public class AnimalServiceImpl implements AnimalService {
         return animalDomainMapper.toDomain(animalRepository.save(animalDomainMapper.toEntity(animalDomain)));
     }
 
-    private AnimalDomain setEnvironment(AnimalDomain animalDomain) {
-        String port = environment.getProperty("local.server.port");
-        animalDomain.setEnvironment(port);
-        return animalDomain;
-    }
+    // private AnimalDomain setEnvironment(AnimalDomain animalDomain) {
+    //     String port = environment.getProperty("local.server.port");
+    //     animalDomain.setEnvironment(port);
+    //     return animalDomain;
+    // }
 }

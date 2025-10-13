@@ -17,6 +17,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collection;
 import java.util.Date;
@@ -49,11 +50,14 @@ class SecurityTest {
 
     @BeforeEach
     void setUp() {
+        // Manually inject the mocked password encoder
+        ReflectionTestUtils.setField(userService, "passwordEncoder", passwordEncoder);
+        
         testUser = new User();
         testUser.setId(1L);
         testUser.setUserId("test123");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
+        testUser.setFirstName("JohnUser");
+        testUser.setLastName("DoeUser");
         testUser.setEmail("john.doe@example.com");
         testUser.setPassword("$2a$10$encodedPassword");
         testUser.setRole(RoleEnum.ROLE_USER);
@@ -64,8 +68,8 @@ class SecurityTest {
         testUserDomain = new UserDomain();
         testUserDomain.setId(1L);
         testUserDomain.setUserId("test123");
-        testUserDomain.setFirstName("John");
-        testUserDomain.setLastName("Doe");
+        testUserDomain.setFirstName("JohnUser");
+        testUserDomain.setLastName("DoeUser");
         testUserDomain.setEmail("john.doe@example.com");
         testUserDomain.setPassword("$2a$10$encodedPassword");
         testUserDomain.setRole("ROLE_USER");
@@ -104,6 +108,7 @@ class SecurityTest {
     void loadUserByUsername_WithInactiveUser_ShouldReturnDisabledUserDetails() {
         // Arrange
         testUser.setActive(false);
+        testUserDomain.setActive(false);
         when(userRepository.findUserByEmail("john.doe@example.com")).thenReturn(testUser);
         when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
 
@@ -120,6 +125,7 @@ class SecurityTest {
     void loadUserByUsername_WithLockedUser_ShouldReturnLockedUserDetails() {
         // Arrange
         testUser.setNotLocked(false);
+        testUserDomain.setNotLocked(false);
         when(userRepository.findUserByEmail("john.doe@example.com")).thenReturn(testUser);
         when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
 
@@ -148,10 +154,11 @@ class SecurityTest {
         when(passwordEncoder.encode(anyString())).thenReturn("$2a$10$encodedPassword");
         when(userDomainMapper.toEntity(any(UserDomain.class))).thenReturn(testUser);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userDomainMapper.toDomain(any(User.class))).thenReturn(testUserDomain);
 
         // Act
-        UserDomain result = userService.addNewUserWithSpecificRole(
-                "John", "Doe", "john.doe@example.com", "ROLE_USER", true, true);
+        UserDomain result = userService.addNewUserWithPassword(
+                "JohnUser", "DoeUser", "john.doe@example.com", "password123", "ROLE_USER", true, true);
 
         // Assert
         assertNotNull(result);
@@ -181,6 +188,8 @@ class SecurityTest {
         // Arrange
         testUser.setActive(false);
         testUser.setNotLocked(false);
+        testUserDomain.setActive(false);
+        testUserDomain.setNotLocked(false);
         when(userRepository.findUserByEmail("john.doe@example.com")).thenReturn(testUser);
         when(userDomainMapper.toDomain(testUser)).thenReturn(testUserDomain);
 
@@ -211,8 +220,8 @@ class SecurityTest {
         assertEquals("test123", userPrincipal.getUserId());
         assertEquals("ROLE_USER", userPrincipal.getRole());
         assertNotNull(userPrincipal.getUser());
-        assertEquals("John", userPrincipal.getUser().getFirstName());
-        assertEquals("Doe", userPrincipal.getUser().getLastName());
+        assertEquals("JohnUser", userPrincipal.getUser().getFirstName());
+        assertEquals("DoeUser", userPrincipal.getUser().getLastName());
     }
 
     @Test

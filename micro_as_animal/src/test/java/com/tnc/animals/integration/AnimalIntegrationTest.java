@@ -192,7 +192,7 @@ class AnimalIntegrationTest {
 
     // Helper methods
     private AnimalDTO createAnimalDTO(Long id, String name, String species, String breed) {
-        return new AnimalDTO(id, name, breed, species, null, null);
+        return new AnimalDTO(id, name, breed, species, null);
     }
 
     private Animal createAndSaveAnimal(String name, String species, String breed) {

@@ -44,7 +44,7 @@ class UserIntegrationTest {
         
         testUserDomain = new UserDomain();
         testUserDomain.setFirstName("Integration");
-        testUserDomain.setLastName("Test");
+        testUserDomain.setLastName("Testing");
         testUserDomain.setEmail("integration.test@example.com");
         testUserDomain.setRole("ROLE_USER");
         testUserDomain.setActive(true);
@@ -67,7 +67,7 @@ class UserIntegrationTest {
         // Assert
         assertNotNull(result);
         assertEquals("Integration", result.getFirstName());
-        assertEquals("Test", result.getLastName());
+        assertEquals("Testing", result.getLastName());
         assertEquals("integration.test@example.com", result.getEmail());
         assertNotNull(result.getUserId());
         assertNotNull(result.getPassword());
@@ -97,14 +97,14 @@ class UserIntegrationTest {
         assertNotNull(result);
         assertEquals("integration.test@example.com", result.getEmail());
         assertEquals("Integration", result.getFirstName());
-        assertEquals("Test", result.getLastName());
+        assertEquals("Testing", result.getLastName());
     }
 
     @Test
     void getAllUsers_ShouldReturnAllPersistedUsers() {
         // Arrange - Add multiple users
-        userService.addNewUserWithSpecificRole("User1", "Test1", "user1@example.com", "ROLE_USER", true, true);
-        userService.addNewUserWithSpecificRole("User2", "Test2", "user2@example.com", "ROLE_ADMIN", true, true);
+        userService.addNewUserWithSpecificRole("UserOne", "TestOne", "user1@example.com", "ROLE_USER", true, true);
+        userService.addNewUserWithSpecificRole("UserTwo", "TestTwo", "user2@example.com", "ROLE_ADMIN", true, true);
 
         // Act
         List<UserDomain> result = userService.getAll();

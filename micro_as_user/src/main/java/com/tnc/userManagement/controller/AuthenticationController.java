@@ -88,10 +88,11 @@ public class AuthenticationController {
             throws EmailExistException {
         
         // Create new user
-        UserDomain newUser = userService.addNewUserWithSpecificRole(
+        UserDomain newUser = userService.addNewUserWithPassword(
             registerRequest.firstName(),
             registerRequest.lastName(),
             registerRequest.email(),
+            registerRequest.password(),
             "USER", // Default role
             true,
             true
