@@ -27,12 +27,15 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             
-            // Add token to request headers for downstream services
-            ServerHttpRequest mutatedRequest = request.mutate()
-                    .header("X-User-Token", token)
-                    .build();
-            
-            return chain.filter(exchange.mutate().request(mutatedRequest).build());
+            // Only process if token is not empty
+            if (!token.trim().isEmpty()) {
+                // Add token to request headers for downstream services
+                ServerHttpRequest mutatedRequest = request.mutate()
+                        .header("X-User-Token", token)
+                        .build();
+                
+                return chain.filter(exchange.mutate().request(mutatedRequest).build());
+            }
         }
         
         return chain.filter(exchange);

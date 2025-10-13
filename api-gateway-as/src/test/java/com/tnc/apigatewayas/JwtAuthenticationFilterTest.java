@@ -27,15 +27,25 @@ class JwtAuthenticationFilterTest {
 
     private ServerWebExchange exchange;
     private ServerHttpRequest request;
+    private ServerHttpRequest.Builder requestBuilder;
+    private ServerWebExchange.Builder exchangeBuilder;
     private GatewayFilterChain filterChain;
 
     @BeforeEach
     void setUp() {
         exchange = mock(ServerWebExchange.class);
         request = mock(ServerHttpRequest.class);
+        requestBuilder = mock(ServerHttpRequest.Builder.class);
+        exchangeBuilder = mock(ServerWebExchange.Builder.class);
         filterChain = mock(GatewayFilterChain.class);
         
-        when(exchange.getRequest()).thenReturn(request);
+        // Use lenient stubbing to avoid UnnecessaryStubbingException
+        lenient().when(exchange.getRequest()).thenReturn(request);
+        lenient().when(request.mutate()).thenReturn(requestBuilder);
+        lenient().when(requestBuilder.build()).thenReturn(request);
+        lenient().when(exchange.mutate()).thenReturn(exchangeBuilder);
+        lenient().when(exchangeBuilder.request(any(ServerHttpRequest.class))).thenReturn(exchangeBuilder);
+        lenient().when(exchangeBuilder.build()).thenReturn(exchange);
     }
 
     @Test
@@ -46,12 +56,7 @@ class JwtAuthenticationFilterTest {
         
         when(request.getHeaders()).thenReturn(mock(org.springframework.http.HttpHeaders.class));
         when(request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(authHeader);
-        when(request.mutate()).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header(anyString(), anyString())).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header(anyString(), anyString()).build()).thenReturn(request);
-        when(exchange.mutate()).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class))).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class)).build()).thenReturn(exchange);
+        when(requestBuilder.header("X-User-Token", token)).thenReturn(requestBuilder);
         when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         // Act
@@ -61,7 +66,7 @@ class JwtAuthenticationFilterTest {
         assertNotNull(result);
         result.block(); // Block to verify completion
         
-        verify(request).mutate();
+        verify(requestBuilder).header("X-User-Token", token);
         verify(filterChain).filter(any(ServerWebExchange.class));
     }
 
@@ -131,12 +136,7 @@ class JwtAuthenticationFilterTest {
         
         when(request.getHeaders()).thenReturn(mock(org.springframework.http.HttpHeaders.class));
         when(request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(authHeader);
-        when(request.mutate()).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header("X-User-Token", token)).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header("X-User-Token", token).build()).thenReturn(request);
-        when(exchange.mutate()).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class))).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class)).build()).thenReturn(exchange);
+        when(requestBuilder.header("X-User-Token", token)).thenReturn(requestBuilder);
         when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         // Act
@@ -146,7 +146,7 @@ class JwtAuthenticationFilterTest {
         assertNotNull(result);
         result.block(); // Block to verify completion
         
-        verify(request.mutate()).header("X-User-Token", token);
+        verify(requestBuilder).header("X-User-Token", token);
         verify(filterChain).filter(any(ServerWebExchange.class));
     }
 
@@ -158,12 +158,7 @@ class JwtAuthenticationFilterTest {
         
         when(request.getHeaders()).thenReturn(mock(org.springframework.http.HttpHeaders.class));
         when(request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION)).thenReturn(authHeader);
-        when(request.mutate()).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header(anyString(), anyString())).thenReturn(mock(ServerHttpRequest.Builder.class));
-        when(request.mutate().header(anyString(), anyString()).build()).thenReturn(request);
-        when(exchange.mutate()).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class))).thenReturn(mock(ServerWebExchange.Builder.class));
-        when(exchange.mutate().request(any(ServerHttpRequest.class)).build()).thenReturn(exchange);
+        when(requestBuilder.header("X-User-Token", longToken)).thenReturn(requestBuilder);
         when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         // Act
@@ -173,7 +168,7 @@ class JwtAuthenticationFilterTest {
         assertNotNull(result);
         result.block(); // Block to verify completion
         
-        verify(request.mutate()).header("X-User-Token", longToken);
+        verify(requestBuilder).header("X-User-Token", longToken);
         verify(filterChain).filter(any(ServerWebExchange.class));
     }
 }
