@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  * Provides fallback mechanisms for database failures.
  */
 @Slf4j
-@Service
+// @Service  // Temporarily disabled to fix startup issue
 @RequiredArgsConstructor
 public class CircuitBreakerService {
     

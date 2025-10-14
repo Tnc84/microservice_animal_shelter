@@ -4,19 +4,21 @@ server:
 spring:
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
       globalcors:
-        corsConfigurations:
+        cors-configurations:
           '[/**]':
-            allowedOriginPatterns: "*"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-            allowCredentials: true
+            allowedoriginpatterns: "*"
+            allowedmethods: "*"
+            allowedheaders: "*"
+            allowcredentials: true
   application:
     name: api-gateway-as
   config:

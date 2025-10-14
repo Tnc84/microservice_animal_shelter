@@ -31,10 +31,12 @@ public class SecurityConfig {
                         // Public endpoints
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health").permitAll()
                         .pathMatchers("/user-management/auth/**").permitAll()
+                        // Public access for Happy Tails page - allow unauthenticated access to get all animals
+                        .pathMatchers("/animal-microservice/animals/getAll").permitAll()
                         // Protected endpoints with role-based access
                         .pathMatchers("/user-management/**").hasRole("USER")
                         .pathMatchers("/shelter-microservice/**").hasAnyRole("ADMIN", "SHELTER_MANAGER")
-                        .pathMatchers("/animals-microservice/**").hasAnyRole("ADMIN", "SHELTER_MANAGER", "VET")
+                        .pathMatchers("/animal-microservice/**").hasAnyRole("ADMIN", "SHELTER_MANAGER", "VET")
                         .anyExchange().authenticated()
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
