@@ -1,11 +1,9 @@
 package com.tnc.shelter.controller;
 
-import com.tnc.shelter.controller.dto.AnimalDTO;
 import com.tnc.shelter.controller.dto.ShelterDTO;
 import com.tnc.shelter.controller.mapper.ShelterDTOMapper;
 import com.tnc.shelter.service.exception.ShelterAddressException;
 import com.tnc.shelter.service.exception.ShelterNameException;
-import com.tnc.shelter.service.impl.FeignAnimalProxy;
 import com.tnc.shelter.service.interfaces.ShelterService;
 import com.tnc.shelter.service.domain.ShelterDomain;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +30,6 @@ import static org.mockito.Mockito.*;
 class ShelterControllerTest {
 
     @Mock
-    private FeignAnimalProxy feignAnimalProxy;
-
-    @Mock
     private ShelterService shelterService;
 
     @Mock
@@ -45,44 +40,14 @@ class ShelterControllerTest {
 
     private ShelterDTO testShelterDTO;
     private ShelterDomain testShelterDomain;
-    private AnimalDTO testAnimalDTO;
 
     @BeforeEach
     void setUp() {
-        testShelterDTO = new ShelterDTO(1L, "Test Shelter", "Test City", "8080");
+        testShelterDTO = new ShelterDTO(1L, "Test Shelter", "Test City", null, null, null, null);
 
         testShelterDomain = new ShelterDomain(1L, "Test Shelter", "Test City");
-        testShelterDomain.setEnvironment("8080");
-
-        testAnimalDTO = new AnimalDTO(1L, "Test Animal", "photo.jpg", "8080");
     }
 
-    @Test
-    void getAllAnimalsFeign_ShouldReturnAnimalsList() {
-        // Arrange
-        List<AnimalDTO> expectedAnimals = Arrays.asList(testAnimalDTO);
-        when(feignAnimalProxy.getAllAnimals()).thenReturn(expectedAnimals);
-
-        // Act
-        List<AnimalDTO> result = shelterController.getAllAnimalsFeign();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Test Animal", result.get(0).name());
-        verify(feignAnimalProxy).getAllAnimals();
-    }
-
-    @Test
-    void getAllAnimalsFeign_WhenServiceDown_ShouldReturnNull() {
-        // Arrange
-        when(feignAnimalProxy.getAllAnimals()).thenThrow(new RuntimeException("Service down"));
-
-        // Act & Assert
-        // Since Resilience4j is not configured in test, the exception will be thrown
-        assertThrows(RuntimeException.class, () -> shelterController.getAllAnimalsFeign());
-        verify(feignAnimalProxy).getAllAnimals();
-    }
 
     @Test
     void getAll_ShouldReturnAllShelters() {
@@ -187,13 +152,4 @@ class ShelterControllerTest {
         verify(shelterService).update(testShelterDomain);
     }
 
-    @Test
-    void getAnimalById_ShouldReturnFeignProxy() {
-        // Act
-        FeignAnimalProxy result = shelterController.getAnimalById();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(feignAnimalProxy, result);
-    }
 }

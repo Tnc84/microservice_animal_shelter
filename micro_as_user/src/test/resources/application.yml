@@ -1,0 +1,47 @@
+spring:
+  profiles:
+    active: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+
+# Disable circuit breaker for unit tests
+resilience4j:
+  circuitbreaker:
+    instances:
+      database:
+        enabled: false
+      rabbitmq:
+        enabled: false
+  retry:
+    instances:
+      database:
+        enabled: false
+      rabbitmq:
+        enabled: false
+  timelimiter:
+    instances:
+      database:
+        enabled: false
+      rabbitmq:
+        enabled: false
+  bulkhead:
+    instances:
+      database:
+        enabled: false
+      rabbitmq:
+        enabled: false
+
+logging:
+  level:
+    com.tnc.userManagement: DEBUG
+    org.springframework.test: DEBUG

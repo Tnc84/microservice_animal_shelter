@@ -15,6 +15,10 @@ public record ShelterDTO(
         String name,
         String city,
 //        List<AnimalDTO> animals,
-        String environment
+        // Statistics fields for tracking animal events
+        Integer animalCount,
+        Integer maxCapacity,
+        Integer adoptionCount,
+        java.time.LocalDateTime lastModified
 ) {
 }

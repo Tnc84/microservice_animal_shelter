@@ -32,10 +32,8 @@ class ShelterDomainMapperTest {
         testShelter.setId(1L);
         testShelter.setName("Test Shelter");
         testShelter.setCity("Test City");
-        testShelter.setEnvironment("8080");
 
         testShelterDomain = new ShelterDomain(1L, "Test Shelter", "Test City");
-        testShelterDomain.setEnvironment("8080");
     }
 
     @Test
@@ -48,7 +46,6 @@ class ShelterDomainMapperTest {
         assertEquals(testShelter.getId(), result.getId());
         assertEquals(testShelter.getName(), result.getName());
         assertEquals(testShelter.getCity(), result.getCity());
-        assertEquals(testShelter.getEnvironment(), result.getEnvironment());
     }
 
     @Test
@@ -61,7 +58,6 @@ class ShelterDomainMapperTest {
         assertEquals(testShelterDomain.getId(), result.getId());
         assertEquals(testShelterDomain.getName(), result.getName());
         assertEquals(testShelterDomain.getCity(), result.getCity());
-        assertEquals(testShelterDomain.getEnvironment(), result.getEnvironment());
     }
 
     @Test
@@ -193,7 +189,6 @@ class ShelterDomainMapperTest {
         // Arrange
         testShelter.setName("Different Shelter");
         testShelter.setCity("Different City");
-        testShelter.setEnvironment("9090");
 
         // Act
         ShelterDomain result = mapper.toDomain(testShelter);
@@ -202,14 +197,12 @@ class ShelterDomainMapperTest {
         assertNotNull(result);
         assertEquals("Different Shelter", result.getName());
         assertEquals("Different City", result.getCity());
-        assertEquals("9090", result.getEnvironment());
     }
 
     @Test
     void toEntity_WithDifferentShelterDomain_ShouldMapCorrectly() {
         // Arrange
         ShelterDomain differentShelterDomain = new ShelterDomain(2L, "Different Shelter", "Different City");
-        differentShelterDomain.setEnvironment("9090");
 
         // Act
         Shelter result = mapper.toEntity(differentShelterDomain);
@@ -219,7 +212,6 @@ class ShelterDomainMapperTest {
         assertEquals(2L, result.getId());
         assertEquals("Different Shelter", result.getName());
         assertEquals("Different City", result.getCity());
-        assertEquals("9090", result.getEnvironment());
     }
 
     @Test
@@ -229,13 +221,11 @@ class ShelterDomainMapperTest {
         shelter1.setId(1L);
         shelter1.setName("Shelter 1");
         shelter1.setCity("City 1");
-        shelter1.setEnvironment("8080");
 
         Shelter shelter2 = new Shelter();
         shelter2.setId(2L);
         shelter2.setName("Shelter 2");
         shelter2.setCity("City 2");
-        shelter2.setEnvironment("8081");
 
         List<Shelter> shelters = Arrays.asList(shelter1, shelter2);
 
@@ -253,10 +243,8 @@ class ShelterDomainMapperTest {
     void toEntityList_WithMultipleShelterDomains_ShouldMapCorrectly() {
         // Arrange
         ShelterDomain domain1 = new ShelterDomain(1L, "Domain 1", "City 1");
-        domain1.setEnvironment("8080");
         
         ShelterDomain domain2 = new ShelterDomain(2L, "Domain 2", "City 2");
-        domain2.setEnvironment("8081");
 
         List<ShelterDomain> shelterDomains = Arrays.asList(domain1, domain2);
 

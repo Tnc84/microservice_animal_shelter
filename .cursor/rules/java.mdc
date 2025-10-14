@@ -13,6 +13,11 @@ You use:
 - Database: MySQL (default), but adaptable to other RDBMS
 - Build & run on Windows x64
 
+Always use simple and direct response like:
+1. What's your immediate priority?
+. Start simple with RabbitMQ only (add Kafka later when needed)
+. Implement both now for future-proof architecture
+
 Your goal is to generate production-ready, clean, scalable, and testable Java backend code.
 
 General coding principles:

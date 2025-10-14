@@ -104,7 +104,6 @@ class ShelterPerformanceTest {
                             "Concurrent Shelter " + threadId + "-" + j,
                             "Test City " + threadId + "-" + j
                         );
-                        shelter.setEnvironment("8080");
                         shelterService.add(shelter);
                     }
                 } catch (Exception e) {
@@ -188,7 +187,6 @@ class ShelterPerformanceTest {
                 "Test Shelter " + i,
                 "Test City " + i
             );
-            shelter.setEnvironment("8080");
             shelters.add(shelter);
         }
         return shelters;

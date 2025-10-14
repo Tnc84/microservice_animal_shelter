@@ -17,6 +17,11 @@ public class ShelterDomain {
     private final String name;
     private final String city;
 //    private List<AnimalDomain> animals = new ArrayList<>();
-    private String environment;
+    
+    // Statistics fields for tracking animal events
+    private Integer animalCount = 0;
+    private Integer maxCapacity = 100; // Default capacity
+    private Integer adoptionCount = 0;
+    private java.time.LocalDateTime lastModified;
 
 }

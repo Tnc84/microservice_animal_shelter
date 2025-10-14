@@ -1,15 +1,12 @@
 package com.tnc.shelter.controller;
 
-import com.tnc.shelter.controller.dto.AnimalDTO;
 import com.tnc.shelter.controller.dto.ShelterDTO;
 import com.tnc.shelter.controller.mapper.ShelterDTOMapper;
 import com.tnc.shelter.service.exception.ShelterAddressException;
 import com.tnc.shelter.service.exception.ShelterNameException;
-import com.tnc.shelter.service.impl.FeignAnimalProxy;
 import com.tnc.shelter.service.interfaces.ShelterService;
 import com.tnc.shelter.service.validation.OnCreate;
 import com.tnc.shelter.service.validation.OnUpdate;
-import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,9 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RequestMapping(value = "/shelters")
 @RestController
@@ -38,46 +33,60 @@ import java.util.Optional;
 public class ShelterController {
 
     private final Logger logger = LoggerFactory.getLogger(ShelterController.class);
-    private final FeignAnimalProxy feignAnimalProxy;
     private final ShelterService shelterService;
     private final ShelterDTOMapper shelterDTOMapper;
 
-    @GetMapping("/getAllAnimals")
-    @Retry(name = "getAllAnimals", fallbackMethod = "fallbackResponse")
-    public List<AnimalDTO> getAllAnimalsFeign(){
-        logger.info("getAllAnimals method call from shelter-microservice received");
-        return feignAnimalProxy.getAllAnimals();
-    }
-
-    private List<AnimalDTO> fallbackResponse(Exception e){
-        logger.error("Animal server is down");
-        return null;
-    }
-
-    @GetMapping("/getAnimalByIdFeign/{id}")
-    public FeignAnimalProxy getAnimalById() {
-        return feignAnimalProxy;
-    }
 
     @GetMapping("/getAll")
+    @Operation(summary = "Get all shelters", description = "Retrieve a list of all shelters with statistics")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shelters retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShelterDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<ShelterDTO>> getAll() {
-        logger.error("retrieve all shelters");
+        logger.info("Retrieving all shelters");
         return ResponseEntity.ok(shelterDTOMapper.toDTOList(shelterService.getAll()));
     }
+    
     @GetMapping("/iasi")
+    @Operation(summary = "Get shelter by name", description = "Retrieve a specific shelter by name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shelter found successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShelterDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Shelter not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<ShelterDTO> getShelterByName() {
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.getShelterByName()));
     }
 
     @PostMapping("/add")
     @Validated(OnCreate.class)
+    @Operation(summary = "Add new shelter", description = "Create a new shelter with initial statistics")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shelter created successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShelterDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<ShelterDTO> add(@Valid @RequestBody ShelterDTO shelterDTO) throws ShelterAddressException, ShelterNameException {
+        logger.info("Creating new shelter: {}", shelterDTO.name());
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.add(shelterDTOMapper.toDomain(shelterDTO))));
     }
 
     @PutMapping("/update")
     @Validated(OnUpdate.class)
+    @Operation(summary = "Update shelter", description = "Update an existing shelter's information and statistics")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shelter updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ShelterDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "Shelter not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<ShelterDTO> update(@Valid @RequestBody ShelterDTO shelterDTO) throws ShelterAddressException, ShelterNameException {
+        logger.info("Updating shelter: {}", shelterDTO.name());
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.update(shelterDTOMapper.toDomain(shelterDTO))));
     }
 

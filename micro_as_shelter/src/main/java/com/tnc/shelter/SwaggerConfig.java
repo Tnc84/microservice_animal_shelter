@@ -26,9 +26,9 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Shelter Management Microservice API")
-                        .description("Comprehensive API for managing shelter operations and animal integration. " +
-                                "This service handles shelter CRUD operations, integrates with Animal service " +
-                                "via Feign client, and implements circuit breaker patterns for resilience.")
+                        .description("Comprehensive API for managing shelter operations and statistics. " +
+                                "This service handles shelter CRUD operations, tracks animal statistics " +
+                                "via RabbitMQ events, and provides real-time shelter capacity monitoring.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("TNC Development Team")

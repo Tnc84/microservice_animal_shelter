@@ -28,10 +28,9 @@ class ShelterDTOMapperTest {
     void setUp() {
         mapper = Mappers.getMapper(ShelterDTOMapper.class);
         
-        testShelterDTO = new ShelterDTO(1L, "Test Shelter", "Test City", "8080");
+        testShelterDTO = new ShelterDTO(1L, "Test Shelter", "Test City", 10, 50, 5, java.time.LocalDateTime.now());
 
         testShelterDomain = new ShelterDomain(1L, "Test Shelter", "Test City");
-        testShelterDomain.setEnvironment("8080");
     }
 
     @Test
@@ -44,7 +43,6 @@ class ShelterDTOMapperTest {
         assertEquals(testShelterDomain.getId(), result.id());
         assertEquals(testShelterDomain.getName(), result.name());
         assertEquals(testShelterDomain.getCity(), result.city());
-        assertEquals(testShelterDomain.getEnvironment(), result.environment());
     }
 
     @Test
@@ -57,7 +55,6 @@ class ShelterDTOMapperTest {
         assertEquals(testShelterDTO.id(), result.getId());
         assertEquals(testShelterDTO.name(), result.getName());
         assertEquals(testShelterDTO.city(), result.getCity());
-        assertEquals(testShelterDTO.environment(), result.getEnvironment());
     }
 
     @Test
@@ -146,7 +143,7 @@ class ShelterDTOMapperTest {
     @Test
     void toDomain_WithEmptyShelterDTO_ShouldMapCorrectly() {
         // Arrange
-        ShelterDTO emptyShelterDTO = new ShelterDTO(null, null, null, null);
+        ShelterDTO emptyShelterDTO = new ShelterDTO(null, null, null, null, null, null, null);
 
         // Act
         ShelterDomain result = mapper.toDomain(emptyShelterDTO);
@@ -188,7 +185,6 @@ class ShelterDTOMapperTest {
     void toDTO_WithDifferentShelterDomain_ShouldMapCorrectly() {
         // Arrange
         ShelterDomain differentShelterDomain = new ShelterDomain(2L, "Different Shelter", "Different City");
-        differentShelterDomain.setEnvironment("9090");
 
         // Act
         ShelterDTO result = mapper.toDTO(differentShelterDomain);
@@ -198,13 +194,12 @@ class ShelterDTOMapperTest {
         assertEquals(2L, result.id());
         assertEquals("Different Shelter", result.name());
         assertEquals("Different City", result.city());
-        assertEquals("9090", result.environment());
     }
 
     @Test
     void toDomain_WithDifferentShelterDTO_ShouldMapCorrectly() {
         // Arrange
-        ShelterDTO differentShelterDTO = new ShelterDTO(2L, "Different Shelter", "Different City", "9090");
+        ShelterDTO differentShelterDTO = new ShelterDTO(2L, "Different Shelter", "Different City", 15, 60, 8, java.time.LocalDateTime.now());
 
         // Act
         ShelterDomain result = mapper.toDomain(differentShelterDTO);
@@ -214,17 +209,14 @@ class ShelterDTOMapperTest {
         assertEquals(2L, result.getId());
         assertEquals("Different Shelter", result.getName());
         assertEquals("Different City", result.getCity());
-        assertEquals("9090", result.getEnvironment());
     }
 
     @Test
     void toDTOList_WithMultipleShelterDomains_ShouldMapCorrectly() {
         // Arrange
         ShelterDomain domain1 = new ShelterDomain(1L, "Shelter 1", "City 1");
-        domain1.setEnvironment("8080");
         
         ShelterDomain domain2 = new ShelterDomain(2L, "Shelter 2", "City 2");
-        domain2.setEnvironment("8081");
 
         List<ShelterDomain> shelterDomains = Arrays.asList(domain1, domain2);
 
@@ -241,8 +233,8 @@ class ShelterDTOMapperTest {
     @Test
     void toDomainList_WithMultipleShelterDTOs_ShouldMapCorrectly() {
         // Arrange
-        ShelterDTO dto1 = new ShelterDTO(1L, "DTO 1", "City 1", "8080");
-        ShelterDTO dto2 = new ShelterDTO(2L, "DTO 2", "City 2", "8081");
+        ShelterDTO dto1 = new ShelterDTO(1L, "DTO 1", "City 1", 5, 30, 2, java.time.LocalDateTime.now());
+        ShelterDTO dto2 = new ShelterDTO(2L, "DTO 2", "City 2", 8, 40, 3, java.time.LocalDateTime.now());
 
         List<ShelterDTO> shelterDTOs = Arrays.asList(dto1, dto2);
 

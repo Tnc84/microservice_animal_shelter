@@ -87,4 +87,40 @@ AnimalDTOMapper animalDTOMapper){
         var updateAnimal = animalService.update(animalDTOMapper.toDomain(animalDTO));
         return ResponseEntity.ok(animalDTOMapper.toDTO(updateAnimal));
     }
+    
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete animal", description = "Remove an animal from the shelter system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Animal deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Animal not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Animal ID to delete", required = true, example = "1")
+            @PathVariable Long id) {
+        ((com.tnc.animals.service.impl.AnimalServiceImpl) animalService).delete(id);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/{id}/adopt")
+    @Operation(summary = "Adopt animal", description = "Mark an animal as adopted by a user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Animal adopted successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AnimalDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Animal not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<AnimalDTO> adoptAnimal(
+            @Parameter(description = "Animal ID to adopt", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "User ID who is adopting", required = true, example = "1")
+            @RequestParam Long userId,
+            @Parameter(description = "User email", required = true, example = "user@example.com")
+            @RequestParam String userEmail) {
+        var adoptedAnimal = ((com.tnc.animals.service.impl.AnimalServiceImpl) animalService).adoptAnimal(id, userId, userEmail);
+        if (adoptedAnimal != null) {
+            return ResponseEntity.ok(animalDTOMapper.toDTO(adoptedAnimal));
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

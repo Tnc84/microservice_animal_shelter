@@ -19,8 +19,9 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Spring Cloud Gateway** for API Gateway
 - **OpenFeign** for inter-service communication
 - **Spring Cloud Sleuth & Zipkin** for distributed tracing
-- **RabbitMQ** for messaging
-- **Resilience4j** for circuit breaker patterns
+- **RabbitMQ** for messaging and event-driven architecture
+- **Resilience4j** for circuit breaker patterns and fault tolerance
+- **Event-Driven Architecture** with RabbitMQ message publishing and consuming
 
 ### **Development Tools:**
 - **Lombok** for reducing boilerplate code
@@ -57,45 +58,59 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### 3. **Animal Microservice**
 - **Ports:** 8093/8095
 - **Database:** MySQL (`animal` database)
-- **Purpose:** Manages animal records
+- **Purpose:** Manages animal records with event-driven architecture
 - **Key Features:**
-  - CRUD operations for animals
+  - CRUD operations for animals with circuit breaker protection
   - Animal validation (name, breed, species)
   - Photo storage capability
   - Environment port tracking
+  - **Event Publishing:** RabbitMQ event publishing for animal lifecycle events
+  - **Circuit Breaker Protection:** Database and RabbitMQ operations with fallback mechanisms
 - **REST Endpoints:**
   - `GET /animals/getAll` - Retrieve all animals
   - `GET /animals/getById/{id}` - Get animal by ID
   - `POST /animals` - Create new animal
   - `PUT /animals` - Update animal
+- **Event Publishing:**
+  - Animal Created, Updated, Adopted, Deleted events
+  - Automatic event publishing after database operations
+  - Circuit breaker protection for message publishing
 
 ### 4. **Shelter Microservice**
 - **Ports:** 8092/8094
 - **Database:** MySQL (`shelter` database)
-- **Purpose:** Manages shelter information and integrates with animal service
+- **Purpose:** Manages shelter information with event-driven integration
 - **Key Features:**
-  - Shelter CRUD operations
+  - Shelter CRUD operations with circuit breaker protection
   - Integration with Animal microservice via Feign
-  - Resilience4j circuit breaker implementation
-  - Fallback mechanisms for service failures
+  - **Event Consumption:** RabbitMQ event processing for animal lifecycle updates
+  - **Circuit Breaker Protection:** Database and RabbitMQ operations with fallback mechanisms
+  - **Statistics Tracking:** Automatic shelter statistics updates based on animal events
+  - **Capacity Management:** Shelter capacity monitoring and alerts
 - **REST Endpoints:**
   - `GET /shelters/getAll` - Get all shelters
   - `GET /shelters/getAllAnimals` - Get all animals via Feign
   - `POST /shelters/add` - Add new shelter
   - `PUT /shelters/update` - Update shelter
+- **Event Processing:**
+  - Animal Created, Updated, Adopted, Deleted event consumption
+  - Automatic shelter statistics updates
+  - Circuit breaker protection for event processing
 
 ### 5. **User Management Microservice**
 - **Port:** 8091
 - **Database:** MySQL (`user_management` database)
-- **Purpose:** Handles user registration, authentication, and JWT token generation
+- **Purpose:** Handles user registration, authentication, and notification management
 - **Key Features:**
-  - User CRUD operations with JWT security
+  - User CRUD operations with JWT security and circuit breaker protection
   - Role-based access control (USER, ADMIN, SHELTER_MANAGER, VET)
   - JWT token generation and validation
   - Password encryption with BCrypt
   - Email functionality for password reset
   - User validation and exception handling
   - Spring Security integration
+  - **Notification System:** In-app notification management with circuit breaker protection
+  - **Circuit Breaker Protection:** Database operations with fallback mechanisms
 - **Authentication Endpoints:**
   - `POST /auth/login` - User login with JWT token generation
   - `POST /auth/register` - User registration with JWT token
@@ -106,6 +121,11 @@ This is a **Java 17 microservices application** for managing an animal shelter s
   - `PUT /users/update` - Update user
   - `DELETE /users/delete/{id}` - Delete user
   - `GET /users/resetPassword/{email}` - Reset password
+- **Notification Endpoints:**
+  - `GET /notifications` - Get user notifications
+  - `POST /notifications` - Create notification
+  - `PUT /notifications/{id}/read` - Mark notification as read
+  - `GET /circuit-breaker/status` - Circuit breaker monitoring
 
 ## Security Implementation
 
@@ -145,6 +165,23 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **XSS Protection:** HttpOnly cookies prevent client-side access
 - **CSRF Protection:** SameSite cookie configuration
 
+## Circuit Breaker Architecture
+
+### **Resilience4j Implementation:**
+- **Database Circuit Breakers:** 50% failure threshold, 30s open state, automatic recovery
+- **RabbitMQ Circuit Breakers:** 60% failure threshold, 60s open state, message processing protection
+- **API Gateway Circuit Breakers:** Service-to-service communication protection
+- **Retry Policies:** Exponential backoff with configurable attempts
+- **Time Limiters:** 5s for database, 10s for RabbitMQ operations
+- **Bulkhead Isolation:** Resource protection with concurrent call limits
+
+### **Fault Tolerance Features:**
+- **Automatic Fallback:** Graceful degradation when services fail
+- **Health Monitoring:** Real-time circuit breaker status tracking
+- **Event Processing:** RabbitMQ message processing with circuit breaker protection
+- **Database Operations:** All CRUD operations protected with fallback mechanisms
+- **Service Communication:** Inter-service calls with circuit breaker protection
+
 ## Key Features & Patterns
 
 ### **SOLID Principles Implementation:**
@@ -159,9 +196,12 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **DTO Pattern** for data transfer using Records
 - **Mapper Pattern** using MapStruct
 - **Service Layer Pattern** for business logic
-- **Circuit Breaker Pattern** with Resilience4j
+- **Circuit Breaker Pattern** with Resilience4j for fault tolerance
 - **Security Filter Pattern** for JWT authentication
 - **Builder Pattern** for JWT token creation
+- **Event-Driven Pattern** with RabbitMQ for asynchronous communication
+- **Publisher-Subscriber Pattern** for animal lifecycle events
+- **Fallback Pattern** for graceful degradation
 
 ### **Data Validation:**
 - Comprehensive validation using Bean Validation
@@ -171,8 +211,11 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### **Monitoring & Observability:**
 - **Distributed Tracing** with Spring Cloud Sleuth
 - **Zipkin** integration for trace visualization
-- **Actuator** endpoints for health checks
+- **Actuator** endpoints for health checks and circuit breaker monitoring
 - **Logging** with SLF4J
+- **Circuit Breaker Monitoring** with dedicated endpoints
+- **Event Tracking** for RabbitMQ message processing
+- **Health Dashboards** for all microservices
 
 ### **Containerization:**
 - **Docker** support with custom images
@@ -190,8 +233,12 @@ Each microservice maintains its own database:
 
 - **Feign Client** for synchronous communication between Shelter and Animal services
 - **Service Discovery** through Eureka for dynamic service location
-- **Circuit Breaker** pattern for fault tolerance
+- **Circuit Breaker** pattern for fault tolerance with Resilience4j
 - **Fallback mechanisms** for service resilience
+- **Event-Driven Architecture** with RabbitMQ for asynchronous communication
+- **Message Publishing** from Animal service for lifecycle events
+- **Message Consumption** in Shelter service for statistics updates
+- **Circuit Breaker Protection** for all inter-service communications
 
 ## Getting Started
 
@@ -289,6 +336,29 @@ curl -H "Authorization: Bearer <JWT_TOKEN>" \
   http://localhost:8765/shelter-microservice/shelters/getAllAnimals
 ```
 
+### Circuit Breaker Monitoring:
+```bash
+# Check circuit breaker status for all services
+curl http://localhost:8091/circuit-breaker/status
+curl http://localhost:8092/circuit-breaker/status
+curl http://localhost:8093/circuit-breaker/status
+
+# Check circuit breaker health
+curl http://localhost:8091/circuit-breaker/health
+curl http://localhost:8092/circuit-breaker/health
+curl http://localhost:8093/circuit-breaker/health
+
+# Check retry metrics
+curl http://localhost:8091/circuit-breaker/retry/status
+curl http://localhost:8092/circuit-breaker/retry/status
+curl http://localhost:8093/circuit-breaker/retry/status
+
+# Check time limiter status
+curl http://localhost:8091/circuit-breaker/time-limiter/status
+curl http://localhost:8092/circuit-breaker/time-limiter/status
+curl http://localhost:8093/circuit-breaker/time-limiter/status
+```
+
 ### Direct Service Access (for development):
 ```bash
 # Animal Service
@@ -354,6 +424,11 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Modern Java Features:** Records, Lombok, and Spring Boot 3.5.5
 - **Microservices Architecture:** All services with enhanced security integration
 - **Frontend Integration Guide:** Complete Angular implementation guide
+- **Circuit Breaker Implementation:** Resilience4j circuit breakers for all services
+- **Event-Driven Architecture:** RabbitMQ messaging for animal lifecycle events
+- **Fault Tolerance:** Fallback mechanisms and graceful degradation
+- **Notification System:** In-app notification management with circuit breaker protection
+- **Monitoring & Observability:** Circuit breaker status and health monitoring endpoints
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
@@ -363,6 +438,11 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Clean Architecture:** SOLID principles with security layers
 - **Database Security:** Refresh token storage with metadata tracking
 - **Device Tracking:** IP address and device info logging for security
+- **Circuit Breaker Integration:** Resilience4j for fault tolerance across all services
+- **Event-Driven Architecture:** RabbitMQ for asynchronous communication
+- **Fault Tolerance:** Comprehensive fallback mechanisms and graceful degradation
+- **Monitoring Enhancement:** Circuit breaker status and health monitoring
+- **Production Readiness:** Enterprise-grade resilience patterns
 
 ## Documentation
 

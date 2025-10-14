@@ -39,3 +39,72 @@ springdoc:
     tagsSorter: alpha
     tryItOutEnabled: true
   show-actuator: true
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      animal-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      shelter-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  retry:
+    instances:
+      user-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+      animal-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+      shelter-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+  timelimiter:
+    instances:
+      user-service:
+        timeout-duration: 5s
+      animal-service:
+        timeout-duration: 5s
+      shelter-service:
+        timeout-duration: 5s
+  bulkhead:
+    instances:
+      user-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+      animal-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+      shelter-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,retries,timelimiters,bulkheads
+  endpoint:
+    health:
+      show-details: always

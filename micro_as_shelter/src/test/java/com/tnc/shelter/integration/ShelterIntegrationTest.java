@@ -45,10 +45,8 @@ class ShelterIntegrationTest {
         testShelter = new Shelter();
         testShelter.setName("Integration Test Shelter");
         testShelter.setCity("Test City");
-        testShelter.setEnvironment("8080");
 
         testShelterDomain = new ShelterDomain(null, "Integration Test Shelter", "Test City");
-        testShelterDomain.setEnvironment("8080");
     }
 
     @Test
@@ -72,7 +70,6 @@ class ShelterIntegrationTest {
         shelterService.add(testShelterDomain);
         
         ShelterDomain anotherShelter = new ShelterDomain(null, "Another Shelter", "Test City");
-        anotherShelter.setEnvironment("8080");
         shelterService.add(anotherShelter);
 
         // Act
@@ -91,7 +88,6 @@ class ShelterIntegrationTest {
         Shelter buciumShelter = new Shelter();
         buciumShelter.setName("Bucium");
         buciumShelter.setCity("Test City");
-        buciumShelter.setEnvironment("8080");
         shelterRepository.save(buciumShelter);
 
         // Act
@@ -109,7 +105,6 @@ class ShelterIntegrationTest {
         
         // Modify the shelter
         ShelterDomain updatedShelter = new ShelterDomain(addedShelter.getId(), "Updated Shelter Name", "Test City");
-        updatedShelter.setEnvironment("8080");
 
         // Act
         ShelterDomain result = shelterService.update(updatedShelter);

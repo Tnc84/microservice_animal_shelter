@@ -35,8 +35,25 @@ public class Shelter {
 //    @OneToMany(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "shelter_id")
 //    private List<Animal> animals = new ArrayList<>();
-
-    private String environment;
+    
+    // Statistics fields for tracking animal events
+    @Column(name = "animal_count")
+    private Integer animalCount = 0;
+    
+    @Column(name = "max_capacity")
+    private Integer maxCapacity = 100; // Default capacity
+    
+    @Column(name = "adoption_count")
+    private Integer adoptionCount = 0;
+    
+    @Column(name = "last_modified")
+    private java.time.LocalDateTime lastModified;
+    
+    @PrePersist
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastModified = java.time.LocalDateTime.now();
+    }
 }
 
 

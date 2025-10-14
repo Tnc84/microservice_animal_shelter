@@ -18,6 +18,20 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin123
+    virtual-host: /
+    connection-timeout: 15000
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
   config:
     import: optional:configserver:http://localhost:8888
   sleuth:
@@ -27,11 +41,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka
-resilience4j:
-  retry:
-    instances:
-      getAllAnimals:
-        maxAttempts: 5
 
 # Swagger/OpenAPI Configuration
 springdoc:
@@ -43,3 +52,54 @@ springdoc:
     tagsSorter: alpha
     tryItOutEnabled: true
   show-actuator: true
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      database:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      rabbitmq:
+        failure-rate-threshold: 60
+        wait-duration-in-open-state: 60s
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+  retry:
+    instances:
+      database:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+      rabbitmq:
+        max-attempts: 5
+        wait-duration: 1s
+        exponential-backoff-multiplier: 1.5
+  timelimiter:
+    instances:
+      database:
+        timeout-duration: 5s
+      rabbitmq:
+        timeout-duration: 10s
+  bulkhead:
+    instances:
+      database:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+      rabbitmq:
+        max-concurrent-calls: 5
+        max-wait-duration: 2s
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,retries,timelimiters,bulkheads
+  endpoint:
+    health:
+      show-details: always
