@@ -10,13 +10,32 @@ spring:
             locator:
               enabled: true
               lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-microservice
+          predicates:
+            - Path=/user-management/**
+          filters:
+            - RewritePath=/user-management/(?<segment>.*), /$\{segment}
+        - id: animal-service
+          uri: lb://animal-microservice
+          predicates:
+            - Path=/animal-management/**
+          filters:
+            - RewritePath=/animal-management/(?<segment>.*), /$\{segment}
+        - id: shelter-service
+          uri: lb://shelter-microservice
+          predicates:
+            - Path=/shelter-management/**
+          filters:
+            - RewritePath=/shelter-management/(?<segment>.*), /$\{segment}
       default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedoriginpatterns: "*"
-            allowedmethods: "*"
+            allowedorigins: "http://localhost:4200"
+            allowedmethods: "GET,POST,PUT,DELETE,OPTIONS"
             allowedheaders: "*"
             allowcredentials: true
   application:

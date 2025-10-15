@@ -5,7 +5,7 @@ server:
   port: 8093
 spring:
   application:
-    name: Animal-microservice
+    name: animal-microservice
 #  cloud:
 #    gcp:
 #      project-id: animal-shelter-351809

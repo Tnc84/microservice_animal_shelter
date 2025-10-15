@@ -2,7 +2,7 @@ server:
   port: 8092
 spring:
   application:
-    name: Shelter-microservice
+    name: shelter-microservice
   datasource:
 #    driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost/shelter
