@@ -69,6 +69,24 @@ public class ExceptionHandling implements ErrorController {
         return createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
     }
 
+    @ExceptionHandler(com.tnc.userManagement.security.SQLInjectionValidator.SecurityException.class)
+    public ResponseEntity<HttpResponse> securityException(com.tnc.userManagement.security.SQLInjectionValidator.SecurityException exception) {
+        logger.error("Security violation detected: {}", exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, "Invalid input detected");
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<HttpResponse> validationException(org.springframework.web.bind.MethodArgumentNotValidException exception) {
+        logger.warn("Validation error: {}", exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, "Validation failed: " + exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage());
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<HttpResponse> constraintViolationException(jakarta.validation.ConstraintViolationException exception) {
+        logger.warn("Constraint violation: {}", exception.getMessage());
+        return createHttpResponse(BAD_REQUEST, "Validation failed: " + exception.getConstraintViolations().iterator().next().getMessage());
+    }
+
     @ExceptionHandler(NoResultException.class)
     public ResponseEntity<HttpResponse> notFoundException(NoResultException exception) {
         logger.error(exception.getMessage());

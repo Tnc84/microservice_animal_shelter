@@ -1,5 +1,9 @@
 package com.tnc.apigatewayas;
 
+import com.tnc.apigatewayas.security.SecurityHeadersFilter;
+import com.tnc.apigatewayas.security.InputSanitizationFilter;
+import com.tnc.apigatewayas.security.RateLimitingFilter;
+import com.tnc.apigatewayas.security.SecurityLoggingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,12 +19,15 @@ import java.util.Collections;
 
 /**
  * Security Configuration for API Gateway
- * Handles JWT token validation and role-based access control
+ * Handles JWT token validation, role-based access control, and security filters
  */
 @Slf4j
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+
+    // Security filters are automatically registered as @Component beans
+    // Order of execution is controlled by the Ordered interface in each filter
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {

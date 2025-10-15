@@ -94,6 +94,11 @@ resilience4j:
         max-concurrent-calls: 5
         max-wait-duration: 2s
 
+# JWT Configuration
+jwt:
+  secret: mySecretKey
+  expiration: 900000  # 15 minutes
+
 # Management endpoints for monitoring
 management:
   endpoints:

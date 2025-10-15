@@ -8,7 +8,6 @@ import com.tnc.shelter.service.interfaces.ShelterService;
 import com.tnc.shelter.service.validation.OnCreate;
 import com.tnc.shelter.service.validation.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Shelter Management", description = "APIs for managing shelter operations and animal integration")
-//@PreAuthorize("isAuthenticated() && hasRole('MOD')")
+@PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER')")
 public class ShelterController {
 
     private final Logger logger = LoggerFactory.getLogger(ShelterController.class);
