@@ -39,14 +39,14 @@ public class User implements Serializable {
     @NotBlank(message = "This field cannot be empty")
     @NotNull(message = "Must not be null")
     @NotEmpty(message = "This field must not be empty.")
-    @Length(message = "The name must be between 5 and 50 chars.", min = 5, max = 50)
-    @Pattern(message = "Must contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Length(message = "The name must be between 2 and 50 chars.", min = 2, max = 50)
+    @Pattern(message = "Must contain only letters.", regexp = "^[a-zA-Z]+$")
     private String firstName;
     @NotBlank(message = "This field cannot be empty")
     @NotNull(message = "Must not be null")
     @NotEmpty(message = "This field must not be empty.")
-    @Length(message = "The name must be between 5 and 50 chars.", min = 5, max = 50)
-    @Pattern(message = "Must contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Length(message = "The name must be between 2 and 50 chars.", min = 2, max = 50)
+    @Pattern(message = "Must contain only letters.", regexp = "^[a-zA-Z]+$")
     private String lastName;
     @Email
     @Column(nullable = false, unique = true)
