@@ -20,15 +20,15 @@ spring:
         - id: animal-service
           uri: lb://animal-microservice
           predicates:
-            - Path=/animal-management/**
+            - Path=/animal-microservice/**
           filters:
-            - RewritePath=/animal-management/(?<segment>.*), /$\{segment}
+            - RewritePath=/animal-microservice/(?<segment>.*), /$\{segment}
         - id: shelter-service
           uri: lb://shelter-microservice
           predicates:
-            - Path=/shelter-management/**
+            - Path=/shelter-microservice/**
           filters:
-            - RewritePath=/shelter-management/(?<segment>.*), /$\{segment}
+            - RewritePath=/shelter-microservice/(?<segment>.*), /$\{segment}
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers
       globalcors:

@@ -24,13 +24,19 @@ import java.util.List;
 @RequestMapping("/animals")
 @Validated
 @Tag(name = "Animal Management", description = "APIs for managing animal records in the shelter system")
-@PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
-public record AnimalController (
-AnimalService animalService,
-AnimalDTOMapper animalDTOMapper){
+public class AnimalController {
+    
+    private final AnimalService animalService;
+    private final AnimalDTOMapper animalDTOMapper;
+    
+    public AnimalController(AnimalService animalService, AnimalDTOMapper animalDTOMapper) {
+        this.animalService = animalService;
+        this.animalDTOMapper = animalDTOMapper;
+    }
 
     @GetMapping
     @RequestMapping("/getById/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
     @Operation(summary = "Get animal by ID", description = "Retrieve a specific animal by its unique identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal found successfully",
@@ -57,6 +63,7 @@ AnimalDTOMapper animalDTOMapper){
 
     @PostMapping
     @Validated(OnCreate.class)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
     @Operation(summary = "Add new animal", description = "Create a new animal record in the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal created successfully",
@@ -74,6 +81,7 @@ AnimalDTOMapper animalDTOMapper){
 
     @PutMapping
     @Validated(OnUpdate.class)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
     @Operation(summary = "Update animal", description = "Update an existing animal record in the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal updated successfully",
@@ -90,6 +98,7 @@ AnimalDTOMapper animalDTOMapper){
     }
     
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
     @Operation(summary = "Delete animal", description = "Remove an animal from the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal deleted successfully"),
@@ -104,6 +113,7 @@ AnimalDTOMapper animalDTOMapper){
     }
     
     @PostMapping("/{id}/adopt")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
     @Operation(summary = "Adopt animal", description = "Mark an animal as adopted by a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal adopted successfully",

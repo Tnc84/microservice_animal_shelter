@@ -457,6 +457,170 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Swagger UI:** `http://localhost:8765/swagger-ui.html`
 - **Health Check:** `http://localhost:8765/actuator/health`
 
+## 🏗️ System Architecture
+
+                    ┌─────────────▼─────────────┐
+                    │    API Gateway (8765)     │
+                    │   JWT Security + Routing  |
+                    └─────────────┬─────────────┘
+                                  │
+                    ┌─────────────▼─────────────┐
+                    │   Eureka Server (8761)    │
+                    │   Service Discovery       │
+                    └─────────────┬─────────────┘
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+┌───────▼───────┐    ┌───────────▼──────────┐    ┌───────▼───────┐
+│ User Service  │    │   Animal Service     │    │Shelter Service│
+│    (8091)     │    │      (8093)          │    │     (8092)    │
+│ Auth + Notif  │    │   Animal CRUD +      │    │ Shelter Mgmt +│
+│               │    │      Events          │    │    Stats      │
+└───────┬───────┘    └───────────┬──────────┘    └───────┬───────┘
+        │                        │                        │
+        │                        │                        │
+┌───────▼───────┐    ┌───────────▼──────────┐    ┌───────▼───────┐
+│   MySQL DB    │    │     MySQL DB         │    │   MySQL DB    │
+│user_management│    │      animal          │    │    shelter    │
+└───────────────┘    └──────────────────────┘    └───────────────┘
+                                 │
+                    ┌─────────────▼─────────────┐
+                    │      RabbitMQ             │
+                    │  Event-Driven Comm.       │
+                    └───────────────────────────┘
+
+
+## API Testing with Swagger UI
+
+### **📋 Complete Swagger Testing Guide:**
+
+All microservices have comprehensive Swagger/OpenAPI documentation with interactive testing capabilities.
+
+### **🚀 Quick Start Testing:**
+
+1. **Start All Services:**
+   ```bash
+   # Use the provided batch script
+   start-all.bat
+   ```
+
+2. **Access Swagger UI for Each Service:**
+   - **API Gateway**: `http://localhost:8765/swagger-ui.html`
+   - **Animal Service**: `http://localhost:8081/swagger-ui.html`
+   - **Shelter Service**: `http://localhost:8082/swagger-ui.html`
+   - **User Service**: `http://localhost:8083/swagger-ui.html`
+   - **Naming Server**: `http://localhost:8761/swagger-ui.html`
+
+### **🔐 Authentication Testing Flow:**
+
+1. **Register/Login via User Service Swagger:**
+   - Navigate to `http://localhost:8083/swagger-ui.html`
+   - Find `/auth/login` or `/auth/register` endpoints
+   - Click "Try it out" and enter credentials:
+     ```json
+     {
+       "email": "test@example.com",
+       "password": "password123"
+     }
+     ```
+   - **Copy the JWT token** from the response
+
+2. **Authorize in Other Services:**
+   - Open any other service's Swagger UI
+   - Click the **"Authorize"** button (🔒 icon)
+   - Enter: `Bearer <your-jwt-token>`
+   - Click "Authorize"
+
+3. **Test Protected Endpoints:**
+   - All endpoints marked with 🔒 require authentication
+   - Use "Try it out" to test CRUD operations
+   - Verify responses match the documented schemas
+
+### **📊 Individual Service Testing:**
+
+#### **Animal Service Testing:**
+- **URL**: `http://localhost:8081/swagger-ui.html`
+- **Key Endpoints**:
+  - `GET /animals/getAll` - List all animals
+  - `POST /animals` - Create new animal
+  - `PUT /animals` - Update animal
+  - `DELETE /animals/{id}` - Delete animal
+- **Authentication**: Required for all operations
+
+#### **Shelter Service Testing:**
+- **URL**: `http://localhost:8082/swagger-ui.html`
+- **Key Endpoints**:
+  - `GET /shelters/getAll` - List all shelters
+  - `POST /shelters/add` - Create new shelter
+  - `PUT /shelters/update` - Update shelter
+  - `GET /shelters/getAllAnimals` - Get animals via Feign
+- **Authentication**: Required for all operations
+
+#### **User Service Testing:**
+- **URL**: `http://localhost:8083/swagger-ui.html`
+- **Key Endpoints**:
+  - `POST /auth/login` - User authentication
+  - `POST /auth/register` - User registration
+  - `GET /users` - List users (requires USER role)
+  - `GET /notifications` - User notifications
+- **Authentication**: Login endpoints are public, others require authentication
+
+#### **API Gateway Testing:**
+- **URL**: `http://localhost:8765/swagger-ui.html`
+- **Features**:
+  - Aggregated view of all microservice endpoints
+  - Centralized authentication
+  - Service routing examples
+
+### **🧪 Testing Scenarios:**
+
+#### **Complete CRUD Flow:**
+1. **Login** via User Service Swagger
+2. **Create Animal** via Animal Service Swagger
+3. **Create Shelter** via Shelter Service Swagger
+4. **View Notifications** via User Service Swagger
+5. **Update/Delete** entities as needed
+
+#### **Authentication Flow:**
+1. **Register** new user via User Service
+2. **Login** and copy JWT token
+3. **Authorize** in other services
+4. **Test protected endpoints**
+5. **Verify role-based access** (try different user roles)
+
+#### **Error Testing:**
+1. **Test without authentication** (should get 401)
+2. **Test with invalid token** (should get 403)
+3. **Test with expired token** (should get 401)
+4. **Test invalid data** (should get 400)
+
+### **📋 Swagger Features Available:**
+
+- **Interactive API Testing**: Click "Try it out" on any endpoint
+- **Request/Response Examples**: Pre-filled examples for all endpoints
+- **Schema Validation**: Automatic validation of request/response formats
+- **Authentication Testing**: Built-in JWT token testing
+- **Error Response Documentation**: Complete error code documentation
+- **Model Definitions**: Detailed request/response schemas
+- **Endpoint Grouping**: Organized by service functionality
+
+### **🔧 Advanced Testing:**
+
+#### **Circuit Breaker Testing:**
+- Test endpoints under load to trigger circuit breakers
+- Monitor fallback responses
+- Check circuit breaker status endpoints
+
+#### **Event-Driven Testing:**
+- Create animals and verify event publishing
+- Check shelter statistics updates
+- Monitor notification creation
+
+#### **Security Testing:**
+- Test different user roles and permissions
+- Verify JWT token expiration handling
+- Test refresh token functionality
+
 ## Contributing
 
 This project follows SOLID principles and modern microservices best practices. When contributing:
