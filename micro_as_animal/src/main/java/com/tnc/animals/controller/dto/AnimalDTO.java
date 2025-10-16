@@ -5,7 +5,7 @@ import com.tnc.animals.service.validation.OnUpdate;
 import com.tnc.animals.service.validation.validationBeans.MustNotBeBlankOrEmpty;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 @Validated
 public record AnimalDTO(
@@ -16,8 +16,6 @@ public record AnimalDTO(
         String name,
         String breed,
         String species,
-        String photo,
-
-        String environment
+        String photo
 ) {
 }

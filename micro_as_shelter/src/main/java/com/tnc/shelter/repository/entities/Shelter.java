@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.*;
-import javax.validation.constraints.*;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Data
@@ -21,13 +21,13 @@ public class Shelter {
     private Long id;
     @NotBlank(message = "This field cannot be empty")
     @NotEmpty(message = "This field must not be empty.")
-    @Pattern(message = "Name should contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Pattern(message = "Name should contain only letters, numbers, spaces and hyphens.", regexp = "^[a-zA-Z0-9\\s-]+$")
     @NotNull(message = "Must not be null")
     @Length(message = "The name must be between 3 and 100 chars.", min = 3, max = 100)
     private String name;
     @NotBlank(message = "This field cannot be empty")
     @NotEmpty(message = "This field must not be empty.")
-    @Pattern(message = "Name should contain only letters.", regexp = "(?<=\\s|^)[a-zA-Z]*(?=[.,;:]?\\s|$)")
+    @Pattern(message = "Name should contain only letters, numbers, spaces and hyphens.", regexp = "^[a-zA-Z0-9\\s-]+$")
     @NotNull(message = "Must not be null")
     @Length(message = "The name must be between 3 and 100 chars.", min = 3, max = 100)
     private String city;
@@ -35,8 +35,25 @@ public class Shelter {
 //    @OneToMany(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "shelter_id")
 //    private List<Animal> animals = new ArrayList<>();
-
-    private String environment;
+    
+    // Statistics fields for tracking animal events
+    @Column(name = "animal_count")
+    private Integer animalCount = 0;
+    
+    @Column(name = "max_capacity")
+    private Integer maxCapacity = 100; // Default capacity
+    
+    @Column(name = "adoption_count")
+    private Integer adoptionCount = 0;
+    
+    @Column(name = "last_modified")
+    private java.time.LocalDateTime lastModified;
+    
+    @PrePersist
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastModified = java.time.LocalDateTime.now();
+    }
 }
 
 

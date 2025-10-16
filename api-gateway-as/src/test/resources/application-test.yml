@@ -1,0 +1,49 @@
+server:
+  port: 0  # Random port for tests
+
+spring:
+  application:
+    name: api-gateway-as-test
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false  # Disable service discovery for tests
+      default-filters: []
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+  config:
+    import: "optional:none"  # Disable config server for tests
+
+# Disable Eureka for tests
+eureka:
+  client:
+    enabled: false
+    serviceUrl:
+      defaultZone: ""
+  instance:
+    hostname: localhost
+
+# Disable actuator endpoints for tests
+management:
+  endpoints:
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+
+# Swagger/OpenAPI Configuration for tests
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  show-actuator: false

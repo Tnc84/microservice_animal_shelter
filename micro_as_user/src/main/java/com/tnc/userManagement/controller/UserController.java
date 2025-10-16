@@ -10,13 +10,20 @@ import com.tnc.userManagement.service.exception.UsernameExistException;
 import com.tnc.userManagement.service.model.HttpResponse;
 import com.tnc.userManagement.service.validation.OnCreate;
 import com.tnc.userManagement.service.validation.OnUpdate;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,6 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @AllArgsConstructor
 @RequestMapping(path = {"/users"})
+@Tag(name = "User Management", description = "APIs for managing user accounts and authentication")
 //init
 public class UserController {
     public static final String EMAIL_SENT = "An email with a new password was sent to: ";

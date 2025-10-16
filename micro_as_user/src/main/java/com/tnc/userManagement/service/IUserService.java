@@ -4,7 +4,7 @@ import com.tnc.userManagement.service.exception.EmailExistException;
 import com.tnc.userManagement.service.exception.EmailNotFoundException;
 import com.tnc.userManagement.service.model.UserDomain;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 import java.util.List;
 
 public interface IUserService {
@@ -26,4 +26,6 @@ public interface IUserService {
     List<UserDomain> getAll();
 
     UserDomain addNewUserWithSpecificRole(String firstName, String lastName, String email, String role, boolean parseBoolean, boolean parseBoolean1);
+    
+    UserDomain addNewUserWithPassword(String firstName, String lastName, String email, String password, String role, boolean isActive, boolean isNotActive);
 }

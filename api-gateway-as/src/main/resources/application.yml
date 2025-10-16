@@ -1,19 +1,131 @@
 server:
   port: 8765
+
 spring:
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lowerCaseServiceId: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-microservice
+          predicates:
+            - Path=/user-management/**
+          filters:
+            - RewritePath=/user-management/(?<segment>.*), /$\{segment}
+        - id: animal-service
+          uri: lb://animal-microservice
+          predicates:
+            - Path=/animal-microservice/**
+          filters:
+            - RewritePath=/animal-microservice/(?<segment>.*), /$\{segment}
+        - id: shelter-service
+          uri: lb://shelter-microservice
+          predicates:
+            - Path=/shelter-microservice/**
+          filters:
+            - RewritePath=/shelter-microservice/(?<segment>.*), /$\{segment}
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedorigins: "http://localhost:4200"
+            allowedmethods: "GET,POST,PUT,DELETE,OPTIONS"
+            allowedheaders: "*"
+            allowcredentials: true
   application:
     name: api-gateway-as
   config:
     import: optional:configserver:http://localhost:8888
+
 eureka:
   instance:
     hostname: localhost
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+  show-actuator: true
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      animal-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      shelter-service:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  retry:
+    instances:
+      user-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+      animal-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+      shelter-service:
+        max-attempts: 3
+        wait-duration: 2s
+        exponential-backoff-multiplier: 2
+  timelimiter:
+    instances:
+      user-service:
+        timeout-duration: 5s
+      animal-service:
+        timeout-duration: 5s
+      shelter-service:
+        timeout-duration: 5s
+  bulkhead:
+    instances:
+      user-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+      animal-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+      shelter-service:
+        max-concurrent-calls: 10
+        max-wait-duration: 1s
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,retries,timelimiters,bulkheads
+  endpoint:
+    health:
+      show-details: always
