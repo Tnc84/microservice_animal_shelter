@@ -83,7 +83,7 @@ class ShelterControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Test Shelter", response.getBody().getName());
+        assertEquals("Test Shelter", response.getBody().name());
         verify(shelterService).getShelterByName();
         verify(shelterDTOMapper).toDTO(testShelterDomain);
     }
@@ -102,7 +102,7 @@ class ShelterControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Test Shelter", response.getBody().getName());
+        assertEquals("Test Shelter", response.getBody().name());
         verify(shelterService).add(testShelterDomain);
         verify(shelterDTOMapper).toDomain(testShelterDTO);
         verify(shelterDTOMapper).toDTO(testShelterDomain);
@@ -133,7 +133,7 @@ class ShelterControllerTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Test Shelter", response.getBody().getName());
+        assertEquals("Test Shelter", response.getBody().name());
         verify(shelterService).update(testShelterDomain);
         verify(shelterDTOMapper).toDomain(testShelterDTO);
         verify(shelterDTOMapper).toDTO(testShelterDomain);

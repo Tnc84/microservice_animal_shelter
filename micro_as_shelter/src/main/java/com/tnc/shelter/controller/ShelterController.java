@@ -71,7 +71,7 @@ public class ShelterController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<ShelterDTO> add(@Valid @RequestBody ShelterDTO shelterDTO) throws ShelterAddressException, ShelterNameException {
-        logger.info("Creating new shelter: {}", shelterDTO.getName());
+        logger.info("Creating new shelter: {}", shelterDTO.name());
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.add(shelterDTOMapper.toDomain(shelterDTO))));
     }
 
@@ -86,7 +86,7 @@ public class ShelterController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<ShelterDTO> update(@Valid @RequestBody ShelterDTO shelterDTO) throws ShelterAddressException, ShelterNameException {
-        logger.info("Updating shelter: {}", shelterDTO.getName());
+        logger.info("Updating shelter: {}", shelterDTO.name());
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.update(shelterDTOMapper.toDomain(shelterDTO))));
     }
 

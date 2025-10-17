@@ -40,9 +40,9 @@ class ShelterDTOMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(testShelterDomain.getId(), result.getId());
-        assertEquals(testShelterDomain.getName(), result.getName());
-        assertEquals(testShelterDomain.getCity(), result.getCity());
+        assertEquals(testShelterDomain.getId(), result.id());
+        assertEquals(testShelterDomain.getName(), result.name());
+        assertEquals(testShelterDomain.getCity(), result.city());
     }
 
     @Test
@@ -52,9 +52,9 @@ class ShelterDTOMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(testShelterDTO.getId(), result.getId());
-        assertEquals(testShelterDTO.getName(), result.getName());
-        assertEquals(testShelterDTO.getCity(), result.getCity());
+        assertEquals(testShelterDTO.id(), result.getId());
+        assertEquals(testShelterDTO.name(), result.getName());
+        assertEquals(testShelterDTO.city(), result.getCity());
     }
 
     @Test
@@ -68,9 +68,9 @@ class ShelterDTOMapperTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(testShelterDomain.getId(), result.get(0).getId());
-        assertEquals(testShelterDomain.getName(), result.get(0).getName());
-        assertEquals(testShelterDomain.getCity(), result.get(0).getCity());
+        assertEquals(testShelterDomain.getId(), result.get(0).id());
+        assertEquals(testShelterDomain.getName(), result.get(0).name());
+        assertEquals(testShelterDomain.getCity(), result.get(0).city());
     }
 
     @Test
@@ -84,9 +84,9 @@ class ShelterDTOMapperTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(testShelterDTO.getId(), result.get(0).getId());
-        assertEquals(testShelterDTO.getName(), result.get(0).getName());
-        assertEquals(testShelterDTO.getCity(), result.get(0).getCity());
+        assertEquals(testShelterDTO.id(), result.get(0).getId());
+        assertEquals(testShelterDTO.name(), result.get(0).getName());
+        assertEquals(testShelterDTO.city(), result.get(0).getCity());
     }
 
     @Test
@@ -135,9 +135,9 @@ class ShelterDTOMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertNull(result.getId());
-        assertNull(result.getName());
-        assertNull(result.getCity());
+        assertNull(result.id());
+        assertNull(result.name());
+        assertNull(result.city());
     }
 
     @Test
@@ -191,9 +191,9 @@ class ShelterDTOMapperTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(2L, result.getId());
-        assertEquals("Different Shelter", result.getName());
-        assertEquals("Different City", result.getCity());
+        assertEquals(2L, result.id());
+        assertEquals("Different Shelter", result.name());
+        assertEquals("Different City", result.city());
     }
 
     @Test
@@ -226,8 +226,8 @@ class ShelterDTOMapperTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("Shelter 1", result.get(0).getName());
-        assertEquals("Shelter 2", result.get(1).getName());
+        assertEquals("Shelter 1", result.get(0).name());
+        assertEquals("Shelter 2", result.get(1).name());
     }
 
     @Test
