@@ -1,5 +1,4 @@
-// animal-shelter-common/src/main/java/com/tnc/common/security/JwtService.java
-package main.java.com.tnc.common.security;
+package com.tnc.common.security; 
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

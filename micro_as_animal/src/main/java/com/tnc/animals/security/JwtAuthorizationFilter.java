@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.tnc.common.security.JwtService;
 /**
  * JWT Authorization Filter for Animal Microservice
  * Validates JWT tokens from X-User-Token header (set by API Gateway)
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtService jwtService;
     private static final String TOKEN_HEADER = "X-User-Token";
     private static final String OPTIONS_HTTP_METHOD = "OPTIONS";
 
@@ -36,11 +37,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String token = request.getHeader(TOKEN_HEADER);
             
             if (token != null && !token.trim().isEmpty()) {
-                String username = jwtTokenProvider.getUsernameFromJwtToken(token);
+                String username = jwtService.getUsernameFromJwtToken(token);
                 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    if (jwtTokenProvider.validateJwtToken(token)) {
-                        String authorities = jwtTokenProvider.getAuthoritiesFromJwtToken(token);
+                    if (jwtService.validateJwtToken(token)) {
+                        String authorities = jwtService.getAuthoritiesFromJwtToken(token);
                         List<SimpleGrantedAuthority> grantedAuthorities = Arrays.stream(authorities.split(","))
                                 .map(SimpleGrantedAuthority::new)
                                 .collect(Collectors.toList());
