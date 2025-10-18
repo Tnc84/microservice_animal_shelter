@@ -9,6 +9,9 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.tnc.apigatewayas.security.JwtAuthenticationFilter;
+
 import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.*;

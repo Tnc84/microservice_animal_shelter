@@ -28,6 +28,8 @@ public class SecurityConfig {
 
     // Security filters are automatically registered as @Component beans
     // Order of execution is controlled by the Ordered interface in each filter
+    // JWT validation is handled by JwtAuthenticationFilter
+    // Role-based access control provides additional security layer
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {

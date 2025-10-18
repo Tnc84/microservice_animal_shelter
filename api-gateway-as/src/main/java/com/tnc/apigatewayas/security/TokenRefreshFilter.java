@@ -1,4 +1,4 @@
-package com.tnc.apigatewayas;
+package com.tnc.apigatewayas.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
