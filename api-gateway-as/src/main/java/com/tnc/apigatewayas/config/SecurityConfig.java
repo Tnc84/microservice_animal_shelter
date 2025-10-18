@@ -1,4 +1,4 @@
-package com.tnc.apigatewayas;
+package com.tnc.apigatewayas.config;
 
 import com.tnc.apigatewayas.security.SecurityHeadersFilter;
 import com.tnc.apigatewayas.security.InputSanitizationFilter;

@@ -76,7 +76,7 @@ public class AuthenticationController {
 
         // Return response with access token in header and refresh token in cookie
         return ResponseEntity.ok()
-            .header(HttpHeaders.AUTHORIZATION, SecurityConstant.TOKEN_PREFIX + tokenPair.accessToken())
+            .header(HttpHeaders.AUTHORIZATION, tokenPair.accessToken())
             .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
             .body(new LoginResponse(tokenPair.accessToken(), user.getUserId(), user.getEmail(), user.getRole()));
     }
@@ -119,7 +119,7 @@ public class AuthenticationController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .header(HttpHeaders.AUTHORIZATION, SecurityConstant.TOKEN_PREFIX + tokenPair.accessToken())
+            .header(HttpHeaders.AUTHORIZATION, tokenPair.accessToken())
             .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
             .body(new LoginResponse(tokenPair.accessToken(), newUser.getUserId(), newUser.getEmail(), newUser.getRole()));
     }
@@ -144,7 +144,7 @@ public class AuthenticationController {
         }
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.AUTHORIZATION, SecurityConstant.TOKEN_PREFIX + newAccessToken.get())
+            .header(HttpHeaders.AUTHORIZATION, newAccessToken.get())
             .body(new RefreshResponse(newAccessToken.get(), "Token refreshed successfully"));
     }
 

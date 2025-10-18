@@ -7,6 +7,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.tnc.apigatewayas.config.SecurityConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
