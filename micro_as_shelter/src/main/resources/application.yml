@@ -94,10 +94,11 @@ resilience4j:
         max-concurrent-calls: 5
         max-wait-duration: 2s
 
-# JWT Configuration
+# JWT Configuration - Internal tokens only
 jwt:
-  secret: mySecretKey
-  expiration: 900000  # 15 minutes
+  internal:
+    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
+    expiration: 600000  # 10 minutes
 
 # Management endpoints for monitoring
 management:

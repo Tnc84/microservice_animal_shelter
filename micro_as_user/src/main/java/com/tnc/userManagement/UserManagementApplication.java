@@ -2,8 +2,10 @@ package com.tnc.userManagement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan(basePackages = {"com.tnc.userManagement", "com.tnc.common.security"})
 public class UserManagementApplication {
 
     public static void main(String[] args) {

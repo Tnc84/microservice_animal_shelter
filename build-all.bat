@@ -1,13 +1,27 @@
 @echo off
+setlocal enabledelayedexpansion
+
 echo ========================================
 echo Building all microservices for Docker
 echo ========================================
 
 echo.
-echo [1/5] Building Naming Server (Eureka)...
+echo [1/6] Building Common Library...
+cd animal-shelter-common
+call mvn clean install -DskipTests
+if !errorlevel! neq 0 (
+    echo ERROR: Failed to build Common Library
+    pause
+    exit /b 1
+)
+cd ..
+echo ✓ Common Library built successfully
+
+echo.
+echo [2/6] Building Naming Server (Eureka)...
 cd naming-server-as
-mvn clean package -DskipTests
-if %errorlevel% neq 0 (
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
     echo ERROR: Failed to build Naming Server
     pause
     exit /b 1
@@ -16,10 +30,10 @@ cd ..
 echo ✓ Naming Server built successfully
 
 echo.
-echo [2/5] Building API Gateway...
+echo [3/6] Building API Gateway...
 cd api-gateway-as
-mvn clean package -DskipTests
-if %errorlevel% neq 0 (
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
     echo ERROR: Failed to build API Gateway
     pause
     exit /b 1
@@ -28,10 +42,10 @@ cd ..
 echo ✓ API Gateway built successfully
 
 echo.
-echo [3/5] Building Animal Microservice...
+echo [4/6] Building Animal Microservice...
 cd micro_as_animal
-mvn clean package -DskipTests
-if %errorlevel% neq 0 (
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
     echo ERROR: Failed to build Animal Microservice
     pause
     exit /b 1
@@ -40,10 +54,10 @@ cd ..
 echo ✓ Animal Microservice built successfully
 
 echo.
-echo [4/5] Building Shelter Microservice...
+echo [5/6] Building Shelter Microservice...
 cd micro_as_shelter
-mvn clean package -DskipTests
-if %errorlevel% neq 0 (
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
     echo ERROR: Failed to build Shelter Microservice
     pause
     exit /b 1
@@ -52,10 +66,10 @@ cd ..
 echo ✓ Shelter Microservice built successfully
 
 echo.
-echo [5/5] Building User Management Microservice...
+echo [6/6] Building User Management Microservice...
 cd micro_as_user
-mvn clean package -DskipTests
-if %errorlevel% neq 0 (
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
     echo ERROR: Failed to build User Management Microservice
     pause
     exit /b 1

@@ -1,9 +1,5 @@
 package com.tnc.apigatewayas.config;
 
-import com.tnc.apigatewayas.security.SecurityHeadersFilter;
-import com.tnc.apigatewayas.security.InputSanitizationFilter;
-import com.tnc.apigatewayas.security.RateLimitingFilter;
-import com.tnc.apigatewayas.security.SecurityLoggingFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

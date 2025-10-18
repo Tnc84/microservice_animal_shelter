@@ -385,7 +385,10 @@
             <h3>🎯 Key Achievements</h3>
             <ul>
                 <li><strong>5 Microservices</strong> with complete separation of concerns</li>
+                <li><strong>🔐 Shared Security Library</strong> eliminating code duplication across microservices</li>
                 <li><strong>Enterprise Security</strong> with JWT authentication and role-based access control</li>
+                <li><strong>Internal Token System</strong> for secure inter-service communication</li>
+                <li><strong>Maven Multi-Module</strong> architecture with centralized dependency management</li>
                 <li><strong>Event-Driven Architecture</strong> with RabbitMQ messaging</li>
                 <li><strong>Fault Tolerance</strong> with circuit breaker patterns</li>
                 <li><strong>Containerized Deployment</strong> with Docker orchestration</li>
@@ -396,7 +399,7 @@
         <!-- System Architecture -->
         <div class="slide">
             <h2>🏗️ System Architecture</h2>
-            <h3>Microservices Ecosystem</h3>
+            <h3>🔐 Enhanced Microservices Architecture with Shared Security</h3>
             <div class="architecture-diagram">
                 <pre>
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -433,6 +436,12 @@
                     ┌─────────────▼─────────────┐
                     │      RabbitMQ             │
                     │  Event-Driven Comm.       │
+                    └───────────────────────────┘
+                                 │
+                    ┌─────────────▼─────────────┐
+                    │  🔐 animal-shelter-common │
+                    │   Shared Security Library  │
+                    │  JwtService + InternalToken│
                     └───────────────────────────┘
                 </pre>
             </div>
@@ -477,12 +486,73 @@
             </div>
         </div>
 
+        <!-- Shared Security Library -->
+        <div class="slide">
+            <h2>🏗️ Shared Security Library Implementation</h2>
+            <h3>Code Duplication Elimination</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📦 animal-shelter-common Module</h4>
+                    <ul>
+                        <li>Centralized JWT Service</li>
+                        <li>Internal Token Management</li>
+                        <li>Shared Authentication Filters</li>
+                        <li>Common Security Configurations</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🔧 Maven Multi-Module</h4>
+                    <ul>
+                        <li>Parent POM Dependency Management</li>
+                        <li>Centralized Version Control</li>
+                        <li>Unified Build Configuration</li>
+                        <li>Shared Library Distribution</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Before vs After Architecture</h3>
+            <div class="code-block">
+BEFORE (Code Duplication):
+  - JwtTokenProvider duplicated in each microservice
+  - Inconsistent security implementations
+  - Maintenance overhead across 5 services
+  - Version management complexity
+
+AFTER (Shared Library):
+  - Single JwtService in animal-shelter-common
+  - Unified security across all microservices
+  - Centralized maintenance and updates
+  - Maven parent POM manages all dependencies
+            </div>
+
+            <h3>🔐 Security Components</h3>
+            <div class="code-block">
+Shared Security Components:
+  - JwtService: Unified JWT token management
+  - InternalTokenService: Inter-service communication
+  - JwtAuthenticationFilter: Common authentication
+  - InternalTokenAuthorizationFilter: Service-to-service auth
+  - SecurityConfig: Centralized security configuration
+            </div>
+        </div>
+
         <!-- Security Architecture -->
         <div class="slide">
             <h2>🔐 Security Architecture</h2>
-            <h3>Multi-Layer Security Implementation</h3>
+            <h3>🔐 Enhanced Security Architecture</h3>
             
             <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🏗️ Shared Security Library</h4>
+                    <ul>
+                        <li>Centralized JWT Service</li>
+                        <li>Code Duplication Elimination</li>
+                        <li>Maven Multi-Module Architecture</li>
+                        <li>Unified Security Components</li>
+                    </ul>
+                </div>
                 <div class="feature-card">
                     <h4>🚪 API Gateway Security</h4>
                     <ul>
@@ -501,6 +571,26 @@
                         <li>JWT Validation</li>
                     </ul>
                 </div>
+                <div class="feature-card">
+                    <h4>🔒 Internal Token System</h4>
+                    <ul>
+                        <li>Inter-Service Communication</li>
+                        <li>Secure Service-to-Service Auth</li>
+                        <li>Internal Token Validation</li>
+                        <li>Enhanced Security Isolation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>🔐 Shared Security Library Implementation</h3>
+            <div class="code-block">
+Shared Security Components:
+  - animal-shelter-common module eliminates code duplication
+  - Unified JwtService across all microservices
+  - InternalTokenService for inter-service communication
+  - Shared authentication filters and security configurations
+  - Maven parent POM manages all security dependencies
+  - Centralized version management for security libraries
             </div>
 
             <h3>Enhanced JWT Implementation</h3>
@@ -511,6 +601,7 @@ Security Features:
   - Token Blacklisting: Secure logout with token revocation
   - Device Tracking: IP address and device info logging
   - Automatic Cleanup: Expired token removal
+  - Internal Token System: Secure service-to-service communication
             </div>
 
             <h3>Role-Based Access Matrix</h3>

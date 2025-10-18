@@ -2,7 +2,6 @@ package com.tnc.animals.controller.dto;
 
 import com.tnc.animals.service.validation.OnCreate;
 import com.tnc.animals.service.validation.OnUpdate;
-import com.tnc.animals.service.validation.validationBeans.MustNotBeBlankOrEmpty;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.constraints.*;

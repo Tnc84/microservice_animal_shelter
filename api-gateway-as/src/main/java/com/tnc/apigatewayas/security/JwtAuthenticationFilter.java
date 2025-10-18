@@ -1,6 +1,7 @@
 package com.tnc.apigatewayas.security;
 
 import com.tnc.common.security.JwtService;
+import com.tnc.common.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 public class JwtAuthenticationFilter implements GlobalFilter {
 
     private final JwtService jwtService;
+    private final InternalTokenService internalTokenService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -56,16 +58,21 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         }
         
         try {
-            // Extract user information from token
+            // Extract user information from client JWT token
             String username = jwtService.getUsernameFromJwtToken(token);
             String authorities = jwtService.getAuthoritiesFromJwtToken(token);
             String userId = jwtService.getUserIdFromJwtToken(token);
             
-            log.debug("Valid token for user: {} with authorities: {}", username, authorities);
+            log.debug("Valid client token for user: {} with authorities: {}", username, authorities);
             
-            // Forward validated token and user context to downstream services
+            // Generate internal token for microservice communication
+            String internalToken = internalTokenService.generateInternalToken(userId, username, authorities);
+            
+            log.debug("Generated internal token for user: {}", username);
+            
+            // Forward internal token and user context to downstream services
             ServerHttpRequest mutatedRequest = request.mutate()
-                    .header("X-User-Token", token)
+                    .header("X-Internal-Token", internalToken)
                     .header("X-User-Name", username)
                     .header("X-User-Authorities", authorities)
                     .header("X-User-Id", userId)

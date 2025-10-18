@@ -38,6 +38,9 @@ jwt:
   secret: mySecretKey123456789012345678901234567890
   expiration: 900000 # 15 minutes in milliseconds
   refresh-expiration: 604800000 # 7 days in milliseconds
+  internal:
+    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
+    expiration: 600000  # 10 minutes
 
 # Swagger/OpenAPI Configuration
 springdoc:

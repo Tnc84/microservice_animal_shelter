@@ -3,7 +3,8 @@ package com.tnc.userManagement.config;
 import com.tnc.userManagement.service.constant.SecurityConstant;
 import com.tnc.userManagement.service.security.filter.JwtAccessDeniedHandler;
 import com.tnc.userManagement.service.security.filter.JwtAuthenticationEntryPoint;
-import com.tnc.userManagement.service.security.filter.JwtAuthorizationFilter;
+import com.tnc.common.security.InternalTokenAuthorizationFilter;
+import com.tnc.common.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.tnc.common.security.JwtService;
 /**
- * Security Configuration for JWT authentication and authorization
+ * Security Configuration for internal token authentication and authorization
  */
 @Configuration
 @EnableWebSecurity
@@ -27,7 +26,7 @@ import com.tnc.common.security.JwtService;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtService jwtService;
+    private final InternalTokenService internalTokenService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
@@ -57,7 +56,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
             )
-            .addFilterBefore(new JwtAuthorizationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }

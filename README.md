@@ -129,6 +129,13 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ## Security Implementation
 
+### **🔐 Shared Security Library Architecture:**
+- **Centralized Security:** `animal-shelter-common` module eliminates code duplication
+- **Unified JWT Service:** Single `JwtService` class used across all microservices
+- **Shared Security Components:** Common authentication filters and security configurations
+- **Maven Multi-Module:** Parent POM manages all security dependencies and versions
+- **Code Reusability:** Eliminated duplicate `JwtTokenProvider` classes across microservices
+
 ### **Enhanced JWT Authentication & Authorization:**
 - **Dual Token System:** Access tokens (15min) + Refresh tokens (7 days)
 - **HttpOnly Cookie Security:** Refresh tokens stored in secure HttpOnly cookies
@@ -137,6 +144,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Password Security:** BCrypt encryption for password storage
 - **Stateless Authentication:** JWT-based stateless security
 - **Token Management:** Automatic refresh and proper token revocation
+- **Internal Token System:** Secure inter-service communication with internal tokens
 
 ### **Enhanced Security Flow:**
 1. **User Authentication:** `POST /user-management/auth/login`
@@ -375,11 +383,19 @@ curl -H "Authorization: Bearer <JWT_TOKEN>" http://localhost:8091/users
 
 ```
 microservice_animal_shelter/
+├── animal-shelter-common/    # 🔐 Shared Security Library
+│   ├── src/main/java/com/tnc/common/security/
+│   │   ├── JwtService.java                    # Unified JWT service
+│   │   ├── InternalTokenService.java          # Internal token management
+│   │   ├── JwtAuthenticationFilter.java       # JWT authentication filter
+│   │   └── InternalTokenAuthorizationFilter.java # Internal token filter
+│   └── pom.xml                                # Shared library dependencies
 ├── api-gateway-as/           # API Gateway service
 ├── micro_as_animal/          # Animal management service
 ├── micro_as_shelter/         # Shelter management service
 ├── micro_as_user/            # User management service
 ├── naming-server-as/         # Eureka service discovery
+├── pom.xml                   # 🔧 Parent POM (dependency management)
 ├── docker-compose.yml        # Docker orchestration
 └── README.md                 # This file
 ```
@@ -393,6 +409,8 @@ Each microservice follows a clean architecture with:
 - **Mapper Layer:** Object transformation using MapStruct
 - **Security Layer:** JWT authentication and authorization (User Management)
 - **Filter Layer:** JWT token validation (API Gateway)
+- **Shared Security:** Common security components from `animal-shelter-common`
+- **Internal Security:** Inter-service communication with internal tokens
 
 ## Frontend Integration
 
@@ -432,7 +450,10 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
+- **Shared Security Library:** Eliminated code duplication with `animal-shelter-common` module
+- **Maven Multi-Module:** Centralized dependency management with parent POM
 - **Enhanced JWT Security:** Dual token system with automatic refresh
+- **Internal Token System:** Secure inter-service communication
 - **Password Encryption:** BCrypt for secure password storage
 - **CORS Configuration:** Frontend integration support
 - **Clean Architecture:** SOLID principles with security layers
@@ -443,6 +464,7 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Fault Tolerance:** Comprehensive fallback mechanisms and graceful degradation
 - **Monitoring Enhancement:** Circuit breaker status and health monitoring
 - **Production Readiness:** Enterprise-grade resilience patterns
+- **Code Duplication Elimination:** Unified security components across all microservices
 
 ## Documentation
 

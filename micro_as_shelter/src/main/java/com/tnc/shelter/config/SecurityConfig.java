@@ -1,6 +1,7 @@
 package com.tnc.shelter.config;
 
-import com.tnc.shelter.security.JwtAuthorizationFilter;
+import com.tnc.common.security.InternalTokenAuthorizationFilter;
+import com.tnc.common.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,11 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.tnc.common.security.JwtService;
 /**
  * Security Configuration for Shelter Microservice
- * Handles JWT token validation and role-based access control
+ * Handles internal token validation and role-based access control
  */
 @Configuration
 @EnableWebSecurity
@@ -22,7 +21,7 @@ import com.tnc.common.security.JwtService;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtService jwtService;
+    private final InternalTokenService internalTokenService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,7 +34,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthorizationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
