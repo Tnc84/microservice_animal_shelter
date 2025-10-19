@@ -37,13 +37,19 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Run tests with coverage
+        run: |
+          mvn clean test jacoco:report
+
       - name: Run SonarQube analysis
         run: |
-          mvn clean compile sonar:sonar \
-            -Dsonar.projectKey=animal-shelter-microservices \
-            -Dsonar.organization=your-org \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          mvn sonar:sonar \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.junit.reportPaths=target/surefire-reports \
+            -Dsonar.java.source=21 \
+            -Dsonar.java.target=21
 
       - name: OWASP Dependency Check
         run: |
@@ -395,7 +401,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-build]
     if: github.ref == 'refs/heads/develop'
-    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -413,7 +418,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-build]
     if: github.ref == 'refs/heads/main'
-    environment: production
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
