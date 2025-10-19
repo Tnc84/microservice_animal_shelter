@@ -59,10 +59,37 @@ jobs:
           name: dependency-check-results
           path: target/dependency-check-report.*
 
-  # Stage 2: Unit Tests
+  # Stage 2: Build Common Module First
+  build-common:
+    name: Build Common Module
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build common module
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
+  # Stage 3: Unit Tests
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    needs: [build-common]
     strategy:
       matrix:
         service: [api-gateway-as, micro_as_animal, micro_as_shelter, micro_as_user, naming-server-as]
@@ -82,6 +109,11 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      - name: Build common module (for dependencies)
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
 
       - name: Run unit tests for ${{ matrix.service }}
         run: |
@@ -109,10 +141,11 @@ jobs:
           name: coverage-report-${{ matrix.service }}
           path: ${{ matrix.service }}/target/site/jacoco/
 
-  # Stage 3: Integration Tests
+  # Stage 4: Integration Tests
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
+    needs: [build-common]
     services:
       mysql:
         image: mysql:8.0
@@ -139,6 +172,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Build common module (for dependencies)
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
       - name: Run integration tests
         run: |
           mvn clean verify \
@@ -155,10 +193,11 @@ jobs:
           name: integration-test-results
           path: "*/target/surefire-reports/"
 
-  # Stage 4: Contract Tests
+  # Stage 5: Contract Tests
   contract-tests:
     name: Contract Tests
     runs-on: ubuntu-latest
+    needs: [build-common]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -176,6 +215,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Build common module (for dependencies)
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
       - name: Run contract tests
         run: |
           mvn clean test \
@@ -189,7 +233,7 @@ jobs:
           name: contract-test-results
           path: "*/target/surefire-reports/"
 
-  # Stage 5: Performance Tests
+  # Stage 6: Performance Tests
   performance-tests:
     name: Performance Tests
     runs-on: ubuntu-latest
@@ -211,6 +255,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Build common module (for dependencies)
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
       - name: Run performance tests
         run: |
           mvn clean test \
@@ -224,7 +273,7 @@ jobs:
           name: performance-test-results
           path: "*/target/surefire-reports/"
 
-  # Stage 6: Build and Package
+  # Stage 7: Build and Package
   build:
     name: Build and Package
     runs-on: ubuntu-latest
@@ -256,7 +305,7 @@ jobs:
           name: build-artifacts
           path: "*/target/*.jar"
 
-  # Stage 7: Docker Build
+  # Stage 8: Docker Build
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
@@ -320,7 +369,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-naming-server:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-naming-server:${{ github.sha }}
 
-  # Stage 8: Deploy to Staging
+  # Stage 9: Deploy to Staging
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
@@ -338,7 +387,7 @@ jobs:
           # Example: kubectl apply -f k8s/staging/
           # Example: docker-compose -f docker-compose.staging.yml up -d
 
-  # Stage 9: Deploy to Production
+  # Stage 10: Deploy to Production
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -356,7 +405,7 @@ jobs:
           # Example: kubectl apply -f k8s/production/
           # Example: docker-compose -f docker-compose.prod.yml up -d
 
-  # Stage 10: End-to-End Tests
+  # Stage 11: End-to-End Tests
   e2e-tests:
     name: End-to-End Tests
     runs-on: ubuntu-latest
@@ -372,6 +421,11 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
+      - name: Build common module (for dependencies)
+        run: |
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
       - name: Run end-to-end tests
         run: |
           mvn clean test \
@@ -385,7 +439,7 @@ jobs:
           name: e2e-test-results
           path: "*/target/surefire-reports/"
 
-  # Stage 11: Security Scan
+  # Stage 12: Security Scan
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -407,7 +461,7 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-  # Stage 12: Notification
+  # Stage 13: Notification
   notify:
     name: Notify Results
     runs-on: ubuntu-latest
