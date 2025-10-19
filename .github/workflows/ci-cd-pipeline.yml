@@ -53,7 +53,7 @@ jobs:
             -Dformat=JSON
 
       - name: Upload dependency check results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dependency-check-results
@@ -96,14 +96,14 @@ jobs:
           mvn surefire-report:report
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-${{ matrix.service }}
           path: ${{ matrix.service }}/target/surefire-reports/
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report-${{ matrix.service }}
@@ -149,7 +149,7 @@ jobs:
             -Dspring.datasource.password=rootpassword
 
       - name: Upload integration test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results
@@ -183,7 +183,7 @@ jobs:
             -Dspring.profiles.active=test
 
       - name: Upload contract test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: contract-test-results
@@ -218,7 +218,7 @@ jobs:
             -Dspring.profiles.active=test
 
       - name: Upload performance test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: performance-test-results
@@ -251,7 +251,7 @@ jobs:
           mvn clean package -DskipTests
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: "*/target/*.jar"
@@ -379,7 +379,7 @@ jobs:
             -Dspring.profiles.active=staging
 
       - name: Upload E2E test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-test-results
