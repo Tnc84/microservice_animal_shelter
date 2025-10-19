@@ -66,6 +66,11 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
         <!-- Other dependencies without versions... -->
         <dependency>
             <groupId>org.projectlombok</groupId>
