@@ -17,9 +17,9 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo Running All Tests (Unit, Contract) - Performance, Integration, Application, Mapper, and Filter tests skipped...
+echo Running All Tests (Unit, Contract) - Performance, Integration, Application, and Mapper tests skipped...
 echo ========================================
-call mvn test -Dspring.profiles.active=test -Dtest="!**/performance/**,!**/integration/**,!**/ShelterApplicationTests,!**/AnimalsApplicationTests,!**/UserManagementApplicationTests,!**/*MapperTest,!**/JwtAuthenticationFilterTest"
+call mvn test -Dspring.profiles.active=test -Dtest="!**/performance/**,!**/integration/**,!**/ShelterApplicationTests,!**/AnimalsApplicationTests,!**/UserManagementApplicationTests,!**/*MapperTest"
 if %ERRORLEVEL% neq 0 (
     echo Tests failed!
     exit /b 1
