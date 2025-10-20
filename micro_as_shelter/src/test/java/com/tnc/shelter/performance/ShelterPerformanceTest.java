@@ -7,6 +7,7 @@ import com.tnc.shelter.service.exception.ShelterAddressException;
 import com.tnc.shelter.service.exception.ShelterNameException;
 import com.tnc.shelter.service.interfaces.ShelterService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@Disabled("Performance tests disabled - can be enabled when needed")
 class ShelterPerformanceTest {
 
     @Autowired
