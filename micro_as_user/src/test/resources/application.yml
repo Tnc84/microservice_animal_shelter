@@ -10,6 +10,19 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+  cloud:
+    config:
+      enabled: false
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+  main:
+    allow-bean-definition-overriding: true
   h2:
     console:
       enabled: true
@@ -45,3 +58,6 @@ logging:
   level:
     com.tnc.userManagement: DEBUG
     org.springframework.test: DEBUG
+eureka:
+  client:
+    enabled: false
