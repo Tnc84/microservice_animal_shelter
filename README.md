@@ -379,6 +379,50 @@ curl http://localhost:8092/shelters/getAll
 curl -H "Authorization: Bearer <JWT_TOKEN>" http://localhost:8091/users
 ```
 
+### User Notifications (User Management Microservice)
+
+The user service provides in-app notifications for user events (e.g., animal created/updated/adopted). Notifications are created internally by services; the public API allows listing, filtering, counting, marking as read, and deleting.
+
+Endpoints (served by `micro_as_user`):
+
+- GET `/notifications/user/{userId}`: Paginated notifications; supports `page`, `size`, `sortBy` (default `createdAt`), `sortDir` (`asc|desc`, default `desc`).
+- GET `/notifications/user/{userId}/unread`: All unread notifications.
+- GET `/notifications/user/{userId}/count`: Count of unread notifications.
+- GET `/notifications/user/{userId}/type/{type}`: Paginated notifications by type.
+- PUT `/notifications/{notificationId}/read?userId={userId}`: Mark a single notification as read.
+- PUT `/notifications/user/{userId}/mark-all-read`: Mark all notifications as read; returns updated count.
+- DELETE `/notifications/{notificationId}?userId={userId}`: Delete a notification (must belong to user).
+
+Common notification types: `ANIMAL_CREATED`, `ANIMAL_UPDATED`, `ANIMAL_ADOPTED`, `ANIMAL_DELETED`, `SHELTER_UPDATE`.
+
+Example requests:
+
+```bash
+# List latest notifications for a user (through API Gateway)
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1?page=0&size=10&sortBy=createdAt&sortDir=desc"
+
+# Get unread notifications
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/unread"
+
+# Get unread count
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/count"
+
+# Mark one as read
+curl -X PUT -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/42/read?userId=1"
+
+# Mark all as read
+curl -X PUT -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/mark-all-read"
+
+# Delete a notification
+curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/42?userId=1"
+```
+
 ## Project Structure
 
 ```

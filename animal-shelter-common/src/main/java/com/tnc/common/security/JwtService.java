@@ -2,6 +2,7 @@ package com.tnc.common.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -63,6 +64,8 @@ public class JwtService {
             System.err.println("JWT token is expired: " + e.getMessage());
         } catch (UnsupportedJwtException e) {
             System.err.println("JWT token is unsupported: " + e.getMessage());
+        } catch (SignatureException e) {
+            System.err.println("JWT signature invalid: " + e.getMessage());
         } catch (IllegalArgumentException e) {
             System.err.println("JWT claims string is empty: " + e.getMessage());
         }
