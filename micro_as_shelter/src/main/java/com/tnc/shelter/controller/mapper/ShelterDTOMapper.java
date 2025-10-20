@@ -3,6 +3,7 @@ package com.tnc.shelter.controller.mapper;
 import com.tnc.shelter.controller.dto.ShelterDTO;
 import com.tnc.shelter.service.domain.ShelterDomain;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 
