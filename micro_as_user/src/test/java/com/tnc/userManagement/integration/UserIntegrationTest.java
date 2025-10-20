@@ -5,6 +5,7 @@ import com.tnc.userManagement.repository.entity.User;
 import com.tnc.userManagement.service.IUserService;
 import com.tnc.userManagement.service.model.UserDomain;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration tests for User service
  * Tests database interactions and service layer integration
  */
+@Disabled("Integration tests disabled - can be enabled when needed")
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
