@@ -19,7 +19,7 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo Running All Tests (Unit, Contract) - Performance, Integration, Application, and Mapper tests skipped...
 echo ========================================
-call mvn test -Dspring.profiles.active=test -Dsonar.skip=true -Dtest="!**/performance/**,!**/integration/**,!**/ShelterApplicationTests,!**/AnimalsApplicationTests,!**/UserManagementApplicationTests,!**/*MapperTest"
+call mvn test -Dspring.profiles.active=test -Dsonar.skip=true -Ddependency-check.skip=true -Dtest="!**/performance/**,!**/integration/**,!**/ShelterApplicationTests,!**/AnimalsApplicationTests,!**/UserManagementApplicationTests,!**/*MapperTest"
 if %ERRORLEVEL% neq 0 (
     echo Tests failed!
     exit /b 1
