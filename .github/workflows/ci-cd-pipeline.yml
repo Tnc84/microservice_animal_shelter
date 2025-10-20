@@ -354,7 +354,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./api-gateway-as
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-api-gateway:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-api-gateway:${{ github.sha }}
@@ -363,7 +363,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./micro_as_animal
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-animal-service:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-animal-service:${{ github.sha }}
@@ -372,7 +372,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./micro_as_shelter
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-shelter-service:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-shelter-service:${{ github.sha }}
@@ -381,7 +381,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./micro_as_user
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-user-service:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-user-service:${{ github.sha }}
@@ -390,7 +390,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./naming-server-as
-          push: true
+          push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-naming-server:latest
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-naming-server:${{ github.sha }}
