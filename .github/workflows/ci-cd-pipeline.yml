@@ -15,6 +15,11 @@ env:
   JAVA_VERSION: '17'
   MYSQL_VERSION: '8.0'
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   # Stage 1: Code Quality and Security
   code-quality:
@@ -496,9 +501,25 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     needs: [docker-build]
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -509,7 +530,7 @@ jobs:
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
