@@ -2,7 +2,7 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 
-# Copy pom.xml first for better layer caching
+# Copy parent POM and install it
 COPY pom.xml .
 COPY src ./src
 

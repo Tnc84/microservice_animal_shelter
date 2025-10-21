@@ -341,6 +341,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Install parent POM and common module
+        run: |
+          mvn clean install -N -DskipTests
+          cd animal-shelter-common
+          mvn clean install -DskipTests
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -353,7 +372,8 @@ jobs:
       - name: Build and push API Gateway
         uses: docker/build-push-action@v5
         with:
-          context: ./api-gateway-as
+          context: .
+          file: ./api-gateway-as/Dockerfile
           push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-api-gateway:latest
@@ -362,7 +382,8 @@ jobs:
       - name: Build and push Animal Service
         uses: docker/build-push-action@v5
         with:
-          context: ./micro_as_animal
+          context: .
+          file: ./micro_as_animal/Dockerfile
           push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-animal-service:latest
@@ -371,7 +392,8 @@ jobs:
       - name: Build and push Shelter Service
         uses: docker/build-push-action@v5
         with:
-          context: ./micro_as_shelter
+          context: .
+          file: ./micro_as_shelter/Dockerfile
           push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-shelter-service:latest
@@ -380,7 +402,8 @@ jobs:
       - name: Build and push User Service
         uses: docker/build-push-action@v5
         with:
-          context: ./micro_as_user
+          context: .
+          file: ./micro_as_user/Dockerfile
           push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-user-service:latest
@@ -389,7 +412,8 @@ jobs:
       - name: Build and push Naming Server
         uses: docker/build-push-action@v5
         with:
-          context: ./naming-server-as
+          context: .
+          file: ./naming-server-as/Dockerfile
           push: ${{ secrets.DOCKER_USERNAME != '' }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/animal-shelter-naming-server:latest
