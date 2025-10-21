@@ -97,7 +97,7 @@ jobs:
 
       - name: Build common module
         run: |
-          cd animal-shelter-common
+          cd security-common
           mvn clean install -DskipTests
 
   # Stage 3: Unit Tests
@@ -131,7 +131,7 @@ jobs:
 
       - name: Build common module (for dependencies)
         run: |
-          cd animal-shelter-common
+          cd security-common
           mvn clean install -DskipTests
 
       - name: Run unit tests for ${{ matrix.service }}
@@ -244,7 +244,7 @@ jobs:
 
       - name: Build common module (for dependencies)
         run: |
-          cd animal-shelter-common
+          cd security-common
           mvn clean install -DskipTests
 
       - name: Run contract tests
@@ -362,7 +362,7 @@ jobs:
       - name: Install parent POM and common module
         run: |
           mvn clean install -N -DskipTests
-          cd animal-shelter-common
+          cd security-common
           mvn clean install -DskipTests
 
       - name: Set up Docker Buildx
@@ -480,7 +480,7 @@ jobs:
 
       - name: Build common module (for dependencies)
         run: |
-          cd animal-shelter-common
+          cd security-common
           mvn clean install -DskipTests
 
       - name: Run end-to-end tests
