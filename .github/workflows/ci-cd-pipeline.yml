@@ -42,6 +42,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Install parent POM
+        run: |
+          mvn clean install -N -DskipTests
+
+      - name: Build security-common module
+        run: |
+          cd security-common
+          mvn clean install -DskipTests
+
       - name: Run tests with coverage
         run: |
           mvn clean test jacoco:report
@@ -53,8 +62,8 @@ jobs:
             -Dsonar.qualitygate.wait=true \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.junit.reportPaths=target/surefire-reports \
-            -Dsonar.java.source=21 \
-            -Dsonar.java.target=21
+            -Dsonar.java.source=17 \
+            -Dsonar.java.target=17
 
       - name: OWASP Dependency Check
         run: |
