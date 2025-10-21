@@ -23,7 +23,7 @@
     <!-- Shared Library -->
         <dependency>
             <groupId>com.tnc</groupId>
-            <artifactId>animal-shelter-common</artifactId>
+            <artifactId>security-common</artifactId>
         </dependency>
         <!-- Spring Boot Dependencies -->
         <dependency>

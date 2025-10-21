@@ -1,7 +1,7 @@
 package com.tnc.apigatewayas.security;
 
-import com.tnc.common.security.JwtService;
-import com.tnc.common.security.InternalTokenService;
+import com.tnc.security.JwtService;
+import com.tnc.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;

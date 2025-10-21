@@ -22,4 +22,3 @@ public interface AnimalDomainMapper {
 //    @Mapping(source = "id", target = "id")
     List<AnimalDomain> toDomainList(List<Animal> animal);
 }
-;

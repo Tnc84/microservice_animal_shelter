@@ -1,7 +1,7 @@
 package com.tnc.animals.config;
 
-import com.tnc.common.security.InternalTokenAuthorizationFilter;
-import com.tnc.common.security.InternalTokenService;
+import com.tnc.security.InternalTokenAuthorizationFilter;
+import com.tnc.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

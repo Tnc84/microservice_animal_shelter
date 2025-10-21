@@ -27,7 +27,6 @@ public class AnimalEventPublisher {
      */
     @CircuitBreaker(name = "rabbitmq", fallbackMethod = "publishAnimalCreatedFallback")
     @Retry(name = "rabbitmq")
-    @TimeLimiter(name = "rabbitmq")
     public void publishAnimalCreated(AnimalEventDTO eventDTO) {
         try {
             log.info("Publishing animal created event for animal ID: {}", eventDTO.getAnimalId());
@@ -50,7 +49,6 @@ public class AnimalEventPublisher {
      */
     @CircuitBreaker(name = "rabbitmq", fallbackMethod = "publishAnimalUpdatedFallback")
     @Retry(name = "rabbitmq")
-    @TimeLimiter(name = "rabbitmq")
     public void publishAnimalUpdated(AnimalEventDTO eventDTO) {
         try {
             log.info("Publishing animal updated event for animal ID: {}", eventDTO.getAnimalId());
@@ -72,7 +70,6 @@ public class AnimalEventPublisher {
      */
     @CircuitBreaker(name = "rabbitmq", fallbackMethod = "publishAnimalAdoptedFallback")
     @Retry(name = "rabbitmq")
-    @TimeLimiter(name = "rabbitmq")
     public void publishAnimalAdopted(AnimalEventDTO eventDTO) {
         try {
             log.info("Publishing animal adopted event for animal ID: {}", eventDTO.getAnimalId());
@@ -94,7 +91,6 @@ public class AnimalEventPublisher {
      */
     @CircuitBreaker(name = "rabbitmq", fallbackMethod = "publishAnimalDeletedFallback")
     @Retry(name = "rabbitmq")
-    @TimeLimiter(name = "rabbitmq")
     public void publishAnimalDeleted(AnimalEventDTO eventDTO) {
         try {
             log.info("Publishing animal deleted event for animal ID: {}", eventDTO.getAnimalId());

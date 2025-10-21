@@ -16,4 +16,6 @@ public interface AnimalService {
     AnimalDomain add(@Valid AnimalDomain animalDomain);
 
     AnimalDomain update(@Valid AnimalDomain animalDomain);
+
+    void delete(Long id);
 }
