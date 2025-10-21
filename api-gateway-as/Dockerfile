@@ -4,10 +4,19 @@ WORKDIR /app
 
 # Copy parent POM and install it
 COPY pom.xml .
-COPY src ./src
+RUN mvn clean install -N -DskipTests
+
+# Copy and install common module
+COPY animal-shelter-common/pom.xml ./animal-shelter-common/
+COPY animal-shelter-common/src ./animal-shelter-common/src
+RUN cd animal-shelter-common && mvn clean install -DskipTests
+
+# Copy service POM and source
+COPY api-gateway-as/pom.xml ./api-gateway-as/
+COPY api-gateway-as/src ./api-gateway-as/src
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN cd api-gateway-as && mvn clean package -DskipTests
 
 # Runtime stage
 FROM openjdk:17-jdk-slim
@@ -15,7 +24,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/api-gateway-as/target/*.jar app.jar
 
 # Expose the port
 EXPOSE 8765
