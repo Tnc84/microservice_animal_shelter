@@ -130,7 +130,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ## Security Implementation
 
 ### **🔐 Shared Security Library Architecture:**
-- **Centralized Security:** `animal-shelter-common` module eliminates code duplication
+- **Centralized Security:** `security-common` module eliminates code duplication
 - **Unified JWT Service:** Single `JwtService` class used across all microservices
 - **Shared Security Components:** Common authentication filters and security configurations
 - **Maven Multi-Module:** Parent POM manages all security dependencies and versions
@@ -427,7 +427,7 @@ curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" \
 
 ```
 microservice_animal_shelter/
-├── animal-shelter-common/    # 🔐 Shared Security Library
+├── security-common/    # 🔐 Shared Security Library
 │   ├── src/main/java/com/tnc/common/security/
 │   │   ├── JwtService.java                    # Unified JWT service
 │   │   ├── InternalTokenService.java          # Internal token management
@@ -453,7 +453,7 @@ Each microservice follows a clean architecture with:
 - **Mapper Layer:** Object transformation using MapStruct
 - **Security Layer:** JWT authentication and authorization (User Management)
 - **Filter Layer:** JWT token validation (API Gateway)
-- **Shared Security:** Common security components from `animal-shelter-common`
+- **Shared Security:** Common security components from `security-common`
 - **Internal Security:** Inter-service communication with internal tokens
 
 ## Frontend Integration
@@ -494,7 +494,7 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
-- **Shared Security Library:** Eliminated code duplication with `animal-shelter-common` module
+- **Shared Security Library:** Eliminated code duplication with `security-common` module
 - **Maven Multi-Module:** Centralized dependency management with parent POM
 - **Enhanced JWT Security:** Dual token system with automatic refresh
 - **Internal Token System:** Secure inter-service communication

@@ -35,11 +35,12 @@ For each microservice, update their `pom.xml`:
     <artifactId>security-common</artifactId>
 </dependency>
 
-<!-- Keep existing animal-shelter-common if needed for other utilities -->
-<dependency>
+<!-- The old animal-shelter-common module has been replaced by security-common -->
+<!-- Remove this dependency if you previously had it -->
+<!-- <dependency>
     <groupId>com.tnc</groupId>
     <artifactId>animal-shelter-common</artifactId>
-</dependency>
+</dependency> -->
 ```
 
 ### **Step 2: Update Import Statements**

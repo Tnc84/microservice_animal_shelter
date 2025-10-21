@@ -6,10 +6,10 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn clean install -N -DskipTests
 
-# Copy and install common module
-COPY animal-shelter-common/pom.xml ./animal-shelter-common/
-COPY animal-shelter-common/src ./animal-shelter-common/src
-RUN cd animal-shelter-common && mvn clean install -DskipTests
+# Copy and install security-common module
+COPY security-common/pom.xml ./security-common/
+COPY security-common/src ./security-common/src
+RUN cd security-common && mvn clean install -DskipTests
 
 # Copy service POM and source
 COPY micro_as_shelter/pom.xml ./micro_as_shelter/
