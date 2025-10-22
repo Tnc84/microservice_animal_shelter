@@ -540,8 +540,31 @@ jobs:
           languages: java
           queries: security-and-quality
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build security-common for CodeQL
+        run: |
+          cd security-common
+          mvn clean compile -DskipTests
+
+      - name: Build microservices for CodeQL
+        run: |
+          cd micro_as_user && mvn clean compile -DskipTests
+          cd ../micro_as_animal && mvn clean compile -DskipTests
+          cd ../micro_as_shelter && mvn clean compile -DskipTests
+          cd ../api-gateway-as && mvn clean compile -DskipTests
+          cd ../naming-server-as && mvn clean compile -DskipTests
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
