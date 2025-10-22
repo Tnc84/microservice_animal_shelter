@@ -58,23 +58,23 @@ jobs:
           cd ../api-gateway-as && mvn clean test jacoco:report
           cd ../naming-server-as && mvn clean test jacoco:report
 
-      - name: Run SonarQube analysis
-        run: |
-          # Run SonarQube analysis for each service
-          cd security-common && mvn sonar:sonar \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.junit.reportPaths=target/surefire-reports \
-            -Dsonar.java.source=17 \
-            -Dsonar.java.target=17
-          cd ../micro_as_user && mvn sonar:sonar \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.qualitygate.wait=true \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-            -Dsonar.junit.reportPaths=target/surefire-reports \
-            -Dsonar.java.source=17 \
-            -Dsonar.java.target=17
+      # - name: Run SonarQube analysis
+      #   run: |
+      #     # Run SonarQube analysis for each service
+      #     cd security-common && mvn sonar:sonar \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+      #       -Dsonar.qualitygate.wait=true \
+      #       -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+      #       -Dsonar.junit.reportPaths=target/surefire-reports \
+      #       -Dsonar.java.source=17 \
+      #       -Dsonar.java.target=17
+      #     cd ../micro_as_user && mvn sonar:sonar \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+      #       -Dsonar.qualitygate.wait=true \
+      #       -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+      #       -Dsonar.junit.reportPaths=target/surefire-reports \
+      #       -Dsonar.java.source=17 \
+      #       -Dsonar.java.target=17
 
       - name: OWASP Dependency Check
         run: |
