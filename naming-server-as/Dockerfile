@@ -2,11 +2,7 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 
-# Copy parent POM and install it
-COPY pom.xml .
-RUN mvn clean install -N -DskipTests
-
-# Copy and install security-common module
+# Copy and install security-common module first (dependency)
 COPY security-common/pom.xml ./security-common/
 COPY security-common/src ./security-common/src
 RUN cd security-common && mvn clean install -DskipTests

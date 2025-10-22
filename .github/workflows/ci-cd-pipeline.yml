@@ -60,39 +60,33 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          # Run SonarQube analysis for each service (only if SONAR_TOKEN is available)
-          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
-            echo "Running SonarQube analysis..."
-            cd security-common && mvn sonar:sonar \
-              -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-              -Dsonar.qualitygate.wait=true \
-              -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-              -Dsonar.junit.reportPaths=target/surefire-reports \
-              -Dsonar.java.source=17 \
-              -Dsonar.java.target=17 || echo "SonarQube analysis failed, continuing..."
-            cd ../micro_as_user && mvn sonar:sonar \
-              -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-              -Dsonar.qualitygate.wait=true \
-              -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-              -Dsonar.junit.reportPaths=target/surefire-reports \
-              -Dsonar.java.source=17 \
-              -Dsonar.java.target=17 || echo "SonarQube analysis failed, continuing..."
-          else
-            echo "SonarQube token not available, skipping analysis..."
-          fi
+          # Run SonarQube analysis for each service
+          cd security-common && mvn sonar:sonar \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.junit.reportPaths=target/surefire-reports \
+            -Dsonar.java.source=17 \
+            -Dsonar.java.target=17
+          cd ../micro_as_user && mvn sonar:sonar \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+            -Dsonar.junit.reportPaths=target/surefire-reports \
+            -Dsonar.java.source=17 \
+            -Dsonar.java.target=17
 
       - name: OWASP Dependency Check
         run: |
           # Run dependency check for each service
-          echo "Running OWASP dependency checks..."
           cd security-common && mvn org.owasp:dependency-check-maven:check \
             -Dformat=ALL \
             -Dformat=HTML \
-            -Dformat=JSON || echo "OWASP check failed for security-common, continuing..."
+            -Dformat=JSON
           cd ../micro_as_user && mvn org.owasp:dependency-check-maven:check \
             -Dformat=ALL \
             -Dformat=HTML \
-            -Dformat=JSON || echo "OWASP check failed for micro_as_user, continuing..."
+            -Dformat=JSON
 
       - name: Upload dependency check results
         uses: actions/upload-artifact@v4
