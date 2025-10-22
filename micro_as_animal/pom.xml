@@ -358,6 +358,13 @@
                 <artifactId>testcontainers-maven-plugin</artifactId>
                 <version>1.19.3</version>
             </plugin>
+            
+            <!-- Surefire Report Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
         </plugins>
     </build>
 
