@@ -3,7 +3,13 @@
 
 ## Project Overview
 
-This is a **Java 17 microservices application** for managing an animal shelter system. The project follows a **microservice architecture** with five distinct services that work together to provide a complete animal shelter management solution.
+This is a **Java 17 microservices application** for managing an animal shelter system. The project follows a **clean microservices architecture** with standalone services that work together to provide a complete animal shelter management solution.
+
+### **🏗️ Architecture Evolution:**
+- **✅ Clean Microservices**: Each service is completely independent with its own dependencies
+- **✅ Standalone Services**: No parent POM - each service manages its own versions
+- **✅ Shared Security Library**: `security-common` module for unified JWT authentication
+- **✅ Independent Deployment**: Services can be built, tested, and deployed separately
 
 ## Architecture & Technology Stack
 
@@ -133,7 +139,8 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Centralized Security:** `security-common` module eliminates code duplication
 - **Unified JWT Service:** Single `JwtService` class used across all microservices
 - **Shared Security Components:** Common authentication filters and security configurations
-- **Maven Multi-Module:** Parent POM manages all security dependencies and versions
+- **Standalone Library:** `security-common` is a library module (not runnable)
+- **Auto-Configuration:** Spring Boot auto-configuration via `spring.factories`
 - **Code Reusability:** Eliminated duplicate `JwtTokenProvider` classes across microservices
 
 ### **Enhanced JWT Authentication & Authorization:**
@@ -258,14 +265,22 @@ Each microservice maintains its own database:
 
 ### Local Development Setup
 
-1. **Start Eureka Server:**
+**⚠️ Important Build Order for Standalone Microservices:**
+
+1. **Build Security Common First (Required Dependency):**
+   ```bash
+   cd security-common
+   mvn clean install -DskipTests
+   ```
+
+2. **Start Eureka Server:**
    ```bash
    cd naming-server-as
    mvn spring-boot:run
    ```
    Access at: `http://localhost:8761`
 
-2. **Start Microservices:**
+3. **Start Microservices (in any order after security-common is built):**
    ```bash
    # Animal Microservice
    cd micro_as_animal
@@ -283,6 +298,17 @@ Each microservice maintains its own database:
    cd api-gateway-as
    mvn spring-boot:run
    ```
+
+**🔧 Build Commands for Standalone Services:**
+```bash
+# Build individual services (security-common must be built first)
+cd security-common && mvn clean install -DskipTests
+cd micro_as_user && mvn clean install -DskipTests  
+cd micro_as_animal && mvn clean install -DskipTests
+cd micro_as_shelter && mvn clean install -DskipTests
+cd api-gateway-as && mvn clean install -DskipTests
+cd naming-server-as && mvn clean install -DskipTests
+```
 
 3. **Access the Application:**
    - API Gateway: `http://localhost:8765`
@@ -427,19 +453,19 @@ curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" \
 
 ```
 microservice_animal_shelter/
-├── security-common/    # 🔐 Shared Security Library
-│   ├── src/main/java/com/tnc/common/security/
+├── security-common/    # 🔐 Shared Security Library (Standalone)
+│   ├── src/main/java/com/tnc/security/
 │   │   ├── JwtService.java                    # Unified JWT service
 │   │   ├── InternalTokenService.java          # Internal token management
-│   │   ├── JwtAuthenticationFilter.java       # JWT authentication filter
-│   │   └── InternalTokenAuthorizationFilter.java # Internal token filter
-│   └── pom.xml                                # Shared library dependencies
-├── api-gateway-as/           # API Gateway service
-├── micro_as_animal/          # Animal management service
-├── micro_as_shelter/         # Shelter management service
-├── micro_as_user/            # User management service
-├── naming-server-as/         # Eureka service discovery
-├── pom.xml                   # 🔧 Parent POM (dependency management)
+│   │   ├── SecurityAutoConfiguration.java     # Auto-configuration
+│   │   └── SecurityUtils.java                 # Security utilities
+│   ├── src/main/resources/META-INF/spring.factories
+│   └── pom.xml                                # Standalone library dependencies
+├── api-gateway-as/           # API Gateway service (Standalone)
+├── micro_as_animal/          # Animal management service (Standalone)
+├── micro_as_shelter/         # Shelter management service (Standalone)
+├── micro_as_user/            # User management service (Standalone)
+├── naming-server-as/         # Eureka service discovery (Standalone)
 ├── docker-compose.yml        # Docker orchestration
 └── README.md                 # This file
 ```
@@ -494,8 +520,10 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
-- **Shared Security Library:** Eliminated code duplication with `security-common` module
-- **Maven Multi-Module:** Centralized dependency management with parent POM
+- **Clean Microservices Architecture:** Each service is completely independent
+- **Standalone Services:** No parent POM - each service manages its own dependencies
+- **Shared Security Library:** `security-common` module for unified JWT authentication
+- **Auto-Configuration:** Spring Boot auto-configuration via `spring.factories`
 - **Enhanced JWT Security:** Dual token system with automatic refresh
 - **Internal Token System:** Secure inter-service communication
 - **Password Encryption:** BCrypt for secure password storage
@@ -508,7 +536,8 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Fault Tolerance:** Comprehensive fallback mechanisms and graceful degradation
 - **Monitoring Enhancement:** Circuit breaker status and health monitoring
 - **Production Readiness:** Enterprise-grade resilience patterns
-- **Code Duplication Elimination:** Unified security components across all microservices
+- **Independent Deployment:** Services can be built, tested, and deployed separately
+- **Version Management:** Each service can evolve its dependencies independently
 
 ## Documentation
 

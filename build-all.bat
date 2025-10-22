@@ -7,7 +7,7 @@ echo ========================================
 
 echo.
 echo [1/6] Building Common Library...
-cd animal-shelter-common
+cd security-common
 call mvn clean install -DskipTests
 if !errorlevel! neq 0 (
     echo ERROR: Failed to build Common Library

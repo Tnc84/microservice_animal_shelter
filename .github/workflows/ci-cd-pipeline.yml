@@ -42,10 +42,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install parent POM
-        run: |
-          mvn clean install -N -DskipTests
-
       - name: Build security-common module
         run: |
           cd security-common
@@ -100,10 +96,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install parent POM
-        run: |
-          mvn clean install -N -DskipTests
-
       - name: Build common module
         run: |
           cd security-common
@@ -133,10 +125,6 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-
-      - name: Install parent POM (for dependencies)
-        run: |
-          mvn clean install -N -DskipTests
 
       - name: Build common module (for dependencies)
         run: |
@@ -247,10 +235,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install parent POM (for dependencies)
-        run: |
-          mvn clean install -N -DskipTests
-
       - name: Build common module (for dependencies)
         run: |
           cd security-common
@@ -337,7 +321,14 @@ jobs:
 
       - name: Build all microservices
         run: |
-          mvn clean package -DskipTests
+          # Build security-common first (dependency for other services)
+          cd security-common && mvn clean install -DskipTests
+          # Build each microservice independently
+          cd ../api-gateway-as && mvn clean package -DskipTests
+          cd ../micro_as_animal && mvn clean package -DskipTests
+          cd ../micro_as_shelter && mvn clean package -DskipTests
+          cd ../micro_as_user && mvn clean package -DskipTests
+          cd ../naming-server-as && mvn clean package -DskipTests
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -368,9 +359,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install parent POM and common module
+      - name: Build common module
         run: |
-          mvn clean install -N -DskipTests
           cd security-common
           mvn clean install -DskipTests
 
@@ -482,10 +472,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
-      - name: Install parent POM (for dependencies)
-        run: |
-          mvn clean install -N -DskipTests
 
       - name: Build common module (for dependencies)
         run: |
