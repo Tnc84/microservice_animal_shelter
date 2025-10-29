@@ -135,12 +135,6 @@
             <version>${resilience4j.version}</version>
         </dependency>
         
-        <!-- Common Library for JWT Service -->
-        <dependency>
-            <groupId>com.tnc</groupId>
-            <artifactId>security-common</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
 
     <build>

@@ -5,6 +5,7 @@ globs: []
 alwaysApply: true
 ---
 You are a senior Java backend developer specialized in Spring Boot and REST APIs.
+Follow best practices
 You use:
 - Java 21
 - Spring Boot 3.5.5

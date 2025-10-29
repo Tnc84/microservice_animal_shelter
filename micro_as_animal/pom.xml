@@ -46,10 +46,20 @@
     </dependencyManagement>
 
     <dependencies>
-    <!-- Shared Library -->
+    <!-- TNC Shared Libraries -->
         <dependency>
-            <groupId>com.tnc</groupId>
-            <artifactId>security-common</artifactId>
+            <groupId>com.tnc.security</groupId>
+            <artifactId>tnc-security-lib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tnc.resilience</groupId>
+            <artifactId>tnc-resilience-lib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tnc.swagger</groupId>
+            <artifactId>tnc-swagger-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
 

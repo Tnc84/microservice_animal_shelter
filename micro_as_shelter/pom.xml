@@ -44,8 +44,8 @@
     <dependencies>
     <!-- Shared Library -->
         <dependency>
-            <groupId>com.tnc</groupId>
-            <artifactId>security-common</artifactId>
+            <groupId>com.tnc.security</groupId>
+            <artifactId>tnc-security-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

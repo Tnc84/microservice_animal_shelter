@@ -2,96 +2,64 @@ package com.tnc.animals.service;
 
 import com.tnc.animals.repository.entities.Animal;
 import com.tnc.animals.repository.interfaces.AnimalRepository;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import com.tnc.resilience.service.BaseCircuitBreakerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
- * Service with circuit breaker patterns for database operations.
- * Provides fallback mechanisms for database failures.
+ * Service with circuit breaker patterns for database operations using TNC shared library.
+ * Extends BaseCircuitBreakerService to inherit circuit breaker, retry, and timeout protection.
  */
 @Slf4j
-// @Service  // Temporarily disabled to fix startup issue
+@Service
 @RequiredArgsConstructor
-public class CircuitBreakerService {
+public class CircuitBreakerService extends BaseCircuitBreakerService<Animal, Long> {
     
     private final AnimalRepository animalRepository;
     
+    @Override
+    protected CrudRepository<Animal, Long> getRepository() {
+        return animalRepository;
+    }
+    
     /**
      * Get all animals with circuit breaker protection.
+     * Uses the inherited resilience patterns from BaseCircuitBreakerService.
      */
-    @CircuitBreaker(name = "database", fallbackMethod = "getAllAnimalsFallback")
-    @Retry(name = "database")
-    @TimeLimiter(name = "database")
-    public CompletableFuture<List<Animal>> getAllAnimals() {
+    public List<Animal> getAllAnimals() {
         log.info("Fetching all animals from database");
-        return CompletableFuture.completedFuture(animalRepository.findAll());
+        return executeWithResilience(() -> animalRepository.findAll());
     }
     
     /**
      * Get animal by ID with circuit breaker protection.
+     * Uses the inherited findById method from BaseCircuitBreakerService.
      */
-    @CircuitBreaker(name = "database", fallbackMethod = "getAnimalByIdFallback")
-    @Retry(name = "database")
-    @TimeLimiter(name = "database")
-    public CompletableFuture<Optional<Animal>> getAnimalById(Long id) {
+    public Optional<Animal> getAnimalById(Long id) {
         log.info("Fetching animal by ID: {}", id);
-        return CompletableFuture.completedFuture(animalRepository.findById(id));
+        return findById(id);
     }
     
     /**
      * Save animal with circuit breaker protection.
+     * Uses the inherited save method from BaseCircuitBreakerService.
      */
-    @CircuitBreaker(name = "database", fallbackMethod = "saveAnimalFallback")
-    @Retry(name = "database")
-    @TimeLimiter(name = "database")
-    public CompletableFuture<Animal> saveAnimal(Animal animal) {
+    public Animal saveAnimal(Animal animal) {
         log.info("Saving animal: {}", animal.getName());
-        return CompletableFuture.completedFuture(animalRepository.save(animal));
+        return save(animal);
     }
     
     /**
      * Delete animal with circuit breaker protection.
+     * Uses the inherited deleteById method from BaseCircuitBreakerService.
      */
-    @CircuitBreaker(name = "database", fallbackMethod = "deleteAnimalFallback")
-    @Retry(name = "database")
-    @TimeLimiter(name = "database")
-    public CompletableFuture<Boolean> deleteAnimal(Long id) {
+    public void deleteAnimal(Long id) {
         log.info("Deleting animal with ID: {}", id);
-        try {
-            animalRepository.deleteById(id);
-            return CompletableFuture.completedFuture(true);
-        } catch (Exception e) {
-            return CompletableFuture.completedFuture(false);
-        }
-    }
-    
-    // Fallback methods
-    public CompletableFuture<List<Animal>> getAllAnimalsFallback(Exception ex) {
-        log.warn("Database circuit breaker open, returning empty list for getAllAnimals. Error: {}", ex.getMessage());
-        return CompletableFuture.completedFuture(Collections.emptyList());
-    }
-    
-    public CompletableFuture<Optional<Animal>> getAnimalByIdFallback(Long id, Exception ex) {
-        log.warn("Database circuit breaker open, returning empty for animal ID {}. Error: {}", id, ex.getMessage());
-        return CompletableFuture.completedFuture(Optional.empty());
-    }
-    
-    public CompletableFuture<Animal> saveAnimalFallback(Animal animal, Exception ex) {
-        log.warn("Database circuit breaker open, returning null for save. Error: {}", ex.getMessage());
-        return CompletableFuture.completedFuture(null);
-    }
-    
-    public CompletableFuture<Boolean> deleteAnimalFallback(Long id, Exception ex) {
-        log.warn("Database circuit breaker open, returning false for delete. Error: {}", ex.getMessage());
-        return CompletableFuture.completedFuture(false);
+        deleteById(id);
     }
 }

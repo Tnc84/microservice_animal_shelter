@@ -1,7 +1,7 @@
 package com.tnc.animals.config;
 
 import com.tnc.security.InternalTokenService;
-import com.tnc.security.JwtService;
+import com.tnc.security.util.JwtUtil;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -17,7 +17,7 @@ public class TestSecurityConfig {
 
     @Bean
     @Primary
-    public JwtService jwtService() {
-        return new JwtService();
+    public JwtUtil jwtUtil() {
+        return new JwtUtil();
     }
 }

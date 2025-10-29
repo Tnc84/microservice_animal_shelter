@@ -29,6 +29,17 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Resilience4j** for circuit breaker patterns and fault tolerance
 - **Event-Driven Architecture** with RabbitMQ message publishing and consuming
 
+### **API Gateway Architecture:**
+- **Reactive Architecture:** Uses Spring WebFlux (reactive/non-blocking) instead of Spring MVC
+- **Dependency Exclusion:** Must exclude `spring-boot-starter-web` to prevent conflicts
+- **Netty Server:** Runs on Netty instead of Tomcat for high-concurrency gateway scenarios
+- **WebFlux Integration:** Uses `spring-boot-starter-webflux` for reactive programming model
+- **Why Exclusion is Required:** Spring Cloud Gateway and Spring MVC cannot coexist due to:
+  - Incompatible web servers (Netty vs Tomcat)
+  - Different HTTP handling (WebFlux filter chain vs Servlet filter chain)
+  - Classpath conflicts in web infrastructure autoconfiguration
+  - Programming model conflicts (reactive vs imperative)
+
 ### **Development Tools:**
 - **Lombok** for reducing boilerplate code
 - **MapStruct** for object mapping
