@@ -23,7 +23,6 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### **Microservices Technologies:**
 - **Netflix Eureka** for service discovery
 - **Spring Cloud Gateway** for API Gateway
-- **OpenFeign** for inter-service communication
 - **Spring Cloud Sleuth & Zipkin** for distributed tracing
 - **RabbitMQ** for messaging and event-driven architecture
 - **Resilience4j** for circuit breaker patterns and fault tolerance
@@ -40,6 +39,13 @@ This is a **Java 17 microservices application** for managing an animal shelter s
   - Classpath conflicts in web infrastructure autoconfiguration
   - Programming model conflicts (reactive vs imperative)
 
+### **Security Architecture by Service Type:**
+- **API Gateway (WebFlux):** Custom JWT service and WebFlux security configuration
+- **Business Microservices (Servlet):** Shared security library with servlet-based filters
+- **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
+- **Performance Benefits:** WebFlux gateway handles thousands of concurrent connections
+- **Maintainability:** Architecture-specific security implementations for optimal performance
+
 ### **Development Tools:**
 - **Lombok** for reducing boilerplate code
 - **MapStruct** for object mapping
@@ -47,6 +53,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Docker** for containerization
 - **Records** for immutable data structures
 - **Spring Security** for JWT authentication
+- **Shared Libraries** for common functionality across microservices
 
 ## Microservices Architecture
 
@@ -59,12 +66,18 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### 2. **API Gateway**
 - **Port:** 8765
 - **Purpose:** Single entry point for all microservices with JWT security
-- **Technology:** Spring Cloud Gateway with Spring Security
+- **Technology:** Spring Cloud Gateway with WebFlux Security
+- **Architecture:** Reactive (WebFlux) - non-blocking, high-performance gateway
 - **Features:** 
   - Service discovery integration and routing
   - JWT token validation and role-based access control
   - CORS configuration for frontend integration
   - Centralized security management
+  - Reactive security filters for non-blocking authentication
+- **Security Implementation:**
+  - Custom `JwtService` for WebFlux compatibility
+  - `WebFluxSecurityConfig` for reactive security configuration
+  - `JwtAuthenticationFilter` for non-blocking token validation
 - **Security Endpoints:**
   - `POST /user-management/auth/login` - User authentication
   - `POST /user-management/auth/register` - User registration
@@ -146,13 +159,21 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ## Security Implementation
 
-### **🔐 Shared Security Library Architecture:**
-- **Centralized Security:** `security-common` module eliminates code duplication
-- **Unified JWT Service:** Single `JwtService` class used across all microservices
-- **Shared Security Components:** Common authentication filters and security configurations
-- **Standalone Library:** `security-common` is a library module (not runnable)
-- **Auto-Configuration:** Spring Boot auto-configuration via `spring.factories`
-- **Code Reusability:** Eliminated duplicate `JwtTokenProvider` classes across microservices
+### **🔐 Hybrid Security Architecture:**
+- **API Gateway Security:** WebFlux-compatible JWT service for reactive gateway
+- **Microservices Security:** Shared security library for servlet-based services
+- **Architecture-Specific Implementation:** Different security approaches for different architectures
+- **WebFlux Gateway:** Custom `JwtService` and `WebFluxSecurityConfig` for reactive applications
+- **Servlet Microservices:** Shared `tnc-security-lib` for traditional Spring MVC services
+- **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
+
+### **📚 Shared Libraries Architecture:**
+- **tnc-security-lib:** JWT authentication and authorization for servlet-based services
+- **tnc-resilience-lib:** Circuit breaker, retry, and fault tolerance patterns
+- **tnc-swagger-lib:** OpenAPI/Swagger documentation configuration and utilities
+- **tnc-docker-lib:** Docker templates, scripts, and containerization utilities
+- **Modular Design:** Each library is independent and can be used separately
+- **Version Management:** Each library maintains its own version and dependencies
 
 ### **Enhanced JWT Authentication & Authorization:**
 - **Dual Token System:** Access tokens (15min) + Refresh tokens (7 days)
@@ -464,19 +485,25 @@ curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" \
 
 ```
 microservice_animal_shelter/
-├── security-common/    # 🔐 Shared Security Library (Standalone)
-│   ├── src/main/java/com/tnc/security/
-│   │   ├── JwtService.java                    # Unified JWT service
+├── tnc-shared-libraries/     # 🔐 Shared Libraries (Standalone)
+│   ├── tnc-security-lib/     # Security library for servlet-based services
+│   │   ├── JwtService.java                    # JWT service for servlet apps
 │   │   ├── InternalTokenService.java          # Internal token management
 │   │   ├── SecurityAutoConfiguration.java     # Auto-configuration
-│   │   └── SecurityUtils.java                 # Security utilities
-│   ├── src/main/resources/META-INF/spring.factories
-│   └── pom.xml                                # Standalone library dependencies
-├── api-gateway-as/           # API Gateway service (Standalone)
-├── micro_as_animal/          # Animal management service (Standalone)
-├── micro_as_shelter/         # Shelter management service (Standalone)
-├── micro_as_user/            # User management service (Standalone)
-├── naming-server-as/         # Eureka service discovery (Standalone)
+│   │   └── InternalTokenWebFluxFilter.java    # WebFlux-compatible filter
+│   ├── tnc-resilience-lib/   # Circuit breaker library
+│   ├── tnc-swagger-lib/      # Swagger/OpenAPI documentation library
+│   └── tnc-docker-lib/       # Docker utilities and templates
+├── api-gateway-as/           # 🌐 API Gateway (WebFlux - Reactive)
+│   ├── security/
+│   │   ├── JwtService.java                    # WebFlux JWT service
+│   │   ├── WebFluxSecurityConfig.java         # Reactive security config
+│   │   └── JwtAuthenticationFilter.java       # Reactive auth filter
+│   └── config/
+├── micro_as_animal/          # 🐕 Animal service (Servlet - Spring MVC)
+├── micro_as_shelter/         # 🏠 Shelter service (Servlet - Spring MVC)
+├── micro_as_user/            # 👤 User service (Servlet - Spring MVC)
+├── naming-server-as/         # 🔍 Eureka service discovery
 ├── docker-compose.yml        # Docker orchestration
 └── README.md                 # This file
 ```
@@ -488,9 +515,10 @@ Each microservice follows a clean architecture with:
 - **DTO Layer:** Data transfer objects using Records with validation
 - **Domain Layer:** Business entities and models
 - **Mapper Layer:** Object transformation using MapStruct
-- **Security Layer:** JWT authentication and authorization (User Management)
-- **Filter Layer:** JWT token validation (API Gateway)
-- **Shared Security:** Common security components from `security-common`
+- **Security Layer:** Architecture-specific security implementation
+  - **API Gateway:** WebFlux-compatible JWT service and reactive filters
+  - **Business Services:** Shared security library with servlet-based filters
+- **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
 - **Internal Security:** Inter-service communication with internal tokens
 
 ## Frontend Integration
@@ -533,13 +561,15 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
 - **Clean Microservices Architecture:** Each service is completely independent
 - **Standalone Services:** No parent POM - each service manages its own dependencies
-- **Shared Security Library:** `security-common` module for unified JWT authentication
-- **Auto-Configuration:** Spring Boot auto-configuration via `spring.factories`
+- **Hybrid Security Architecture:** WebFlux for API Gateway, servlet for business services
+- **WebFlux API Gateway:** Reactive, non-blocking gateway for high performance
+- **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
+- **Shared Libraries:** Modular libraries for security, resilience, documentation, and Docker
 - **Enhanced JWT Security:** Dual token system with automatic refresh
 - **Internal Token System:** Secure inter-service communication
 - **Password Encryption:** BCrypt for secure password storage
 - **CORS Configuration:** Frontend integration support
-- **Clean Architecture:** SOLID principles with security layers
+- **Clean Architecture:** SOLID principles with architecture-specific security layers
 - **Database Security:** Refresh token storage with metadata tracking
 - **Device Tracking:** IP address and device info logging for security
 - **Circuit Breaker Integration:** Resilience4j for fault tolerance across all services
@@ -549,6 +579,28 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Production Readiness:** Enterprise-grade resilience patterns
 - **Independent Deployment:** Services can be built, tested, and deployed separately
 - **Version Management:** Each service can evolve its dependencies independently
+
+## Architecture Decision: WebFlux vs Servlet
+
+### **Why WebFlux for API Gateway?**
+- **Performance:** Handles 10,000+ concurrent connections vs 200-500 for servlet
+- **Memory Efficiency:** Lower memory footprint with event-driven architecture
+- **Non-blocking I/O:** Perfect for high-throughput gateway scenarios
+- **Spring Cloud Gateway:** Built specifically for WebFlux architecture
+- **Industry Standard:** Production microservices use reactive gateways
+
+### **Why Servlet for Business Services?**
+- **Familiarity:** Most developers are comfortable with Spring MVC
+- **Rich Ecosystem:** Extensive library support for servlet-based applications
+- **Complex Business Logic:** Easier to implement with blocking operations
+- **Database Integration:** Better support for JPA/Hibernate with servlet
+- **Testing:** More mature testing frameworks for servlet applications
+
+### **Best Practices Applied:**
+- **Dependency Exclusions:** Prevent servlet/WebFlux conflicts
+- **Architecture-Specific Security:** Optimized for each service type
+- **Clean Separation:** Clear boundaries between reactive and imperative code
+- **Performance Optimization:** Right tool for the right job
 
 ## Documentation
 
