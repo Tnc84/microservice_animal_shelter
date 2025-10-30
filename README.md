@@ -632,6 +632,31 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Swagger UI:** `http://localhost:8765/swagger-ui.html`
 - **Health Check:** `http://localhost:8765/actuator/health`
 
+### Recent Changes (Resilience + Security)
+
+- Resilience
+  - Added `tnc-resilience-lib` helper `ResilienceExecutor` to centralize CircuitBreaker/Retry/TimeLimiter decoration.
+  - Renamed methods for clarity:
+    - Database: `executeDatabase(...)`, `executeDatabaseAsync(...)`
+    - API: `executeApi(...)`, `executeApiAsync(...)`
+  - `micro_as_animal`: `AnimalServiceImpl` now delegates DB calls to `CircuitBreakerService`.
+  - `micro_as_shelter`: migrated to shared base resilience; added `findByName`, `getAllShelters`, `saveShelter`, `deleteShelter` in its `CircuitBreakerService`.
+
+- Security (shared lib)
+  - `tnc-security-lib` auto-config now isolates servlet vs reactive:
+    - Servlet (MVC services): default `SecurityFilterChain` with `InternalTokenAuthorizationFilter`.
+    - Reactive (API Gateway): nested `WebFluxSecurityConfiguration` registers `InternalTokenWebFluxFilter` only when Spring Cloud Gateway is on classpath.
+  - Marked WebFlux/Gateway dependencies as optional in `tnc-security-lib`.
+
+- Architecture
+  - API Gateway uses WebFlux (reactive). Business services (Animal, Shelter, User) use Spring MVC (servlet). This mix is intentional and follows best practice.
+
+- Build/Test notes
+  - JJWT requires HS256 keys >= 256 bits. For tests:
+    - Windows CMD: `set INTERNAL_JWT_SECRET=0123456789ABCDEF0123456789ABCDEF`
+    - PowerShell: `$env:INTERNAL_JWT_SECRET="0123456789ABCDEF0123456789ABCDEF"`
+    - Then run: `mvn -f tnc-shared-libraries/tnc-security-lib clean test`
+
 ## 🏗️ System Architecture
 
                     ┌─────────────▼─────────────┐
