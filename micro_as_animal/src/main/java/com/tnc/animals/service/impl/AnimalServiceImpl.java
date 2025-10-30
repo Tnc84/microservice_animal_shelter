@@ -2,7 +2,7 @@ package com.tnc.animals.service.impl;
 
 import com.tnc.animals.events.AnimalEventDTO;
 import com.tnc.animals.events.AnimalEventPublisher;
-import com.tnc.animals.repository.interfaces.AnimalRepository;
+import com.tnc.animals.service.CircuitBreakerService;
 import com.tnc.animals.service.domain.AnimalDomain;
 import com.tnc.animals.service.interfaces.AnimalService;
 import com.tnc.animals.service.mapper.AnimalDomainMapper;
@@ -19,25 +19,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AnimalServiceImpl implements AnimalService {
 
-    private final AnimalRepository animalRepository;
     private final AnimalDomainMapper animalDomainMapper;
     private final AnimalEventPublisher animalEventPublisher;
+    private final CircuitBreakerService circuitBreakerService;
 
     @Override
     public AnimalDomain get(Long id) {
-        return animalDomainMapper.toDomain(animalRepository.findById(id).orElse(null));
+        return animalDomainMapper.toDomain(circuitBreakerService.getAnimalById(id).orElse(null));
     }
 
     @Override
     public List<AnimalDomain> getAll() {
-        return animalDomainMapper.toDomainList(animalRepository.findAll());
+        return animalDomainMapper.toDomainList(circuitBreakerService.getAllAnimals());
     }
 
     @Override
     @Transactional
     public AnimalDomain add(AnimalDomain animalDomain) {
         log.info("Creating new animal: {}", animalDomain.getName());
-        AnimalDomain savedAnimal = animalDomainMapper.toDomain(animalRepository.save(animalDomainMapper.toEntity(animalDomain)));
+        AnimalDomain savedAnimal = animalDomainMapper.toDomain(
+                circuitBreakerService.saveAnimal(animalDomainMapper.toEntity(animalDomain))
+        );
         
         // Publish animal created event after successful DB commit
         publishAnimalCreatedEvent(savedAnimal);
@@ -49,7 +51,9 @@ public class AnimalServiceImpl implements AnimalService {
     @Transactional
     public AnimalDomain update(AnimalDomain animalDomain) {
         log.info("Updating animal: {}", animalDomain.getName());
-        AnimalDomain updatedAnimal = animalDomainMapper.toDomain(animalRepository.save(animalDomainMapper.toEntity(animalDomain)));
+        AnimalDomain updatedAnimal = animalDomainMapper.toDomain(
+                circuitBreakerService.saveAnimal(animalDomainMapper.toEntity(animalDomain))
+        );
         
         // Publish animal updated event after successful DB commit
         publishAnimalUpdatedEvent(updatedAnimal);
@@ -67,7 +71,7 @@ public class AnimalServiceImpl implements AnimalService {
         log.info("Deleting animal with ID: {}", id);
         AnimalDomain animalToDelete = get(id);
         if (animalToDelete != null) {
-            animalRepository.deleteById(id);
+            circuitBreakerService.deleteAnimal(id);
             // Publish animal deleted event after successful DB commit
             publishAnimalDeletedEvent(animalToDelete);
         }
@@ -86,7 +90,9 @@ public class AnimalServiceImpl implements AnimalService {
         AnimalDomain animal = get(id);
         if (animal != null) {
             // Update animal status to adopted (you might need to add status field to entity)
-            AnimalDomain adoptedAnimal = animalDomainMapper.toDomain(animalRepository.save(animalDomainMapper.toEntity(animal)));
+            AnimalDomain adoptedAnimal = animalDomainMapper.toDomain(
+                    circuitBreakerService.saveAnimal(animalDomainMapper.toEntity(animal))
+            );
             
             // Publish animal adopted event after successful DB commit
             publishAnimalAdoptedEvent(adoptedAnimal, userId, userEmail);

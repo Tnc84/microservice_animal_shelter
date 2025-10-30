@@ -229,6 +229,23 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Database Operations:** All CRUD operations protected with fallback mechanisms
 - **Service Communication:** Inter-service calls with circuit breaker protection
 
+### Clear Circuit Breaker Example (what happens step-by-step)
+
+- Normal operation (CLOSED)
+  - GET /animals reads from DB; success rate is healthy → all requests pass.
+- Degradation begins
+  - DB starts failing/timeouts. Within last 10 calls, 6 fail → failure-rate > 50%.
+- Trip to OPEN
+  - Circuit opens. New GET /animals requests fail fast (no DB call) with a quick fallback (e.g., cached/empty list or 503 with message).
+- Half-open probing
+  - After 30s, circuit goes HALF-OPEN and allows a few test calls (e.g., 3).
+  - If they succeed → circuit closes; if they fail → circuit re-opens.
+- Isolation and protection
+  - Bulkhead caps concurrent DB calls (prevents thread starvation).
+  - Time limiter aborts hanging calls (e.g., after 5s) to free resources.
+- Not only databases
+  - Use it for dependencies: databases, other microservices, RabbitMQ, caches, email/SMS providers. Not for pure in-process CPU work.
+
 ## Key Features & Patterns
 
 ### **SOLID Principles Implementation:**

@@ -33,7 +33,7 @@ public class CircuitBreakerService extends BaseCircuitBreakerService<Animal, Lon
      */
     public List<Animal> getAllAnimals() {
         log.info("Fetching all animals from database");
-        return executeWithResilience(() -> animalRepository.findAll());
+        return executeDatabase(() -> animalRepository.findAll());
     }
     
     /**

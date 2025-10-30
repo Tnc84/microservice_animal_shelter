@@ -6,6 +6,7 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
+import com.tnc.resilience.util.ResilienceExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -46,7 +47,7 @@ public class ApiCircuitBreakerService {
      * @return ResponseEntity containing the response
      */
     public <T> ResponseEntity<T> get(String url, Class<T> responseType) {
-        return executeWithResilience("api", () -> {
+        return executeApi("api", () -> {
             log.debug("Making GET request to: {}", url);
             return restTemplate.getForEntity(url, responseType);
         });
@@ -63,7 +64,7 @@ public class ApiCircuitBreakerService {
      * @return ResponseEntity containing the response
      */
     public <T, R> ResponseEntity<T> post(String url, R request, Class<T> responseType) {
-        return executeWithResilience("api", () -> {
+        return executeApi("api", () -> {
             log.debug("Making POST request to: {}", url);
             return restTemplate.postForEntity(url, request, responseType);
         });
@@ -80,7 +81,7 @@ public class ApiCircuitBreakerService {
      * @return ResponseEntity containing the response
      */
     public <T, R> ResponseEntity<T> put(String url, R request, Class<T> responseType) {
-        return executeWithResilience("api", () -> {
+        return executeApi("api", () -> {
             log.debug("Making PUT request to: {}", url);
             HttpEntity<R> entity = new HttpEntity<>(request);
             return restTemplate.exchange(url, HttpMethod.PUT, entity, responseType);
@@ -96,7 +97,7 @@ public class ApiCircuitBreakerService {
      * @return ResponseEntity containing the response
      */
     public <T> ResponseEntity<T> delete(String url, Class<T> responseType) {
-        return executeWithResilience("api", () -> {
+        return executeApi("api", () -> {
             log.debug("Making DELETE request to: {}", url);
             return restTemplate.exchange(url, HttpMethod.DELETE, null, responseType);
         });
@@ -109,15 +110,13 @@ public class ApiCircuitBreakerService {
      * @param <T> the return type
      * @return the result of the operation
      */
-    public <T> T executeWithResilience(String circuitBreakerName, Supplier<T> operation) {
+    public <T> T executeApi(String circuitBreakerName, Supplier<T> operation) {
         CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(circuitBreakerName);
         Retry retry = retryRegistry.retry(circuitBreakerName);
-        TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(circuitBreakerName);
+        // TimeLimiter not applied for sync path
 
-        Supplier<T> decoratedSupplier = CircuitBreaker
-                .decorateSupplier(circuitBreaker, operation);
-        decoratedSupplier = Retry.decorateSupplier(retry, decoratedSupplier);
-
+        Supplier<T> decoratedSupplier = ResilienceExecutor
+                .decorateSupplier(circuitBreaker, retry, operation);
         return decoratedSupplier.get();
     }
 
@@ -128,15 +127,13 @@ public class ApiCircuitBreakerService {
      * @param <T> the return type
      * @return CompletableFuture containing the result
      */
-    public <T> CompletableFuture<T> executeAsyncWithResilience(String circuitBreakerName, Supplier<CompletableFuture<T>> operation) {
+    public <T> CompletableFuture<T> executeApiAsync(String circuitBreakerName, Supplier<CompletableFuture<T>> operation) {
         CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(circuitBreakerName);
         Retry retry = retryRegistry.retry(circuitBreakerName);
         TimeLimiter timeLimiter = timeLimiterRegistry.timeLimiter(circuitBreakerName);
 
-        Supplier<CompletableFuture<T>> decoratedSupplier = CircuitBreaker
-                .decorateSupplier(circuitBreaker, operation);
-        decoratedSupplier = Retry.decorateSupplier(retry, decoratedSupplier);
-
+        Supplier<CompletableFuture<T>> decoratedSupplier = ResilienceExecutor
+                .decorateAsync(timeLimiter, circuitBreaker, retry, operation);
         return decoratedSupplier.get();
     }
 }
