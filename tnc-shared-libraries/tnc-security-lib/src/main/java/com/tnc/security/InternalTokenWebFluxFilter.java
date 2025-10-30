@@ -12,20 +12,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
+ 
 /**
  * WebFlux-compatible security filter for validating internal tokens in inter-microservice communication.
  * This filter validates internal tokens and sets up the security context for authenticated requests.
  * Used in reactive applications like Spring Cloud Gateway.
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class InternalTokenWebFluxFilter implements GlobalFilter {
 

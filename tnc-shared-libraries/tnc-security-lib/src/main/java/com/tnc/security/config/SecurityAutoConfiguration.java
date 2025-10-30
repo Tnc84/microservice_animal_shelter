@@ -8,14 +8,13 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.reactive.DispatcherHandler;
 
 /**
  * Auto-configuration for TNC Security components.
@@ -23,7 +22,6 @@ import org.springframework.web.reactive.DispatcherHandler;
  * Supports both servlet-based (Spring MVC) and reactive (WebFlux) applications.
  */
 @AutoConfiguration
-@ComponentScan(basePackages = "com.tnc.security")
 public class SecurityAutoConfiguration {
 
     @Autowired(required = false)
@@ -52,13 +50,22 @@ public class SecurityAutoConfiguration {
     }
 
     /**
-     * WebFlux filter for reactive applications.
-     * Automatically registered when running in a WebFlux context.
+     * Nested configuration for WebFlux/Gateway security.
+     * Only loaded when Spring Cloud Gateway is on the classpath.
+     * This isolation prevents ClassNotFoundException in servlet applications.
      */
-    @Bean
-    @ConditionalOnClass(DispatcherHandler.class)
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(GlobalFilter.class)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    public InternalTokenWebFluxFilter internalTokenWebFluxFilter() {
-        return new InternalTokenWebFluxFilter(internalTokenService);
+    protected static class WebFluxSecurityConfiguration {
+
+        /**
+         * WebFlux filter for reactive applications.
+         * Automatically registered when running in a WebFlux Gateway context.
+         */
+        @Bean
+        public InternalTokenWebFluxFilter internalTokenWebFluxFilter(InternalTokenService internalTokenService) {
+            return new InternalTokenWebFluxFilter(internalTokenService);
+        }
     }
 }

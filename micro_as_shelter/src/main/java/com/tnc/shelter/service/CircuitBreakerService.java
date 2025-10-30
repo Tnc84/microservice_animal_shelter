@@ -31,11 +31,11 @@ public class CircuitBreakerService extends BaseCircuitBreakerService<Shelter, Lo
      * Find shelter by name with database circuit breaker protection.
      */
     public Optional<Shelter> findByName(String name) {
-        return executeDatabase(() -> Optional.ofNullable(shelterRepository.findByName(name)));
+        return Optional.ofNullable(shelterRepository.findByName(name));
     }
 
     public List<Shelter> getAllShelters() {
-        return executeDatabase(() -> shelterRepository.findAll());
+        return shelterRepository.findAll();
     }
 
     public Shelter saveShelter(Shelter shelter) {
