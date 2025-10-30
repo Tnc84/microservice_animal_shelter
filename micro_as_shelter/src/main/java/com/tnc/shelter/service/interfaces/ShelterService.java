@@ -12,6 +12,8 @@ public interface ShelterService {
 //    ShelterDomain get(Long id);
     ShelterDomain getShelterByName();
 
+    ShelterDomain getShelterById(Long id);
+
     List<ShelterDomain> getAll();
 
     ShelterDomain add(ShelterDomain shelterDomain) throws ShelterAddressException, ShelterNameException;
