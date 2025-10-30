@@ -5,14 +5,15 @@ echo (Animal Shelter Microservices)
 echo ========================================
 
 echo.
-echo Step 1: Building security-common library first...
-cd security-common
+echo Step 1: Building tnc-security-lib library first...
+cd tnc-shared-libraries\tnc-security-lib
 call mvn clean install -DskipTests
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to build security-common
+    echo ERROR: Failed to build tnc-security-lib
     pause
     exit /b 1
 )
+cd ..
 cd ..
 
 echo.

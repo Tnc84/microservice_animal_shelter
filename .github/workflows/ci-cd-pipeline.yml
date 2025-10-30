@@ -42,15 +42,15 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build security-common module
+      - name: Build tnc-security-lib module
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
       - name: Run tests with coverage for all services
         run: |
-          # Build security-common first
-          cd security-common && mvn clean test jacoco:report
+          # Build tnc-security-lib first
+          cd tnc-shared-libraries/tnc-security-lib && mvn clean test jacoco:report
           # Run tests for each microservice
           cd ../micro_as_user && mvn clean test jacoco:report
           cd ../micro_as_animal && mvn clean test jacoco:report
@@ -80,14 +80,14 @@ jobs:
         run: |
           # Run dependency check for each service with offline mode and retry
           echo "Running OWASP dependency checks with offline mode..."
-          cd security-common && mvn org.owasp:dependency-check-maven:check \
+          cd tnc-shared-libraries/tnc-security-lib && mvn org.owasp:dependency-check-maven:check \
             -Dformat=ALL \
             -Dformat=HTML \
             -Dformat=JSON \
             -Ddependency-check.retryCount=3 \
             -Ddependency-check.connectionTimeout=30000 \
             -Ddependency-check.readTimeout=30000 \
-            -Ddependency-check.offline=true || echo "OWASP check failed for security-common, continuing..."
+            -Ddependency-check.offline=true || echo "OWASP check failed for tnc-security-lib, continuing..."
           cd ../micro_as_user && mvn org.owasp:dependency-check-maven:check \
             -Dformat=ALL \
             -Dformat=HTML \
@@ -104,9 +104,9 @@ jobs:
           name: dependency-check-results
           path: "*/target/dependency-check-report.*"
 
-  # Stage 2: Build Security Common Module
+  # Stage 2: Build Security Library Module
   build-security-common:
-    name: Build Security Common Module
+    name: Build Security Library Module
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -125,9 +125,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build security-common module
+      - name: Build tnc-security-lib module
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
   # Stage 3: Unit Tests
@@ -155,9 +155,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build security-common (for dependencies)
+      - name: Build tnc-security-lib (for dependencies)
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
       - name: Run unit tests for ${{ matrix.service }}
@@ -264,9 +264,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build security-common (for dependencies)
+      - name: Build tnc-security-lib (for dependencies)
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
       - name: Run contract tests
@@ -351,8 +351,8 @@ jobs:
 
       - name: Build all microservices
         run: |
-          # Build security-common first (dependency for other services)
-          cd security-common && mvn clean install -DskipTests
+          # Build tnc-security-lib first (dependency for other services)
+          cd tnc-shared-libraries/tnc-security-lib && mvn clean install -DskipTests
           # Build each microservice independently
           cd ../api-gateway-as && mvn clean package -DskipTests
           cd ../micro_as_animal && mvn clean package -DskipTests
@@ -389,9 +389,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build common module
+      - name: Build shared security library
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
       - name: Set up Docker Buildx
@@ -503,9 +503,9 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: Build security-common (for dependencies)
+      - name: Build tnc-security-lib (for dependencies)
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean install -DskipTests
 
       - name: Run end-to-end tests
@@ -557,9 +557,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build security-common for CodeQL
+      - name: Build tnc-security-lib for CodeQL
         run: |
-          cd security-common
+          cd tnc-shared-libraries/tnc-security-lib
           mvn clean compile -DskipTests
 
       - name: Build microservices for CodeQL

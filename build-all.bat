@@ -6,16 +6,17 @@ echo Building all microservices for Docker
 echo ========================================
 
 echo.
-echo [1/6] Building Common Library...
-cd security-common
+echo [1/6] Building Common Library (tnc-shared-libraries/tnc-security-lib)...
+cd tnc-shared-libraries\tnc-security-lib
 call mvn clean install -DskipTests
 if !errorlevel! neq 0 (
-    echo ERROR: Failed to build Common Library
+    echo ERROR: Failed to build Common Library (tnc-security-lib)
     pause
     exit /b 1
 )
 cd ..
-echo ✓ Common Library built successfully
+cd ..
+echo ✓ Common Library (tnc-security-lib) built successfully
 
 echo.
 echo [2/6] Building Naming Server (Eureka)...

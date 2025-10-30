@@ -2,10 +2,10 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 
-# Copy and install security-common module first (dependency)
-COPY security-common/pom.xml ./security-common/
-COPY security-common/src ./security-common/src
-RUN cd security-common && mvn clean install -DskipTests
+# Copy and install tnc-security-lib module first (dependency)
+COPY tnc-shared-libraries/tnc-security-lib/pom.xml ./tnc-shared-libraries/tnc-security-lib/
+COPY tnc-shared-libraries/tnc-security-lib/src ./tnc-shared-libraries/tnc-security-lib/src
+RUN cd tnc-shared-libraries/tnc-security-lib && mvn clean install -DskipTests
 
 # Copy service POM and source
 COPY naming-server-as/pom.xml ./naming-server-as/

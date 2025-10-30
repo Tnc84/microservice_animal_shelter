@@ -5,19 +5,19 @@ echo (Offline Mode - No Network Required)
 echo ========================================
 
 echo.
-echo Step 1: Building security-common library first...
-cd security-common
+echo Step 1: Building tnc-security-lib library first...
+cd tnc-shared-libraries\tnc-security-lib
 call mvn clean install -DskipTests
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to build security-common
+    echo ERROR: Failed to build tnc-security-lib
     pause
     exit /b 1
 )
 cd ..
 
 echo.
-echo Step 2: Running OWASP check for security-common...
-cd security-common
+echo Step 2: Running OWASP check for tnc-security-lib...
+cd tnc-shared-libraries\tnc-security-lib
 call mvn org.owasp:dependency-check-maven:check \
   -Dformat=ALL \
   -Dformat=HTML \
@@ -27,7 +27,7 @@ call mvn org.owasp:dependency-check-maven:check \
   -Ddependency-check.connectionTimeout=30000 \
   -Ddependency-check.readTimeout=30000
 if %ERRORLEVEL% neq 0 (
-    echo WARNING: OWASP check failed for security-common, continuing...
+    echo WARNING: OWASP check failed for tnc-security-lib, continuing...
 )
 cd ..
 
@@ -117,7 +117,7 @@ echo OWASP dependency checks completed!
 echo ========================================
 echo.
 echo Reports generated in:
-echo   - security-common/target/dependency-check-report.html
+echo   - tnc-shared-libraries/tnc-security-lib/target/dependency-check-report.html
 echo   - micro_as_user/target/dependency-check-report.html
 echo   - micro_as_animal/target/dependency-check-report.html
 echo   - micro_as_shelter/target/dependency-check-report.html

@@ -8,7 +8,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### **🏗️ Architecture Evolution:**
 - **✅ Clean Microservices**: Each service is completely independent with its own dependencies
 - **✅ Standalone Services**: No parent POM - each service manages its own versions
-- **✅ Shared Security Library**: `security-common` module for unified JWT authentication
+- **✅ Shared Security Library**: `tnc-security-lib` module for unified JWT authentication
 - **✅ Independent Deployment**: Services can be built, tested, and deployed separately
 
 ## Architecture & Technology Stack
@@ -316,9 +316,9 @@ Each microservice maintains its own database:
 
 **⚠️ Important Build Order for Standalone Microservices:**
 
-1. **Build Security Common First (Required Dependency):**
+1. **Build Security Library First (Required Dependency):**
    ```bash
-   cd security-common
+   cd tnc-shared-libraries/tnc-security-lib
    mvn clean install -DskipTests
    ```
 
@@ -329,7 +329,7 @@ Each microservice maintains its own database:
    ```
    Access at: `http://localhost:8761`
 
-3. **Start Microservices (in any order after security-common is built):**
+3. **Start Microservices (in any order after tnc-security-lib is built):**
    ```bash
    # Animal Microservice
    cd micro_as_animal
@@ -350,8 +350,8 @@ Each microservice maintains its own database:
 
 **🔧 Build Commands for Standalone Services:**
 ```bash
-# Build individual services (security-common must be built first)
-cd security-common && mvn clean install -DskipTests
+# Build individual services (tnc-security-lib must be built first)
+cd tnc-shared-libraries/tnc-security-lib && mvn clean install -DskipTests
 cd micro_as_user && mvn clean install -DskipTests  
 cd micro_as_animal && mvn clean install -DskipTests
 cd micro_as_shelter && mvn clean install -DskipTests
