@@ -2,17 +2,22 @@
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 
-# Copy and install tnc-security-lib module first (dependency)
-COPY tnc-shared-libraries/tnc-security-lib/pom.xml ./tnc-shared-libraries/tnc-security-lib/
-COPY tnc-shared-libraries/tnc-security-lib/src ./tnc-shared-libraries/tnc-security-lib/src
-RUN cd tnc-shared-libraries/tnc-security-lib && mvn clean install -DskipTests
+# Copy parent POM and all shared libraries
+COPY tnc-shared-libraries/pom.xml ./tnc-shared-libraries/
+COPY tnc-shared-libraries/tnc-security-lib ./tnc-shared-libraries/tnc-security-lib
+COPY tnc-shared-libraries/tnc-resilience-lib ./tnc-shared-libraries/tnc-resilience-lib
+COPY tnc-shared-libraries/tnc-swagger-lib ./tnc-shared-libraries/tnc-swagger-lib
+COPY tnc-shared-libraries/tnc-docker-lib ./tnc-shared-libraries/tnc-docker-lib
+
+# Build all shared libraries first
+RUN cd tnc-shared-libraries && mvn clean install -DskipTests -T 4
 
 # Copy service POM and source
 COPY naming-server-as/pom.xml ./naming-server-as/
 COPY naming-server-as/src ./naming-server-as/src
 
 # Build the application
-RUN cd naming-server-as && mvn clean package -DskipTests
+RUN cd naming-server-as && mvn clean package -DskipTests -T 4
 
 # Runtime stage
 FROM eclipse-temurin:17-jdk
