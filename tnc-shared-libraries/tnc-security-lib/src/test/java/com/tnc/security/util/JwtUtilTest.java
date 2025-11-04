@@ -16,7 +16,8 @@ class JwtUtilTest {
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil();
-        ReflectionTestUtils.setField(jwtUtil, "secret", "testSecretKey");
+        // HS256 requires at least 256 bits (32 bytes) key length
+        ReflectionTestUtils.setField(jwtUtil, "secret", "testSecretKeyThatIsAtLeast32BytesLongForHS256Algorithm");
         ReflectionTestUtils.setField(jwtUtil, "expiration", 86400000L); // 24 hours
     }
 
