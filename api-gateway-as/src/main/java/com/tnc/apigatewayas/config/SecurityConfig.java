@@ -33,8 +33,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(exchanges -> exchanges
-                        // Public endpoints
-                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/health").permitAll()
+                        // Public endpoints - Actuator endpoints for monitoring
+                        .pathMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring
+                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .pathMatchers("/user-management/auth/**").permitAll()
                         // Public access for Happy Tails page - allow unauthenticated access to get all animals
                         .pathMatchers("/animal-microservice/animals/getAll").permitAll()
