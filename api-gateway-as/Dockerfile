@@ -15,7 +15,7 @@ COPY api-gateway-as/src ./api-gateway-as/src
 RUN cd api-gateway-as && mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-slim
 
 WORKDIR /app
 

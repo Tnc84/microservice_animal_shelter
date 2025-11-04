@@ -15,7 +15,7 @@ COPY micro_as_user/src ./micro_as_user/src
 RUN cd micro_as_user && mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-slim
 
 WORKDIR /app
 

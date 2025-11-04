@@ -15,7 +15,7 @@ COPY naming-server-as/src ./naming-server-as/src
 RUN cd naming-server-as && mvn clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-slim
 
 WORKDIR /app
 
