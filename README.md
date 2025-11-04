@@ -23,7 +23,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### **Microservices Technologies:**
 - **Netflix Eureka** for service discovery
 - **Spring Cloud Gateway** for API Gateway
-- **Spring Cloud Sleuth & Zipkin** for distributed tracing
+- **Micrometer & Zipkin** for distributed tracing and metrics collection
 - **RabbitMQ** for messaging and event-driven architecture
 - **Resilience4j** for circuit breaker patterns and fault tolerance
 - **Event-Driven Architecture** with RabbitMQ message publishing and consuming
@@ -273,13 +273,33 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - Field-level validation for names, emails, and other attributes
 
 ### **Monitoring & Observability:**
-- **Distributed Tracing** with Spring Cloud Sleuth
-- **Zipkin** integration for trace visualization
-- **Actuator** endpoints for health checks and circuit breaker monitoring
+- **Micrometer** - Industry-standard metrics collection framework
+  - Collects HTTP request metrics, JVM metrics, database performance
+  - Custom business metrics (animals created, adoptions, etc.)
+  - Prometheus export for Grafana dashboards
+  - Circuit breaker metrics and performance tracking
+- **Zipkin** - Distributed tracing system for microservices
+  - Visualizes request flows across all services
+  - Tracks timing for each service call
+  - Identifies bottlenecks and performance issues
+  - Automatic tracing of HTTP, database, and RabbitMQ operations
+- **Spring Boot Actuator** endpoints for health checks and monitoring
+  - `/actuator/health` - Service health status
+  - `/actuator/metrics` - All application metrics
+  - `/actuator/prometheus` - Prometheus format metrics
+  - `/actuator/httptrace` - HTTP request traces
 - **Logging** with SLF4J
 - **Circuit Breaker Monitoring** with dedicated endpoints
 - **Event Tracking** for RabbitMQ message processing
 - **Health Dashboards** for all microservices
+
+**Quick Access:**
+- **Zipkin UI**: `http://localhost:9411` (when running with Docker Compose)
+- **Metrics**: `http://localhost:8093/actuator/metrics` (any service)
+- **Prometheus**: `http://localhost:8093/actuator/prometheus` (any service)
+- **Health Check**: `http://localhost:8093/actuator/health` (any service)
+
+**See `MICROMETER_ZIPKIN_GUIDE.md` for detailed setup and usage instructions.**
 
 ### **Containerization:**
 - **Docker** support with custom images
@@ -362,7 +382,10 @@ cd naming-server-as && mvn clean install -DskipTests
 3. **Access the Application:**
    - API Gateway: `http://localhost:8765`
    - Eureka Dashboard: `http://localhost:8761`
-   - Zipkin (if running): `http://localhost:9411`
+   - Zipkin Distributed Tracing: `http://localhost:9411` (when running with Docker Compose)
+   - RabbitMQ Management: `http://localhost:15672` (admin/admin123)
+   - Service Metrics: `http://localhost:8093/actuator/metrics` (any service)
+   - Prometheus Metrics: `http://localhost:8093/actuator/prometheus` (any service)
 
 ### Docker Deployment
 
@@ -619,6 +642,166 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Clean Separation:** Clear boundaries between reactive and imperative code
 - **Performance Optimization:** Right tool for the right job
 
+## CI/CD Pipeline
+
+### **🔄 What is CI/CD?**
+
+**CI/CD (Continuous Integration/Continuous Deployment)** is an automated workflow that runs on every code push or pull request. It automatically tests, builds, and deploys your code, catching bugs early and ensuring consistent, reliable deployments.
+
+### **🚀 When Does It Run?**
+
+The workflow automatically triggers on:
+- **Push** to `main` or `develop` branches
+- **Pull requests** to `main` or `develop` branches
+
+### **📋 What Your CI/CD Pipeline Does**
+
+#### **Stage 1: Code Quality & Security (Parallel Execution)**
+
+1. **Code Quality Tests** (Parallel - ~5 minutes)
+   - Runs tests for all 6 modules simultaneously using matrix strategy
+   - Generates code coverage reports (JaCoCo)
+   - Provides fast feedback on code quality
+   - Tests run in parallel: `tnc-shared-libraries`, `micro_as_user`, `micro_as_animal`, `micro_as_shelter`, `api-gateway-as`, `naming-server-as`
+
+2. **Security Scanning** (Parallel - ~10 minutes)
+   - **OWASP Dependency Check**: Scans for known vulnerabilities in dependencies
+   - Checks for outdated or insecure libraries
+   - Generates security reports (HTML, JSON)
+   - Uses cached OWASP database for faster execution
+
+#### **Stage 2: Build Shared Libraries**
+- Builds all shared libraries (`tnc-shared-libraries`)
+- Required dependency for all microservices
+- Uses Maven parallel builds (`-T 4`) for faster compilation
+
+#### **Stage 3: Unit Tests**
+- Runs unit tests for each microservice in parallel
+- Generates test reports and coverage metrics
+- Validates basic functionality of each service
+
+#### **Stage 4: Contract Tests**
+- Validates API contracts between services
+- Ensures services can communicate correctly
+- Prevents breaking changes in service interfaces
+
+#### **Stage 5: Build & Package**
+- Builds all microservices into JAR files
+- Creates deployable artifacts
+- Only runs if all tests pass
+
+#### **Stage 6: Docker Build** (Only on main/develop branches)
+- Builds Docker images for all services
+- Pushes to Docker Hub (if configured)
+- Tags images with `latest` and commit SHA
+
+#### **Stage 7: Deploy to Staging** (Only on develop branch)
+- Automatically deploys to staging environment
+- Ready for manual testing and validation
+
+#### **Stage 8: End-to-End Tests** (After staging deploy)
+- Runs full system tests against staging environment
+- Validates entire system works together
+- Tests complete user workflows
+
+#### **Stage 9: Security Scan**
+- **CodeQL**: Static code analysis for security vulnerabilities
+- **Trivy**: Scans for vulnerabilities in dependencies and code
+- Uploads security findings to GitHub Security tab
+
+#### **Stage 10: Notifications**
+- Sends success/failure notifications
+- Provides visibility into pipeline status
+
+### **💡 How This Helps You**
+
+#### **1. Catches Bugs Early**
+```
+❌ Without CI/CD: You push code → Deploy to production → User finds bug → Fix it → Redeploy
+✅ With CI/CD:    You push code → Tests fail → Fix immediately → No broken production
+```
+
+#### **2. Prevents Broken Code from Reaching Production**
+- All tests must pass before Docker images are built
+- If tests fail, the pipeline stops automatically
+- No broken code reaches production
+
+#### **3. Automated Security Scanning**
+- **OWASP**: Finds vulnerable dependencies automatically
+- **CodeQL**: Finds security vulnerabilities in your code
+- **Trivy**: Additional security scanning
+- All security issues are reported before deployment
+
+#### **4. Consistent Builds**
+- Runs on a clean environment every time
+- No "works on my machine" issues
+- Same Java version, same Maven setup, every time
+
+#### **5. Code Coverage Tracking**
+- JaCoCo reports show test coverage percentage
+- Helps identify untested code
+- Ensures quality standards are met
+
+#### **6. Fast Feedback**
+- Parallel execution makes results available in ~10-15 minutes
+- You know quickly if something is wrong
+- No waiting for sequential builds
+
+#### **7. Automated Docker Images**
+- Images are built and pushed automatically
+- Ready to deploy without manual steps
+- Tagged with commit SHA for traceability
+
+#### **8. Deployment Ready**
+- Staging deployment happens automatically
+- Production-ready artifacts are generated
+- Reduced manual deployment errors
+
+### **⚡ Performance Optimizations**
+
+The CI/CD pipeline is optimized for speed:
+
+- **Parallel Execution**: Tests run simultaneously (6 jobs in parallel)
+- **OWASP Database Caching**: Reduces download time (saves 2-5 minutes)
+- **Maven Parallel Builds**: Uses 4 threads (`-T 4`) for faster compilation
+- **Dependency Caching**: Maven dependencies cached between runs
+- **Removed Redundant Clean**: Uses `install` instead of `clean install` when cache is valid
+
+**Expected Performance:**
+- **Before Optimization**: ~30 minutes
+- **After Optimization**: ~10-15 minutes (50% faster)
+
+### **📊 Real-World Example**
+
+**Scenario:** You fix a bug in the user service
+
+1. **You push code** → GitHub automatically triggers workflow
+2. **Tests run** → All tests pass ✅
+3. **Security scan** → No vulnerabilities found ✅
+4. **Build** → JAR created successfully ✅
+5. **Docker build** → Image pushed to Docker Hub ✅
+6. **Deploy to staging** → Service updated automatically ✅
+7. **E2E tests** → System works correctly ✅
+8. **Notification** → "✅ All tests passed! Pipeline successful."
+
+**If something fails:**
+- Pipeline stops immediately
+- You get a notification
+- You can see exactly what failed and where
+- You fix the issue and push again
+
+### **🔧 Key Benefits Summary**
+
+This CI/CD workflow acts as your **safety net** that:
+- ✅ Tests your code automatically
+- ✅ Checks for security issues
+- ✅ Builds and packages your application
+- ✅ Creates Docker images
+- ✅ Deploys to staging
+- ✅ Provides feedback on every change
+
+It saves you time, prevents bugs, and helps you maintain high code quality standards.
+
 ## Documentation
 
 ### **📚 Available Documentation:**
@@ -631,6 +814,10 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Eureka Dashboard:** `http://localhost:8761`
 - **Swagger UI:** `http://localhost:8765/swagger-ui.html`
 - **Health Check:** `http://localhost:8765/actuator/health`
+- **Zipkin Tracing UI:** `http://localhost:9411`
+- **RabbitMQ Management:** `http://localhost:15672` (admin/admin123)
+- **Metrics Endpoint:** `http://localhost:8093/actuator/metrics` (any service)
+- **Prometheus Metrics:** `http://localhost:8093/actuator/prometheus` (any service)
 
 ### Recent Changes (Resilience + Security)
 

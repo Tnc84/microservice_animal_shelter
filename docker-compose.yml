@@ -39,6 +39,20 @@ services:
       timeout: 20s
       retries: 10
 
+  # Zipkin Distributed Tracing
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - animal_shelter
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9411/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Eureka Naming Server
   naming-server:
     build: ./naming-server-as

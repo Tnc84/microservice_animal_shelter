@@ -15,7 +15,7 @@ COPY micro_as_animal/src ./micro_as_animal/src
 RUN cd micro_as_animal && mvn clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 

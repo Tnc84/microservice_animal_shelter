@@ -901,33 +901,142 @@ Services:
             <h3>CI/CD Pipeline</h3>
             <div class="timeline">
                 <div class="timeline-item">
-                    <h4>1. Code Quality</h4>
-                    <p>SonarQube analysis and code coverage</p>
+                    <h4>1. Code Quality (Parallel)</h4>
+                    <p>Tests for all 6 modules run simultaneously using matrix strategy</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>2. Security Scanning</h4>
-                    <p>OWASP dependency check</p>
+                    <h4>2. Security Scanning (Parallel)</h4>
+                    <p>OWASP dependency check with cached database</p>
                 </div>
                 <div class="timeline-item">
                     <h4>3. Unit Testing</h4>
-                    <p>Comprehensive test execution</p>
+                    <p>Comprehensive test execution with parallel builds</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>4. Integration Testing</h4>
-                    <p>TestContainers with real databases</p>
+                    <h4>4. Contract Testing</h4>
+                    <p>API contract validation between services</p>
                 </div>
                 <div class="timeline-item">
                     <h4>5. Build & Package</h4>
-                    <p>Maven build with artifact creation</p>
+                    <p>Maven build with artifact creation (only if tests pass)</p>
                 </div>
                 <div class="timeline-item">
                     <h4>6. Docker Build</h4>
                     <p>Container image creation and registry push</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>7. Deployment</h4>
-                    <p>Automated deployment to environments</p>
+                    <h4>7. Security Scan</h4>
+                    <p>CodeQL and Trivy vulnerability scanning</p>
                 </div>
+                <div class="timeline-item">
+                    <h4>8. Deployment</h4>
+                    <p>Automated deployment to staging/production</p>
+                </div>
+            </div>
+
+            <h3>Performance Optimizations</h3>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number">50%</span>
+                    <span class="stat-label">Faster</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">10-15min</span>
+                    <span class="stat-label">Execution Time</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">6x</span>
+                    <span class="stat-label">Parallel Jobs</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Automated</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CI/CD Pipeline Details -->
+        <div class="slide">
+            <h2>🔄 CI/CD Pipeline Deep Dive</h2>
+            <h3>What is CI/CD?</h3>
+            <p><strong>CI/CD (Continuous Integration/Continuous Deployment)</strong> is an automated workflow that runs on every code push or pull request. It automatically tests, builds, and deploys your code, catching bugs early and ensuring consistent, reliable deployments.</p>
+            
+            <h3>When Does It Run?</h3>
+            <ul>
+                <li><strong>Push</strong> to <strong>main</strong> or <strong>develop</strong> branches</li>
+                <li><strong>Pull requests</strong> to <strong>main</strong> or <strong>develop</strong> branches</li>
+            </ul>
+
+            <h3>Pipeline Stages</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔍 Code Quality & Security</h4>
+                    <ul>
+                        <li>Parallel test execution (6 modules)</li>
+                        <li>Code coverage reports (JaCoCo)</li>
+                        <li>OWASP dependency scanning</li>
+                        <li>Security vulnerability detection</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🧪 Testing</h4>
+                    <ul>
+                        <li>Unit tests (parallel execution)</li>
+                        <li>Contract tests</li>
+                        <li>Integration tests</li>
+                        <li>End-to-end tests</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>📦 Build & Package</h4>
+                    <ul>
+                        <li>Maven parallel builds (-T 4)</li>
+                        <li>JAR artifact creation</li>
+                        <li>Dependency caching</li>
+                        <li>Optimized build process</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>🐳 Docker & Deploy</h4>
+                    <ul>
+                        <li>Docker image creation</li>
+                        <li>Docker Hub push</li>
+                        <li>Staging deployment</li>
+                        <li>Production readiness</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>How This Helps You</h3>
+            <div class="code-block">
+✅ Catches Bugs Early: Tests fail before production deployment
+✅ Prevents Broken Code: All tests must pass before build
+✅ Automated Security: OWASP, CodeQL, Trivy scanning
+✅ Consistent Builds: Same environment every time
+✅ Fast Feedback: ~10-15 minutes execution time
+✅ Automated Deployment: Zero manual steps
+✅ Code Coverage: Track test coverage percentage
+✅ Deployment Ready: Production artifacts generated automatically
+            </div>
+
+            <h3>Real-World Example</h3>
+            <div class="code-block">
+Scenario: You fix a bug in the user service
+
+1. You push code → GitHub triggers workflow
+2. Tests run → All pass ✅
+3. Security scan → No vulnerabilities ✅
+4. Build → JAR created ✅
+5. Docker build → Image pushed ✅
+6. Deploy to staging → Service updated ✅
+7. E2E tests → System works ✅
+8. Notification → "✅ All tests passed!"
+
+If something fails:
+- Pipeline stops immediately
+- You get notification
+- You see exactly what failed
+- You fix and push again
             </div>
         </div>
 
@@ -959,6 +1068,26 @@ Services:
                 </div>
             </div>
             
+            <h3>🔧 Configuration & Access</h3>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <h4>Zipkin UI</h4>
+                    <p>http://localhost:9411</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Metrics Endpoint</h4>
+                    <p>/actuator/metrics</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Prometheus Export</h4>
+                    <p>/actuator/prometheus</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Health Check</h4>
+                    <p>/actuator/health</p>
+                </div>
+            </div>
+            
             <h3>🚀 Real-World Example:</h3>
             <div class="code-block">
 <strong>Problem:</strong> "Animal adoption is slow"
@@ -970,6 +1099,67 @@ Services:
 <strong>Micrometer:</strong> Shows high error rates
 <strong>Zipkin:</strong> Shows failures happen in RabbitMQ communication
 <strong>Solution:</strong> Check RabbitMQ health or adjust circuit breaker settings
+            </div>
+        </div>
+
+        <!-- Micrometer & Zipkin Setup -->
+        <div class="slide">
+            <h2>📊 Micrometer & Zipkin Implementation</h2>
+            <h3>Industry-Standard Monitoring Tools</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>✅ Micrometer</h4>
+                    <ul>
+                        <li>De facto standard for Java metrics</li>
+                        <li>Built into Spring Boot Actuator</li>
+                        <li>Vendor-neutral metrics facade</li>
+                        <li>Used by Netflix, Google, Microsoft</li>
+                        <li>Works with Prometheus, Grafana, Datadog</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>✅ Zipkin</h4>
+                    <ul>
+                        <li>Widely used for distributed tracing</li>
+                        <li>Created by Twitter (OpenZipkin)</li>
+                        <li>Used by Netflix, Uber, Amazon</li>
+                        <li>CNCF ecosystem member</li>
+                        <li>Spring Cloud integration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>What Gets Traced Automatically</h3>
+            <ul>
+                <li><strong>HTTP Requests:</strong> All REST endpoints across services</li>
+                <li><strong>Database Queries:</strong> JPA/Hibernate operations</li>
+                <li><strong>RabbitMQ:</strong> Message publishing and consuming</li>
+                <li><strong>Service Calls:</strong> Feign client and RestTemplate calls</li>
+                <li><strong>Circuit Breakers:</strong> Resilience4j operations</li>
+            </ul>
+
+            <h3>Custom Metrics Example</h3>
+            <div class="code-block">
+// Track business metrics
+Counter.builder("animals.created")
+    .description("Total animals created")
+    .tag("service", "animal-microservice")
+    .register(meterRegistry);
+
+// Track performance
+Timer.builder("animals.adoption.process")
+    .description("Adoption processing time")
+    .register(meterRegistry);
+            </div>
+
+            <h3>Access Points</h3>
+            <div class="code-block">
+Zipkin UI:        http://localhost:9411
+Metrics:          http://localhost:8093/actuator/metrics
+Prometheus:       http://localhost:8093/actuator/prometheus
+HTTP Traces:      http://localhost:8093/actuator/httptrace
+Health Check:     http://localhost:8093/actuator/health
             </div>
         </div>
 

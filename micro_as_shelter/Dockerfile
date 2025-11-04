@@ -15,7 +15,7 @@ COPY micro_as_shelter/src ./micro_as_shelter/src
 RUN cd micro_as_shelter && mvn clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
