@@ -11,7 +11,7 @@ on:
       - develop
 
 env:
-  MAVEN_OPTS: -Xmx1024m
+  MAVEN_OPTS: -Xmx2048m
   JAVA_VERSION: '17'
   MYSQL_VERSION: '8.0'
 
@@ -21,9 +21,52 @@ permissions:
   actions: read
 
 jobs:
-  # Stage 1: Code Quality and Security
-  code-quality:
-    name: Code Quality & Security
+  # Stage 1a: Code Quality Tests (Fast Feedback - Parallel)
+  code-quality-tests:
+    name: Code Quality Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [tnc-shared-libraries, micro_as_user, micro_as_animal, micro_as_shelter, api-gateway-as, naming-server-as]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build shared libraries (if needed)
+        if: matrix.module != 'tnc-shared-libraries'
+        run: |
+          cd tnc-shared-libraries
+          mvn install -DskipTests -T 4
+
+      - name: Run tests with coverage
+        run: |
+          cd ${{ matrix.module }}
+          mvn test jacoco:report -T 4
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.module }}
+          path: ${{ matrix.module }}/target/site/jacoco/
+
+  # Stage 1b: Security Scan (Runs in parallel, can be slower)
+  code-quality-security:
+    name: Code Quality Security
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -42,21 +85,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
+      - name: Cache OWASP database
+        uses: actions/cache@v3
+        with:
+          path: ~/.dependency-check-data
+          key: ${{ runner.os }}-owasp-db-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-owasp-db
+
       - name: Build all shared libraries
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
-
-      - name: Run tests with coverage for all services
-        run: |
-          # Build all shared libraries first
-          cd tnc-shared-libraries && mvn clean test jacoco:report
-          # Run tests for each microservice
-          cd ../micro_as_user && mvn clean test jacoco:report
-          cd ../micro_as_animal && mvn clean test jacoco:report
-          cd ../micro_as_shelter && mvn clean test jacoco:report
-          cd ../api-gateway-as && mvn clean test jacoco:report
-          cd ../naming-server-as && mvn clean test jacoco:report
+          mvn install -DskipTests -T 4
 
       # - name: Run SonarQube analysis
       #   run: |
@@ -76,26 +115,30 @@ jobs:
       #       -Dsonar.java.source=17 \
       #       -Dsonar.java.target=17
 
-      - name: OWASP Dependency Check
+      - name: OWASP Dependency Check (optimized)
         run: |
-          # Run dependency check for each service with offline mode and retry
-          echo "Running OWASP dependency checks with offline mode..."
+          echo "Running OWASP dependency checks with cached database..."
+          # Run checks in parallel for faster execution
           cd tnc-shared-libraries/tnc-security-lib && mvn org.owasp:dependency-check-maven:check \
-            -Dformat=ALL \
-            -Dformat=HTML \
-            -Dformat=JSON \
-            -Ddependency-check.retryCount=3 \
-            -Ddependency-check.connectionTimeout=30000 \
-            -Ddependency-check.readTimeout=30000 \
-            -Ddependency-check.offline=true || echo "OWASP check failed for tnc-security-lib, continuing..."
-          cd ../micro_as_user && mvn org.owasp:dependency-check-maven:check \
-            -Dformat=ALL \
-            -Dformat=HTML \
-            -Dformat=JSON \
-            -Ddependency-check.retryCount=3 \
-            -Ddependency-check.connectionTimeout=30000 \
-            -Ddependency-check.readTimeout=30000 \
-            -Ddependency-check.offline=true || echo "OWASP check failed for micro_as_user, continuing..."
+            -Dformat=HTML,JSON \
+            -Ddependency-check.retryCount=2 \
+            -Ddependency-check.connectionTimeout=20000 \
+            -Ddependency-check.readTimeout=20000 \
+            -Ddependency-check.dataDirectory=~/.dependency-check-data \
+            -Ddependency-check.nvd.validForHours=24 \
+            -T 2 || echo "OWASP check failed for tnc-security-lib, continuing..." &
+          
+          cd ../.. && cd micro_as_user && mvn org.owasp:dependency-check-maven:check \
+            -Dformat=HTML,JSON \
+            -Ddependency-check.retryCount=2 \
+            -Ddependency-check.connectionTimeout=20000 \
+            -Ddependency-check.readTimeout=20000 \
+            -Ddependency-check.dataDirectory=~/.dependency-check-data \
+            -Ddependency-check.nvd.validForHours=24 \
+            -T 2 || echo "OWASP check failed for micro_as_user, continuing..." &
+          
+          # Wait for OWASP checks to complete
+          wait
 
       - name: Upload dependency check results
         uses: actions/upload-artifact@v4
@@ -128,7 +171,7 @@ jobs:
       - name: Build all shared libraries
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
+          mvn install -DskipTests -T 4
 
   # Stage 3: Unit Tests
   unit-tests:
@@ -158,14 +201,15 @@ jobs:
       - name: Build all shared libraries (for dependencies)
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
+          mvn install -DskipTests -T 4
 
       - name: Run unit tests for ${{ matrix.service }}
         run: |
           cd ${{ matrix.service }}
-          mvn clean test \
+          mvn test \
             -Dspring.profiles.active=test \
-            -Dmaven.test.failure.ignore=false
+            -Dmaven.test.failure.ignore=false \
+            -T 4
 
       - name: Generate test report
         run: |
@@ -267,14 +311,14 @@ jobs:
       - name: Build all shared libraries (for dependencies)
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
+          mvn install -DskipTests -T 4
 
       - name: Run contract tests
         run: |
           # Run contract tests for each service that has them
-          cd micro_as_user && mvn clean test -Dspring.profiles.active=test || true
-          cd ../micro_as_animal && mvn clean test -Dspring.profiles.active=test || true
-          cd ../micro_as_shelter && mvn clean test -Dspring.profiles.active=test || true
+          cd micro_as_user && mvn test -Dspring.profiles.active=test -T 4 || true
+          cd ../micro_as_animal && mvn test -Dspring.profiles.active=test -T 4 || true
+          cd ../micro_as_shelter && mvn test -Dspring.profiles.active=test -T 4 || true
 
       - name: Upload contract test results
         uses: actions/upload-artifact@v4
@@ -331,7 +375,7 @@ jobs:
   build:
     name: Build and Package
     runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, contract-tests]
+    needs: [code-quality-tests, code-quality-security, unit-tests, contract-tests]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -352,13 +396,13 @@ jobs:
       - name: Build all microservices
         run: |
           # Build all shared libraries first (dependencies for other services)
-          cd tnc-shared-libraries && mvn clean install -DskipTests
+          cd tnc-shared-libraries && mvn install -DskipTests -T 4
           # Build each microservice independently
-          cd ../api-gateway-as && mvn clean package -DskipTests
-          cd ../micro_as_animal && mvn clean package -DskipTests
-          cd ../micro_as_shelter && mvn clean package -DskipTests
-          cd ../micro_as_user && mvn clean package -DskipTests
-          cd ../naming-server-as && mvn clean package -DskipTests
+          cd ../api-gateway-as && mvn package -DskipTests -T 4
+          cd ../micro_as_animal && mvn package -DskipTests -T 4
+          cd ../micro_as_shelter && mvn package -DskipTests -T 4
+          cd ../micro_as_user && mvn package -DskipTests -T 4
+          cd ../naming-server-as && mvn package -DskipTests -T 4
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -392,7 +436,7 @@ jobs:
       - name: Build all shared libraries
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
+          mvn install -DskipTests -T 4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -506,17 +550,17 @@ jobs:
       - name: Build all shared libraries (for dependencies)
         run: |
           cd tnc-shared-libraries
-          mvn clean install -DskipTests
+          mvn install -DskipTests -T 4
 
       - name: Run end-to-end tests
         run: |
           # Run E2E tests for each microservice (if they exist)
           echo "Running end-to-end tests for microservices..."
-          cd micro_as_user && mvn clean test -Dspring.profiles.active=staging || echo "E2E tests failed for micro_as_user, continuing..."
-          cd ../micro_as_animal && mvn clean test -Dspring.profiles.active=staging || echo "E2E tests failed for micro_as_animal, continuing..."
-          cd ../micro_as_shelter && mvn clean test -Dspring.profiles.active=staging || echo "E2E tests failed for micro_as_shelter, continuing..."
-          cd ../api-gateway-as && mvn clean test -Dspring.profiles.active=staging || echo "E2E tests failed for api-gateway-as, continuing..."
-          cd ../naming-server-as && mvn clean test -Dspring.profiles.active=staging || echo "E2E tests failed for naming-server-as, continuing..."
+          cd micro_as_user && mvn test -Dspring.profiles.active=staging -T 4 || echo "E2E tests failed for micro_as_user, continuing..."
+          cd ../micro_as_animal && mvn test -Dspring.profiles.active=staging -T 4 || echo "E2E tests failed for micro_as_animal, continuing..."
+          cd ../micro_as_shelter && mvn test -Dspring.profiles.active=staging -T 4 || echo "E2E tests failed for micro_as_shelter, continuing..."
+          cd ../api-gateway-as && mvn test -Dspring.profiles.active=staging -T 4 || echo "E2E tests failed for api-gateway-as, continuing..."
+          cd ../naming-server-as && mvn test -Dspring.profiles.active=staging -T 4 || echo "E2E tests failed for naming-server-as, continuing..."
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
@@ -560,15 +604,15 @@ jobs:
       - name: Build all shared libraries for CodeQL
         run: |
           cd tnc-shared-libraries
-          mvn clean compile -DskipTests
+          mvn compile -DskipTests -T 4
 
       - name: Build microservices for CodeQL
         run: |
-          cd micro_as_user && mvn clean compile -DskipTests
-          cd ../micro_as_animal && mvn clean compile -DskipTests
-          cd ../micro_as_shelter && mvn clean compile -DskipTests
-          cd ../api-gateway-as && mvn clean compile -DskipTests
-          cd ../naming-server-as && mvn clean compile -DskipTests
+          cd micro_as_user && mvn compile -DskipTests -T 4
+          cd ../micro_as_animal && mvn compile -DskipTests -T 4
+          cd ../micro_as_shelter && mvn compile -DskipTests -T 4
+          cd ../api-gateway-as && mvn compile -DskipTests -T 4
+          cd ../naming-server-as && mvn compile -DskipTests -T 4
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -590,15 +634,15 @@ jobs:
   notify:
     name: Notify Results
     runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests,  contract-tests, build, docker-build]
+    needs: [code-quality-tests, code-quality-security, unit-tests, contract-tests, build, docker-build]
     if: always()
     steps:
       - name: Notify on success
-        if: ${{ needs.code-quality.result == 'success' && needs.unit-tests.result == 'success' }}
+        if: ${{ needs.code-quality-tests.result == 'success' && needs.code-quality-security.result == 'success' && needs.unit-tests.result == 'success' }}
         run: |
           echo "✅ All tests passed! Pipeline successful."
 
       - name: Notify on failure
-        if: ${{ needs.code-quality.result == 'failure' || needs.unit-tests.result == 'failure'  }}
+        if: ${{ needs.code-quality-tests.result == 'failure' || needs.code-quality-security.result == 'failure' || needs.unit-tests.result == 'failure' }}
         run: |
           echo "❌ Pipeline failed. Check the logs for details."
