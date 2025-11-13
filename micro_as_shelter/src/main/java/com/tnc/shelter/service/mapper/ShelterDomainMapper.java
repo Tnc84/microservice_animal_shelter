@@ -3,6 +3,7 @@ package com.tnc.shelter.service.mapper;
 import com.tnc.shelter.repository.entities.Shelter;
 import com.tnc.shelter.service.domain.ShelterDomain;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 

@@ -1,0 +1,21 @@
+{
+  "name": "presentation-pdf-generator",
+  "version": "1.0.0",
+  "description": "Generate PDF and images from Presentation.html",
+  "main": "generate-pdf.js",
+  "scripts": {
+    "generate-pdf": "node generate-pdf.js",
+    "generate-images": "node generate-pdf-images.js",
+    "install-deps": "npm install puppeteer"
+  },
+  "keywords": [
+    "pdf",
+    "presentation",
+    "html-to-pdf"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^21.11.0"
+  }
+}

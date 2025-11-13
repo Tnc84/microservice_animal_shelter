@@ -9,6 +9,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +35,7 @@ public class CircuitBreakerController {
      * Get circuit breaker status for all instances.
      */
     @GetMapping("/status")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public ResponseEntity<Map<String, Object>> getCircuitBreakerStatus() {
         log.info("Retrieving circuit breaker status");
         
@@ -66,6 +68,7 @@ public class CircuitBreakerController {
      * Get retry status for all instances.
      */
     @GetMapping("/retry/status")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public ResponseEntity<Map<String, Object>> getRetryStatus() {
         log.info("Retrieving retry status");
         
@@ -104,6 +107,7 @@ public class CircuitBreakerController {
      * Get time limiter status for all instances.
      */
     @GetMapping("/time-limiter/status")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public ResponseEntity<Map<String, Object>> getTimeLimiterStatus() {
         log.info("Retrieving time limiter status");
         
@@ -128,6 +132,7 @@ public class CircuitBreakerController {
      * Get overall health status of all circuit breakers.
      */
     @GetMapping("/health")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public ResponseEntity<Map<String, String>> getHealth() {
         log.info("Retrieving circuit breaker health");
         

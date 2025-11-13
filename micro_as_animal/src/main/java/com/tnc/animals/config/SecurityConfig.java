@@ -1,7 +1,7 @@
 package com.tnc.animals.config;
 
-import com.tnc.common.security.InternalTokenAuthorizationFilter;
-import com.tnc.common.security.InternalTokenService;
+import com.tnc.security.InternalTokenAuthorizationFilter;
+import com.tnc.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final InternalTokenService internalTokenService;
+    private final InternalTokenAuthorizationFilter internalTokenAuthorizationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -31,12 +31,12 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring - MUST be first
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/animals/getAll").permitAll() // Public access for Happy Tails page
+                // /animals/getAll is now secured via @PreAuthorize annotation - allows USER, ADMIN, SHELTER_MANAGER, VET, INTERNAL_SERVICE
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(internalTokenAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }

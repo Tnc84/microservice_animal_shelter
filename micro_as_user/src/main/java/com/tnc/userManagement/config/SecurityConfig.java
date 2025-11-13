@@ -3,8 +3,8 @@ package com.tnc.userManagement.config;
 import com.tnc.userManagement.service.constant.SecurityConstant;
 import com.tnc.userManagement.service.security.filter.JwtAccessDeniedHandler;
 import com.tnc.userManagement.service.security.filter.JwtAuthenticationEntryPoint;
-import com.tnc.common.security.InternalTokenAuthorizationFilter;
-import com.tnc.common.security.InternalTokenService;
+import com.tnc.security.InternalTokenAuthorizationFilter;
+import com.tnc.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,6 +47,7 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring
                 .requestMatchers(SecurityConstant.PUBLIC_URLS).permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

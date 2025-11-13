@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.tnc.animals", "com.tnc.common"}) 
+@ComponentScan(basePackages = {"com.tnc.animals", "com.tnc.security"}) 
 public class AnimalsApplication {
 
     public static void main(String[] args) throws IOException {

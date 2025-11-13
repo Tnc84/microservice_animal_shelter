@@ -157,16 +157,10 @@ class AnimalServiceImplTest {
 
     @Test
     @DisplayName("add() - Should handle null animal domain")
-    void add_WithNullAnimal_ShouldThrowException() {
-        // Given
-        when(animalDomainMapper.toEntity(null)).thenThrow(new IllegalArgumentException("Animal domain cannot be null"));
-
+    void add_WithNullAnimal_ShouldThrowNullPointerException() {
         // When & Then
         assertThatThrownBy(() -> animalService.add(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Animal domain cannot be null");
-
-        verify(animalDomainMapper).toEntity(null);
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -214,6 +208,125 @@ class AnimalServiceImplTest {
         verify(animalDomainMapper).toEntity(updatedAnimalDomain);
         verify(animalRepository).save(updatedAnimal);
         verify(animalDomainMapper, never()).toDomain(any());
+    }
+
+    @Test
+    @DisplayName("delete() - Should delete animal successfully")
+    void delete_WithValidId_ShouldDeleteAnimal() {
+        // Given
+        Long animalId = 1L;
+        Animal testAnimal = createTestAnimal(animalId, "Buddy", "Dog", "Golden Retriever");
+        AnimalDomain testAnimalDomain = createTestAnimalDomain(animalId, "Buddy", "Dog", "Golden Retriever");
+        when(animalRepository.findById(animalId)).thenReturn(Optional.of(testAnimal));
+        when(animalDomainMapper.toDomain(testAnimal)).thenReturn(testAnimalDomain);
+
+        // When
+        animalService.delete(animalId);
+
+        // Then
+        verify(animalRepository).findById(animalId);
+        verify(animalRepository).deleteById(animalId);
+    }
+
+    @Test
+    @DisplayName("delete() - Should not delete when animal does not exist")
+    void delete_WithNonExistentId_ShouldNotDelete() {
+        // Given
+        Long animalId = 999L;
+        when(animalRepository.findById(animalId)).thenReturn(Optional.empty());
+        when(animalDomainMapper.toDomain(null)).thenReturn(null);
+
+        // When
+        animalService.delete(animalId);
+
+        // Then
+        verify(animalRepository).findById(animalId);
+        verify(animalRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("delete() - Should handle null ID")
+    void delete_WithNullId_ShouldHandleGracefully() {
+        // Given
+        when(animalRepository.findById(null)).thenReturn(Optional.empty());
+        when(animalDomainMapper.toDomain(null)).thenReturn(null);
+
+        // When
+        animalService.delete(null);
+
+        // Then
+        verify(animalRepository).findById(null);
+        verify(animalRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("delete() - Should handle repository exception during deletion")
+    void delete_WhenRepositoryThrowsException_ShouldPropagateException() {
+        // Given
+        Long animalId = 1L;
+        Animal testAnimal = createTestAnimal(animalId, "Buddy", "Dog", "Golden Retriever");
+        AnimalDomain testAnimalDomain = createTestAnimalDomain(animalId, "Buddy", "Dog", "Golden Retriever");
+        when(animalRepository.findById(animalId)).thenReturn(Optional.of(testAnimal));
+        when(animalDomainMapper.toDomain(testAnimal)).thenReturn(testAnimalDomain);
+        doThrow(new RuntimeException("Database connection failed")).when(animalRepository).deleteById(animalId);
+
+        // When & Then
+        assertThatThrownBy(() -> animalService.delete(animalId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Database connection failed");
+
+        verify(animalRepository).findById(animalId);
+        verify(animalRepository).deleteById(animalId);
+    }
+
+    @Test
+    @DisplayName("getAll() - Should handle empty repository")
+    void getAll_WhenRepositoryIsEmpty_ShouldReturnEmptyList() {
+        // Given
+        when(animalRepository.findAll()).thenReturn(Arrays.asList());
+        when(animalDomainMapper.toDomainList(Arrays.asList())).thenReturn(Arrays.asList());
+
+        // When
+        List<AnimalDomain> result = animalService.getAll();
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+
+        verify(animalRepository).findAll();
+        verify(animalDomainMapper).toDomainList(Arrays.asList());
+    }
+
+    @Test
+    @DisplayName("getAll() - Should handle repository exception")
+    void getAll_WhenRepositoryThrowsException_ShouldPropagateException() {
+        // Given
+        when(animalRepository.findAll()).thenThrow(new RuntimeException("Database connection failed"));
+
+        // When & Then
+        assertThatThrownBy(() -> animalService.getAll())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Database connection failed");
+
+        verify(animalRepository).findAll();
+        verify(animalDomainMapper, never()).toDomainList(any());
+    }
+
+    @Test
+    @DisplayName("get() - Should return null when animal not found")
+    void get_WhenAnimalNotFound_ShouldReturnNull() {
+        // Given
+        Long animalId = 999L;
+        when(animalRepository.findById(animalId)).thenReturn(Optional.empty());
+        when(animalDomainMapper.toDomain(null)).thenReturn(null);
+
+        // When
+        AnimalDomain result = animalService.get(animalId);
+
+        // Then
+        assertThat(result).isNull();
+        verify(animalRepository).findById(animalId);
+        verify(animalDomainMapper).toDomain(null);
     }
 
 

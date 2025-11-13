@@ -1,7 +1,7 @@
 package com.tnc.shelter.config;
 
-import com.tnc.common.security.InternalTokenAuthorizationFilter;
-import com.tnc.common.security.InternalTokenService;
+import com.tnc.security.InternalTokenAuthorizationFilter;
+import com.tnc.security.InternalTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +30,7 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )

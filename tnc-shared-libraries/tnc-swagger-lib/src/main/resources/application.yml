@@ -1,0 +1,32 @@
+# TNC Swagger Library Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  show-actuator: true
+  group-configs:
+    - group: 'all'
+      display-name: 'All APIs'
+      paths-to-match: '/**'
+    - group: 'internal'
+      display-name: 'Internal APIs'
+      paths-to-match: '/internal/**'
+    - group: 'public'
+      display-name: 'Public APIs'
+      paths-to-match: '/api/**'
+
+# OpenAPI configuration
+openapi:
+  info:
+    title: "TNC Microservice API"
+    version: "1.0.0"
+    description: "API documentation for TNC microservice"
+  servers:
+    - url: "http://localhost:8080"
+      description: "Development server"
+    - url: "https://api.tnc.com"
+      description: "Production server"

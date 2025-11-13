@@ -42,9 +42,13 @@ spring:
       mandatory: true
   config:
     import: optional:configserver:http://localhost:8888
+  # Micrometer Tracing Configuration (Spring Boot 3)
+  zipkin:
+    base-url: http://localhost:9411
+    enabled: true
   sleuth:
     sampler:
-      probability: 1.0
+      probability: 1.0  # 1.0 = 100% sampling (use 0.1 for production)
 eureka:
   client:
     serviceUrl:
@@ -113,7 +117,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,circuitbreakers,retries,timelimiters,bulkheads
+        include: health,info,metrics,prometheus,httptrace,circuitbreakers,retries,timelimiters,bulkheads
   endpoint:
     health:
       show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0  # 100% sampling rate (use 0.1 for production)

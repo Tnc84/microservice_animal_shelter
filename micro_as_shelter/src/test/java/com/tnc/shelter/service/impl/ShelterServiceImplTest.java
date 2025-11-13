@@ -1,7 +1,7 @@
 package com.tnc.shelter.service.impl;
 
 import com.tnc.shelter.repository.entities.Shelter;
-import com.tnc.shelter.repository.interfaces.ShelterRepository;
+import com.tnc.shelter.service.CircuitBreakerService;
 import com.tnc.shelter.service.domain.ShelterDomain;
 import com.tnc.shelter.service.exception.ShelterAddressException;
 import com.tnc.shelter.service.exception.ShelterNameException;
@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,11 +32,10 @@ import static org.mockito.Mockito.*;
 class ShelterServiceImplTest {
 
     @Mock
-    private ShelterRepository shelterRepository;
+    private CircuitBreakerService circuitBreakerService;
 
     @Mock
     private ShelterDomainMapper shelterDomainMapper;
-
 
     @InjectMocks
     private ShelterServiceImpl shelterService;
@@ -56,7 +56,7 @@ class ShelterServiceImplTest {
     @Test
     void getShelterByName_ShouldReturnShelter() {
         // Arrange
-        when(shelterRepository.findByName("Bucium")).thenReturn(testShelter);
+        when(circuitBreakerService.findByName("Bucium")).thenReturn(Optional.of(testShelter));
         when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
 
         // Act
@@ -66,7 +66,7 @@ class ShelterServiceImplTest {
         assertNotNull(result);
         assertEquals("Test Shelter", result.getName());
         assertEquals("Test City", result.getCity());
-        verify(shelterRepository).findByName("Bucium");
+        verify(circuitBreakerService).findByName("Bucium");
         verify(shelterDomainMapper).toDomain(testShelter);
     }
 
@@ -76,7 +76,7 @@ class ShelterServiceImplTest {
         List<Shelter> shelters = Arrays.asList(testShelter);
         List<ShelterDomain> shelterDomains = Arrays.asList(testShelterDomain);
         
-        when(shelterRepository.findAll()).thenReturn(shelters);
+        when(circuitBreakerService.getAllShelters()).thenReturn(shelters);
         when(shelterDomainMapper.toDomainList(shelters)).thenReturn(shelterDomains);
 
         // Act
@@ -85,7 +85,7 @@ class ShelterServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(shelterRepository).findAll();
+        verify(circuitBreakerService).getAllShelters();
         verify(shelterDomainMapper).toDomainList(shelters);
     }
 
@@ -94,7 +94,7 @@ class ShelterServiceImplTest {
         // Arrange
         try (MockedStatic<ValidateShelter> mockedStatic = mockStatic(ValidateShelter.class)) {
             when(shelterDomainMapper.toEntity(testShelterDomain)).thenReturn(testShelter);
-            when(shelterRepository.save(testShelter)).thenReturn(testShelter);
+            when(circuitBreakerService.saveShelter(testShelter)).thenReturn(testShelter);
             when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
 
             // Act
@@ -105,6 +105,7 @@ class ShelterServiceImplTest {
             assertEquals("Test Shelter", result.getName());
             mockedStatic.verify(() -> ValidateShelter.validateShelter(testShelterDomain, "Test Shelter"));
             verify(shelterDomainMapper).toEntity(testShelterDomain);
+            verify(circuitBreakerService).saveShelter(testShelter);
             verify(shelterDomainMapper).toDomain(testShelter);
         }
     }
@@ -126,7 +127,7 @@ class ShelterServiceImplTest {
     void update_ShouldReturnUpdatedShelter() {
         // Arrange
         when(shelterDomainMapper.toEntity(testShelterDomain)).thenReturn(testShelter);
-        when(shelterRepository.save(testShelter)).thenReturn(testShelter);
+        when(circuitBreakerService.saveShelter(testShelter)).thenReturn(testShelter);
         when(shelterDomainMapper.toDomain(testShelter)).thenReturn(testShelterDomain);
 
         // Act
@@ -136,6 +137,7 @@ class ShelterServiceImplTest {
         assertNotNull(result);
         assertEquals("Test Shelter", result.getName());
         verify(shelterDomainMapper).toEntity(testShelterDomain);
+        verify(circuitBreakerService).saveShelter(testShelter);
         verify(shelterDomainMapper).toDomain(testShelter);
     }
 

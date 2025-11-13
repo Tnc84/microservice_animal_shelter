@@ -1,9 +1,10 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password: 
+  
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -11,31 +12,39 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
   h2:
     console:
       enabled: true
 
-# Test specific configurations
+# Security configuration for tests
+jwt:
+  secret: test-secret-key-for-testing-purposes-only
+  expiration: 900000
+  internal:
+    secret: test-internal-secret-key-for-testing-purposes-only
+    expiration: 600000
+
+# Logging configuration
 logging:
   level:
     com.tnc.animals: DEBUG
-    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-# Disable security for testing
-security:
-  basic:
-    enabled: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    connection-timeout: 1000
 
-# Test profiles
-spring:
-  profiles:
-    active: test
-
-# Test database configuration
+# Test specific configurations
 test:
   database:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password: 
+    cleanup: true
+  security:
+    enabled: false

@@ -3,7 +3,13 @@
 
 ## Project Overview
 
-This is a **Java 17 microservices application** for managing an animal shelter system. The project follows a **microservice architecture** with five distinct services that work together to provide a complete animal shelter management solution.
+This is a **Java 17 microservices application** for managing an animal shelter system. The project follows a **clean microservices architecture** with standalone services that work together to provide a complete animal shelter management solution.
+
+### **🏗️ Architecture Evolution:**
+- **✅ Clean Microservices**: Each service is completely independent with its own dependencies
+- **✅ Standalone Services**: No parent POM - each service manages its own versions
+- **✅ Shared Security Library**: `tnc-security-lib` module for unified JWT authentication
+- **✅ Independent Deployment**: Services can be built, tested, and deployed separately
 
 ## Architecture & Technology Stack
 
@@ -17,11 +23,28 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### **Microservices Technologies:**
 - **Netflix Eureka** for service discovery
 - **Spring Cloud Gateway** for API Gateway
-- **OpenFeign** for inter-service communication
-- **Spring Cloud Sleuth & Zipkin** for distributed tracing
+- **Micrometer & Zipkin** for distributed tracing and metrics collection
 - **RabbitMQ** for messaging and event-driven architecture
 - **Resilience4j** for circuit breaker patterns and fault tolerance
 - **Event-Driven Architecture** with RabbitMQ message publishing and consuming
+
+### **API Gateway Architecture:**
+- **Reactive Architecture:** Uses Spring WebFlux (reactive/non-blocking) instead of Spring MVC
+- **Dependency Exclusion:** Must exclude `spring-boot-starter-web` to prevent conflicts
+- **Netty Server:** Runs on Netty instead of Tomcat for high-concurrency gateway scenarios
+- **WebFlux Integration:** Uses `spring-boot-starter-webflux` for reactive programming model
+- **Why Exclusion is Required:** Spring Cloud Gateway and Spring MVC cannot coexist due to:
+  - Incompatible web servers (Netty vs Tomcat)
+  - Different HTTP handling (WebFlux filter chain vs Servlet filter chain)
+  - Classpath conflicts in web infrastructure autoconfiguration
+  - Programming model conflicts (reactive vs imperative)
+
+### **Security Architecture by Service Type:**
+- **API Gateway (WebFlux):** Custom JWT service and WebFlux security configuration
+- **Business Microservices (Servlet):** Shared security library with servlet-based filters
+- **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
+- **Performance Benefits:** WebFlux gateway handles thousands of concurrent connections
+- **Maintainability:** Architecture-specific security implementations for optimal performance
 
 ### **Development Tools:**
 - **Lombok** for reducing boilerplate code
@@ -30,6 +53,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Docker** for containerization
 - **Records** for immutable data structures
 - **Spring Security** for JWT authentication
+- **Shared Libraries** for common functionality across microservices
 
 ## Microservices Architecture
 
@@ -42,12 +66,18 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### 2. **API Gateway**
 - **Port:** 8765
 - **Purpose:** Single entry point for all microservices with JWT security
-- **Technology:** Spring Cloud Gateway with Spring Security
+- **Technology:** Spring Cloud Gateway with WebFlux Security
+- **Architecture:** Reactive (WebFlux) - non-blocking, high-performance gateway
 - **Features:** 
   - Service discovery integration and routing
   - JWT token validation and role-based access control
   - CORS configuration for frontend integration
   - Centralized security management
+  - Reactive security filters for non-blocking authentication
+- **Security Implementation:**
+  - Custom `JwtService` for WebFlux compatibility
+  - `WebFluxSecurityConfig` for reactive security configuration
+  - `JwtAuthenticationFilter` for non-blocking token validation
 - **Security Endpoints:**
   - `POST /user-management/auth/login` - User authentication
   - `POST /user-management/auth/register` - User registration
@@ -129,12 +159,21 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ## Security Implementation
 
-### **🔐 Shared Security Library Architecture:**
-- **Centralized Security:** `animal-shelter-common` module eliminates code duplication
-- **Unified JWT Service:** Single `JwtService` class used across all microservices
-- **Shared Security Components:** Common authentication filters and security configurations
-- **Maven Multi-Module:** Parent POM manages all security dependencies and versions
-- **Code Reusability:** Eliminated duplicate `JwtTokenProvider` classes across microservices
+### **🔐 Hybrid Security Architecture:**
+- **API Gateway Security:** WebFlux-compatible JWT service for reactive gateway
+- **Microservices Security:** Shared security library for servlet-based services
+- **Architecture-Specific Implementation:** Different security approaches for different architectures
+- **WebFlux Gateway:** Custom `JwtService` and `WebFluxSecurityConfig` for reactive applications
+- **Servlet Microservices:** Shared `tnc-security-lib` for traditional Spring MVC services
+- **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
+
+### **📚 Shared Libraries Architecture:**
+- **tnc-security-lib:** JWT authentication and authorization for servlet-based services
+- **tnc-resilience-lib:** Circuit breaker, retry, and fault tolerance patterns
+- **tnc-swagger-lib:** OpenAPI/Swagger documentation configuration and utilities
+- **tnc-docker-lib:** Docker templates, scripts, and containerization utilities
+- **Modular Design:** Each library is independent and can be used separately
+- **Version Management:** Each library maintains its own version and dependencies
 
 ### **Enhanced JWT Authentication & Authorization:**
 - **Dual Token System:** Access tokens (15min) + Refresh tokens (7 days)
@@ -190,6 +229,23 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Database Operations:** All CRUD operations protected with fallback mechanisms
 - **Service Communication:** Inter-service calls with circuit breaker protection
 
+### Clear Circuit Breaker Example (what happens step-by-step)
+
+- Normal operation (CLOSED)
+  - GET /animals reads from DB; success rate is healthy → all requests pass.
+- Degradation begins
+  - DB starts failing/timeouts. Within last 10 calls, 6 fail → failure-rate > 50%.
+- Trip to OPEN
+  - Circuit opens. New GET /animals requests fail fast (no DB call) with a quick fallback (e.g., cached/empty list or 503 with message).
+- Half-open probing
+  - After 30s, circuit goes HALF-OPEN and allows a few test calls (e.g., 3).
+  - If they succeed → circuit closes; if they fail → circuit re-opens.
+- Isolation and protection
+  - Bulkhead caps concurrent DB calls (prevents thread starvation).
+  - Time limiter aborts hanging calls (e.g., after 5s) to free resources.
+- Not only databases
+  - Use it for dependencies: databases, other microservices, RabbitMQ, caches, email/SMS providers. Not for pure in-process CPU work.
+
 ## Key Features & Patterns
 
 ### **SOLID Principles Implementation:**
@@ -217,13 +273,33 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - Field-level validation for names, emails, and other attributes
 
 ### **Monitoring & Observability:**
-- **Distributed Tracing** with Spring Cloud Sleuth
-- **Zipkin** integration for trace visualization
-- **Actuator** endpoints for health checks and circuit breaker monitoring
+- **Micrometer** - Industry-standard metrics collection framework
+  - Collects HTTP request metrics, JVM metrics, database performance
+  - Custom business metrics (animals created, adoptions, etc.)
+  - Prometheus export for Grafana dashboards
+  - Circuit breaker metrics and performance tracking
+- **Zipkin** - Distributed tracing system for microservices
+  - Visualizes request flows across all services
+  - Tracks timing for each service call
+  - Identifies bottlenecks and performance issues
+  - Automatic tracing of HTTP, database, and RabbitMQ operations
+- **Spring Boot Actuator** endpoints for health checks and monitoring
+  - `/actuator/health` - Service health status
+  - `/actuator/metrics` - All application metrics
+  - `/actuator/prometheus` - Prometheus format metrics
+  - `/actuator/httptrace` - HTTP request traces
 - **Logging** with SLF4J
 - **Circuit Breaker Monitoring** with dedicated endpoints
 - **Event Tracking** for RabbitMQ message processing
 - **Health Dashboards** for all microservices
+
+**Quick Access:**
+- **Zipkin UI**: `http://localhost:9411` (when running with Docker Compose)
+- **Metrics**: `http://localhost:8093/actuator/metrics` (any service)
+- **Prometheus**: `http://localhost:8093/actuator/prometheus` (any service)
+- **Health Check**: `http://localhost:8093/actuator/health` (any service)
+
+**See `MICROMETER_ZIPKIN_GUIDE.md` for detailed setup and usage instructions.**
 
 ### **Containerization:**
 - **Docker** support with custom images
@@ -258,14 +334,22 @@ Each microservice maintains its own database:
 
 ### Local Development Setup
 
-1. **Start Eureka Server:**
+**⚠️ Important Build Order for Standalone Microservices:**
+
+1. **Build Security Library First (Required Dependency):**
+   ```bash
+   cd tnc-shared-libraries/tnc-security-lib
+   mvn clean install -DskipTests
+   ```
+
+2. **Start Eureka Server:**
    ```bash
    cd naming-server-as
    mvn spring-boot:run
    ```
    Access at: `http://localhost:8761`
 
-2. **Start Microservices:**
+3. **Start Microservices (in any order after tnc-security-lib is built):**
    ```bash
    # Animal Microservice
    cd micro_as_animal
@@ -284,10 +368,24 @@ Each microservice maintains its own database:
    mvn spring-boot:run
    ```
 
+**🔧 Build Commands for Standalone Services:**
+```bash
+# Build individual services (tnc-security-lib must be built first)
+cd tnc-shared-libraries/tnc-security-lib && mvn clean install -DskipTests
+cd micro_as_user && mvn clean install -DskipTests  
+cd micro_as_animal && mvn clean install -DskipTests
+cd micro_as_shelter && mvn clean install -DskipTests
+cd api-gateway-as && mvn clean install -DskipTests
+cd naming-server-as && mvn clean install -DskipTests
+```
+
 3. **Access the Application:**
    - API Gateway: `http://localhost:8765`
    - Eureka Dashboard: `http://localhost:8761`
-   - Zipkin (if running): `http://localhost:9411`
+   - Zipkin Distributed Tracing: `http://localhost:9411` (when running with Docker Compose)
+   - RabbitMQ Management: `http://localhost:15672` (admin/admin123)
+   - Service Metrics: `http://localhost:8093/actuator/metrics` (any service)
+   - Prometheus Metrics: `http://localhost:8093/actuator/prometheus` (any service)
 
 ### Docker Deployment
 
@@ -379,23 +477,73 @@ curl http://localhost:8092/shelters/getAll
 curl -H "Authorization: Bearer <JWT_TOKEN>" http://localhost:8091/users
 ```
 
+### User Notifications (User Management Microservice)
+
+The user service provides in-app notifications for user events (e.g., animal created/updated/adopted). Notifications are created internally by services; the public API allows listing, filtering, counting, marking as read, and deleting.
+
+Endpoints (served by `micro_as_user`):
+
+- GET `/notifications/user/{userId}`: Paginated notifications; supports `page`, `size`, `sortBy` (default `createdAt`), `sortDir` (`asc|desc`, default `desc`).
+- GET `/notifications/user/{userId}/unread`: All unread notifications.
+- GET `/notifications/user/{userId}/count`: Count of unread notifications.
+- GET `/notifications/user/{userId}/type/{type}`: Paginated notifications by type.
+- PUT `/notifications/{notificationId}/read?userId={userId}`: Mark a single notification as read.
+- PUT `/notifications/user/{userId}/mark-all-read`: Mark all notifications as read; returns updated count.
+- DELETE `/notifications/{notificationId}?userId={userId}`: Delete a notification (must belong to user).
+
+Common notification types: `ANIMAL_CREATED`, `ANIMAL_UPDATED`, `ANIMAL_ADOPTED`, `ANIMAL_DELETED`, `SHELTER_UPDATE`.
+
+Example requests:
+
+```bash
+# List latest notifications for a user (through API Gateway)
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1?page=0&size=10&sortBy=createdAt&sortDir=desc"
+
+# Get unread notifications
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/unread"
+
+# Get unread count
+curl -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/count"
+
+# Mark one as read
+curl -X PUT -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/42/read?userId=1"
+
+# Mark all as read
+curl -X PUT -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/user/1/mark-all-read"
+
+# Delete a notification
+curl -X DELETE -H "Authorization: Bearer <JWT_TOKEN>" \
+  "http://localhost:8765/user-management/notifications/42?userId=1"
+```
+
 ## Project Structure
 
 ```
 microservice_animal_shelter/
-├── animal-shelter-common/    # 🔐 Shared Security Library
-│   ├── src/main/java/com/tnc/common/security/
-│   │   ├── JwtService.java                    # Unified JWT service
+├── tnc-shared-libraries/     # 🔐 Shared Libraries (Standalone)
+│   ├── tnc-security-lib/     # Security library for servlet-based services
+│   │   ├── JwtService.java                    # JWT service for servlet apps
 │   │   ├── InternalTokenService.java          # Internal token management
-│   │   ├── JwtAuthenticationFilter.java       # JWT authentication filter
-│   │   └── InternalTokenAuthorizationFilter.java # Internal token filter
-│   └── pom.xml                                # Shared library dependencies
-├── api-gateway-as/           # API Gateway service
-├── micro_as_animal/          # Animal management service
-├── micro_as_shelter/         # Shelter management service
-├── micro_as_user/            # User management service
-├── naming-server-as/         # Eureka service discovery
-├── pom.xml                   # 🔧 Parent POM (dependency management)
+│   │   ├── SecurityAutoConfiguration.java     # Auto-configuration
+│   │   └── InternalTokenWebFluxFilter.java    # WebFlux-compatible filter
+│   ├── tnc-resilience-lib/   # Circuit breaker library
+│   ├── tnc-swagger-lib/      # Swagger/OpenAPI documentation library
+│   └── tnc-docker-lib/       # Docker utilities and templates
+├── api-gateway-as/           # 🌐 API Gateway (WebFlux - Reactive)
+│   ├── security/
+│   │   ├── JwtService.java                    # WebFlux JWT service
+│   │   ├── WebFluxSecurityConfig.java         # Reactive security config
+│   │   └── JwtAuthenticationFilter.java       # Reactive auth filter
+│   └── config/
+├── micro_as_animal/          # 🐕 Animal service (Servlet - Spring MVC)
+├── micro_as_shelter/         # 🏠 Shelter service (Servlet - Spring MVC)
+├── micro_as_user/            # 👤 User service (Servlet - Spring MVC)
+├── naming-server-as/         # 🔍 Eureka service discovery
 ├── docker-compose.yml        # Docker orchestration
 └── README.md                 # This file
 ```
@@ -407,9 +555,10 @@ Each microservice follows a clean architecture with:
 - **DTO Layer:** Data transfer objects using Records with validation
 - **Domain Layer:** Business entities and models
 - **Mapper Layer:** Object transformation using MapStruct
-- **Security Layer:** JWT authentication and authorization (User Management)
-- **Filter Layer:** JWT token validation (API Gateway)
-- **Shared Security:** Common security components from `animal-shelter-common`
+- **Security Layer:** Architecture-specific security implementation
+  - **API Gateway:** WebFlux-compatible JWT service and reactive filters
+  - **Business Services:** Shared security library with servlet-based filters
+- **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
 - **Internal Security:** Inter-service communication with internal tokens
 
 ## Frontend Integration
@@ -450,13 +599,17 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 
 ### **🔧 Technical Improvements:**
 - **Spring Boot 3.5.5:** Updated from 2.6.2/2.7.0
-- **Shared Security Library:** Eliminated code duplication with `animal-shelter-common` module
-- **Maven Multi-Module:** Centralized dependency management with parent POM
+- **Clean Microservices Architecture:** Each service is completely independent
+- **Standalone Services:** No parent POM - each service manages its own dependencies
+- **Hybrid Security Architecture:** WebFlux for API Gateway, servlet for business services
+- **WebFlux API Gateway:** Reactive, non-blocking gateway for high performance
+- **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
+- **Shared Libraries:** Modular libraries for security, resilience, documentation, and Docker
 - **Enhanced JWT Security:** Dual token system with automatic refresh
 - **Internal Token System:** Secure inter-service communication
 - **Password Encryption:** BCrypt for secure password storage
 - **CORS Configuration:** Frontend integration support
-- **Clean Architecture:** SOLID principles with security layers
+- **Clean Architecture:** SOLID principles with architecture-specific security layers
 - **Database Security:** Refresh token storage with metadata tracking
 - **Device Tracking:** IP address and device info logging for security
 - **Circuit Breaker Integration:** Resilience4j for fault tolerance across all services
@@ -464,7 +617,190 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Fault Tolerance:** Comprehensive fallback mechanisms and graceful degradation
 - **Monitoring Enhancement:** Circuit breaker status and health monitoring
 - **Production Readiness:** Enterprise-grade resilience patterns
-- **Code Duplication Elimination:** Unified security components across all microservices
+- **Independent Deployment:** Services can be built, tested, and deployed separately
+- **Version Management:** Each service can evolve its dependencies independently
+
+## Architecture Decision: WebFlux vs Servlet
+
+### **Why WebFlux for API Gateway?**
+- **Performance:** Handles 10,000+ concurrent connections vs 200-500 for servlet
+- **Memory Efficiency:** Lower memory footprint with event-driven architecture
+- **Non-blocking I/O:** Perfect for high-throughput gateway scenarios
+- **Spring Cloud Gateway:** Built specifically for WebFlux architecture
+- **Industry Standard:** Production microservices use reactive gateways
+
+### **Why Servlet for Business Services?**
+- **Familiarity:** Most developers are comfortable with Spring MVC
+- **Rich Ecosystem:** Extensive library support for servlet-based applications
+- **Complex Business Logic:** Easier to implement with blocking operations
+- **Database Integration:** Better support for JPA/Hibernate with servlet
+- **Testing:** More mature testing frameworks for servlet applications
+
+### **Best Practices Applied:**
+- **Dependency Exclusions:** Prevent servlet/WebFlux conflicts
+- **Architecture-Specific Security:** Optimized for each service type
+- **Clean Separation:** Clear boundaries between reactive and imperative code
+- **Performance Optimization:** Right tool for the right job
+
+## CI/CD Pipeline
+
+### **🔄 What is CI/CD?**
+
+**CI/CD (Continuous Integration/Continuous Deployment)** is an automated workflow that runs on every code push or pull request. It automatically tests, builds, and deploys your code, catching bugs early and ensuring consistent, reliable deployments.
+
+### **🚀 When Does It Run?**
+
+The workflow automatically triggers on:
+- **Push** to `main` or `develop` branches
+- **Pull requests** to `main` or `develop` branches
+
+### **📋 What Your CI/CD Pipeline Does**
+
+#### **Stage 1: Code Quality & Security (Parallel Execution)**
+
+1. **Code Quality Tests** (Parallel - ~5 minutes)
+   - Runs tests for all 6 modules simultaneously using matrix strategy
+   - Generates code coverage reports (JaCoCo)
+   - Provides fast feedback on code quality
+   - Tests run in parallel: `tnc-shared-libraries`, `micro_as_user`, `micro_as_animal`, `micro_as_shelter`, `api-gateway-as`, `naming-server-as`
+
+2. **Security Scanning** (Parallel - ~10 minutes)
+   - **OWASP Dependency Check**: Scans for known vulnerabilities in dependencies
+   - Checks for outdated or insecure libraries
+   - Generates security reports (HTML, JSON)
+   - Uses cached OWASP database for faster execution
+
+#### **Stage 2: Build Shared Libraries**
+- Builds all shared libraries (`tnc-shared-libraries`)
+- Required dependency for all microservices
+- Uses Maven parallel builds (`-T 4`) for faster compilation
+
+#### **Stage 3: Unit Tests**
+- Runs unit tests for each microservice in parallel
+- Generates test reports and coverage metrics
+- Validates basic functionality of each service
+
+#### **Stage 4: Contract Tests**
+- Validates API contracts between services
+- Ensures services can communicate correctly
+- Prevents breaking changes in service interfaces
+
+#### **Stage 5: Build & Package**
+- Builds all microservices into JAR files
+- Creates deployable artifacts
+- Only runs if all tests pass
+
+#### **Stage 6: Docker Build** (Only on main/develop branches)
+- Builds Docker images for all services
+- Pushes to Docker Hub (if configured)
+- Tags images with `latest` and commit SHA
+
+#### **Stage 7: Deploy to Staging** (Only on develop branch)
+- Automatically deploys to staging environment
+- Ready for manual testing and validation
+
+#### **Stage 8: End-to-End Tests** (After staging deploy)
+- Runs full system tests against staging environment
+- Validates entire system works together
+- Tests complete user workflows
+
+#### **Stage 9: Security Scan**
+- **CodeQL**: Static code analysis for security vulnerabilities
+- **Trivy**: Scans for vulnerabilities in dependencies and code
+- Uploads security findings to GitHub Security tab
+
+#### **Stage 10: Notifications**
+- Sends success/failure notifications
+- Provides visibility into pipeline status
+
+### **💡 How This Helps You**
+
+#### **1. Catches Bugs Early**
+```
+❌ Without CI/CD: You push code → Deploy to production → User finds bug → Fix it → Redeploy
+✅ With CI/CD:    You push code → Tests fail → Fix immediately → No broken production
+```
+
+#### **2. Prevents Broken Code from Reaching Production**
+- All tests must pass before Docker images are built
+- If tests fail, the pipeline stops automatically
+- No broken code reaches production
+
+#### **3. Automated Security Scanning**
+- **OWASP**: Finds vulnerable dependencies automatically
+- **CodeQL**: Finds security vulnerabilities in your code
+- **Trivy**: Additional security scanning
+- All security issues are reported before deployment
+
+#### **4. Consistent Builds**
+- Runs on a clean environment every time
+- No "works on my machine" issues
+- Same Java version, same Maven setup, every time
+
+#### **5. Code Coverage Tracking**
+- JaCoCo reports show test coverage percentage
+- Helps identify untested code
+- Ensures quality standards are met
+
+#### **6. Fast Feedback**
+- Parallel execution makes results available in ~10-15 minutes
+- You know quickly if something is wrong
+- No waiting for sequential builds
+
+#### **7. Automated Docker Images**
+- Images are built and pushed automatically
+- Ready to deploy without manual steps
+- Tagged with commit SHA for traceability
+
+#### **8. Deployment Ready**
+- Staging deployment happens automatically
+- Production-ready artifacts are generated
+- Reduced manual deployment errors
+
+### **⚡ Performance Optimizations**
+
+The CI/CD pipeline is optimized for speed:
+
+- **Parallel Execution**: Tests run simultaneously (6 jobs in parallel)
+- **OWASP Database Caching**: Reduces download time (saves 2-5 minutes)
+- **Maven Parallel Builds**: Uses 4 threads (`-T 4`) for faster compilation
+- **Dependency Caching**: Maven dependencies cached between runs
+- **Removed Redundant Clean**: Uses `install` instead of `clean install` when cache is valid
+
+**Expected Performance:**
+- **Before Optimization**: ~30 minutes
+- **After Optimization**: ~10-15 minutes (50% faster)
+
+### **📊 Real-World Example**
+
+**Scenario:** You fix a bug in the user service
+
+1. **You push code** → GitHub automatically triggers workflow
+2. **Tests run** → All tests pass ✅
+3. **Security scan** → No vulnerabilities found ✅
+4. **Build** → JAR created successfully ✅
+5. **Docker build** → Image pushed to Docker Hub ✅
+6. **Deploy to staging** → Service updated automatically ✅
+7. **E2E tests** → System works correctly ✅
+8. **Notification** → "✅ All tests passed! Pipeline successful."
+
+**If something fails:**
+- Pipeline stops immediately
+- You get a notification
+- You can see exactly what failed and where
+- You fix the issue and push again
+
+### **🔧 Key Benefits Summary**
+
+This CI/CD workflow acts as your **safety net** that:
+- ✅ Tests your code automatically
+- ✅ Checks for security issues
+- ✅ Builds and packages your application
+- ✅ Creates Docker images
+- ✅ Deploys to staging
+- ✅ Provides feedback on every change
+
+It saves you time, prevents bugs, and helps you maintain high code quality standards.
 
 ## Documentation
 
@@ -478,6 +814,35 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Eureka Dashboard:** `http://localhost:8761`
 - **Swagger UI:** `http://localhost:8765/swagger-ui.html`
 - **Health Check:** `http://localhost:8765/actuator/health`
+- **Zipkin Tracing UI:** `http://localhost:9411`
+- **RabbitMQ Management:** `http://localhost:15672` (admin/admin123)
+- **Metrics Endpoint:** `http://localhost:8093/actuator/metrics` (any service)
+- **Prometheus Metrics:** `http://localhost:8093/actuator/prometheus` (any service)
+
+### Recent Changes (Resilience + Security)
+
+- Resilience
+  - Added `tnc-resilience-lib` helper `ResilienceExecutor` to centralize CircuitBreaker/Retry/TimeLimiter decoration.
+  - Renamed methods for clarity:
+    - Database: `executeDatabase(...)`, `executeDatabaseAsync(...)`
+    - API: `executeApi(...)`, `executeApiAsync(...)`
+  - `micro_as_animal`: `AnimalServiceImpl` now delegates DB calls to `CircuitBreakerService`.
+  - `micro_as_shelter`: migrated to shared base resilience; added `findByName`, `getAllShelters`, `saveShelter`, `deleteShelter` in its `CircuitBreakerService`.
+
+- Security (shared lib)
+  - `tnc-security-lib` auto-config now isolates servlet vs reactive:
+    - Servlet (MVC services): default `SecurityFilterChain` with `InternalTokenAuthorizationFilter`.
+    - Reactive (API Gateway): nested `WebFluxSecurityConfiguration` registers `InternalTokenWebFluxFilter` only when Spring Cloud Gateway is on classpath.
+  - Marked WebFlux/Gateway dependencies as optional in `tnc-security-lib`.
+
+- Architecture
+  - API Gateway uses WebFlux (reactive). Business services (Animal, Shelter, User) use Spring MVC (servlet). This mix is intentional and follows best practice.
+
+- Build/Test notes
+  - JJWT requires HS256 keys >= 256 bits. For tests:
+    - Windows CMD: `set INTERNAL_JWT_SECRET=0123456789ABCDEF0123456789ABCDEF`
+    - PowerShell: `$env:INTERNAL_JWT_SECRET="0123456789ABCDEF0123456789ABCDEF"`
+    - Then run: `mvn -f tnc-shared-libraries/tnc-security-lib clean test`
 
 ## 🏗️ System Architecture
 

@@ -1,9 +1,7 @@
 package com.tnc.animals;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +11,7 @@ import java.util.List;
 
 /**
  * Swagger/OpenAPI Configuration for Animal Microservice
- * Provides API documentation for animal management operations
+ * Extends the base configuration from TNC shared library with custom settings
  */
 @Configuration
 public class SwaggerConfig {
@@ -29,14 +27,7 @@ public class SwaggerConfig {
                         .description("Comprehensive API for managing animal records in the shelter system. " +
                                 "This service handles CRUD operations for animals including registration, " +
                                 "updates, photo management, and breed information.")
-                        .version("1.0.0")
-                        .contact(new Contact()
-                                .name("TNC Development Team")
-                                .email("support@animalshelter.com")
-                                .url("https://animalshelter.com"))
-                        .license(new License()
-                                .name("MIT License")
-                                .url("https://opensource.org/licenses/MIT")))
+                        .version("1.0.0"))
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:" + serverPort)

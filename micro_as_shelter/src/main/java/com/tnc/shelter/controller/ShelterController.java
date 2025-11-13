@@ -29,7 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Shelter Management", description = "APIs for managing shelter operations and animal integration")
-@PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER')")
 public class ShelterController {
 
     private final Logger logger = LoggerFactory.getLogger(ShelterController.class);
@@ -38,6 +37,7 @@ public class ShelterController {
 
 
     @GetMapping("/getAll")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SHELTER_MANAGER', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get all shelters", description = "Retrieve a list of all shelters with statistics")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Shelters retrieved successfully",
@@ -50,6 +50,7 @@ public class ShelterController {
     }
     
     @GetMapping("/iasi")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SHELTER_MANAGER', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get shelter by name", description = "Retrieve a specific shelter by name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Shelter found successfully",
@@ -62,6 +63,7 @@ public class ShelterController {
     }
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'INTERNAL_SERVICE')")
     @Validated(OnCreate.class)
     @Operation(summary = "Add new shelter", description = "Create a new shelter with initial statistics")
     @ApiResponses(value = {
@@ -76,6 +78,7 @@ public class ShelterController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'INTERNAL_SERVICE')")
     @Validated(OnUpdate.class)
     @Operation(summary = "Update shelter", description = "Update an existing shelter's information and statistics")
     @ApiResponses(value = {
@@ -89,11 +92,5 @@ public class ShelterController {
         logger.info("Updating shelter: {}", shelterDTO.name());
         return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.update(shelterDTOMapper.toDomain(shelterDTO))));
     }
-
-//    @GetMapping(value = "/{id}")
-//    public ResponseEntity<ShelterDTO> get(@PathVariable Long id) {
-//        return ResponseEntity.ok(shelterDTOMapper.toDTO(shelterService.get(id)));
-//    }
-
 
 }

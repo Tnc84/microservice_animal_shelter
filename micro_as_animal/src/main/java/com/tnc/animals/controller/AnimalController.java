@@ -36,7 +36,7 @@ public class AnimalController {
 
     @GetMapping
     @RequestMapping("/getById/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get animal by ID", description = "Retrieve a specific animal by its unique identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal found successfully",
@@ -51,6 +51,7 @@ public class AnimalController {
     }
 
     @GetMapping("/getAll")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get all animals", description = "Retrieve a list of all animals in the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animals retrieved successfully",
@@ -63,7 +64,7 @@ public class AnimalController {
 
     @PostMapping
     @Validated(OnCreate.class)
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Add new animal", description = "Create a new animal record in the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal created successfully",
@@ -81,7 +82,7 @@ public class AnimalController {
 
     @PutMapping
     @Validated(OnUpdate.class)
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Update animal", description = "Update an existing animal record in the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal updated successfully",
@@ -98,7 +99,7 @@ public class AnimalController {
     }
     
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Delete animal", description = "Remove an animal from the shelter system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal deleted successfully"),
@@ -113,7 +114,7 @@ public class AnimalController {
     }
     
     @PostMapping("/{id}/adopt")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SHELTER_MANAGER', 'VET', 'INTERNAL_SERVICE')")
     @Operation(summary = "Adopt animal", description = "Mark an animal as adopted by a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Animal adopted successfully",

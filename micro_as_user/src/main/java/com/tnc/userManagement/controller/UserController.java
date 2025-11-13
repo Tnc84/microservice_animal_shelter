@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,7 @@ public class UserController {
     private final UserDTOMapper userDTOMapper;
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INTERNAL_SERVICE')")
     @Validated(OnCreate.class)
     public ResponseEntity<UserDTO> addNewUser(@RequestBody UserDTO userDTO) {
         var newUser = userDTOMapper.toDTO(userService.addNewUserWithSpecificRole(userDTO.firstName(), userDTO.lastName(), userDTO.email(), userDTO.role(),
@@ -50,6 +52,7 @@ public class UserController {
     }
 
     @PutMapping("/update")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INTERNAL_SERVICE')")
     @Validated(OnUpdate.class)
     public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDTO) throws UserNotFoundException, EmailExistException, IOException, UsernameExistException, EmailNotFoundException {
         var updateUser = userService.updateUser(userDTO.id(), userDTO.firstName(), userDTO.lastName(), userDTO.email(), userDTO.role(),
@@ -58,24 +61,28 @@ public class UserController {
     }
 
     @GetMapping("/find/{username}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     public ResponseEntity<UserDTO> getUser(@PathVariable("username") String username) {
         var userDomain = userService.findByEmail(username);
         return new ResponseEntity<>(userDTOMapper.toDTO(userDomain), OK);
     }
 
     @GetMapping()
+    @PreAuthorize("hasAnyRole('ADMIN', 'INTERNAL_SERVICE')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userDTOMapper.toDTOList(userService.getAll());
         return new ResponseEntity<>(users, OK);
     }
 
     @GetMapping("/resetPassword/{email}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email) throws EmailNotFoundException, MessagingException {
         userService.resetPassword(email);
         return response(OK, EMAIL_SENT + email);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INTERNAL_SERVICE')")
     public ResponseEntity<HttpResponse> deleteUser(@PathVariable("id") long id) {
         userService.deleteUser(id);
         return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
