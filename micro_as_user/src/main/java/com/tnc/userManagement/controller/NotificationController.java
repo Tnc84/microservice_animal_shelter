@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,6 +48,7 @@ public class NotificationController {
      * @return page of notifications
      */
     @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get user notifications", description = "Retrieve paginated notifications for a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notifications retrieved successfully",
@@ -83,6 +85,7 @@ public class NotificationController {
      * @return list of unread notifications
      */
     @GetMapping("/user/{userId}/unread")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get unread notifications", description = "Retrieve all unread notifications for a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Unread notifications retrieved successfully"),
@@ -105,6 +108,7 @@ public class NotificationController {
      * @return notification count
      */
     @GetMapping("/user/{userId}/count")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get notification count", description = "Get the count of unread notifications for a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notification count retrieved successfully"),
@@ -129,6 +133,7 @@ public class NotificationController {
      * @return page of notifications
      */
     @GetMapping("/user/{userId}/type/{type}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Get notifications by type", description = "Retrieve paginated notifications of a specific type for a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notifications retrieved successfully"),
@@ -161,6 +166,7 @@ public class NotificationController {
      * @return success response
      */
     @PutMapping("/{notificationId}/read")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Mark notification as read", description = "Mark a specific notification as read")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notification marked as read successfully"),
@@ -190,6 +196,7 @@ public class NotificationController {
      * @return number of notifications marked as read
      */
     @PutMapping("/user/{userId}/mark-all-read")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Mark all notifications as read", description = "Mark all notifications as read for a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "All notifications marked as read successfully"),
@@ -212,6 +219,7 @@ public class NotificationController {
      * @return success response
      */
     @DeleteMapping("/{notificationId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'INTERNAL_SERVICE')")
     @Operation(summary = "Delete notification", description = "Delete a specific notification")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notification deleted successfully"),

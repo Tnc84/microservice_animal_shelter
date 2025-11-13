@@ -33,7 +33,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring - MUST be first
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/animals/getAll").permitAll() // Public access for Happy Tails page
+                // /animals/getAll is now secured via @PreAuthorize annotation - allows USER, ADMIN, SHELTER_MANAGER, VET, INTERNAL_SERVICE
                 .anyRequest().authenticated()
             )
             .addFilterBefore(internalTokenAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
