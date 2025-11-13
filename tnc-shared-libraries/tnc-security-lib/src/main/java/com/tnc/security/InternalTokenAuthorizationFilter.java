@@ -13,11 +13,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Security filter for validating internal tokens in inter-microservice communication.
- * This filter validates internal tokens and sets up the security context for authenticated requests.
+ * Security filter for handling authentication from two sources:
+ * 1. User requests from API Gateway (via X-User-* headers) - sets user roles
+ * 2. Inter-service communication (via internal tokens) - sets ROLE_INTERNAL_SERVICE
  */
 @Slf4j
 @Component
@@ -40,7 +44,29 @@ public class InternalTokenAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Extract token from Authorization header
+        // PRIORITY 1: Check if request comes from API Gateway (has X-User headers)
+        String userAuthorities = request.getHeader("X-User-Authorities");
+        String userName = request.getHeader("X-User-Name");
+        String userId = request.getHeader("X-User-Id");
+        
+        if (userAuthorities != null && userName != null) {
+            // Request from API Gateway - set user context with actual user roles
+            List<SimpleGrantedAuthority> authorities = Arrays.stream(userAuthorities.split(","))
+                .map(String::trim)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+            
+            UsernamePasswordAuthenticationToken authentication = 
+                new UsernamePasswordAuthenticationToken(userName, null, authorities);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            log.debug("Set user context from API Gateway: {} (userId: {}) with roles: {}", 
+                userName, userId, authorities);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // PRIORITY 2: Check for internal token (inter-service communication)
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("Missing or invalid Authorization header for request: {}", requestPath);
@@ -49,7 +75,7 @@ public class InternalTokenAuthorizationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7); // Remove "Bearer " prefix
-        log.debug("Extracted token for validation");
+        log.debug("Extracted internal token for validation");
 
         // Validate internal token
         if (!internalTokenService.validateInternalToken(token)) {
@@ -58,7 +84,7 @@ public class InternalTokenAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Extract service name and set up security context
+        // Extract service name and set up security context with ROLE_INTERNAL_SERVICE
         String serviceName = internalTokenService.extractServiceName(token);
         if (serviceName != null) {
             UsernamePasswordAuthenticationToken authentication = 
