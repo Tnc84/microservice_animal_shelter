@@ -1,4 +1,4 @@
-package org.tnc.pethotelmicroservice;
+package org.tnc.pethotelmicroservice.repository.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
