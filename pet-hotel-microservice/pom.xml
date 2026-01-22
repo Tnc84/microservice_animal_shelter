@@ -36,7 +36,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <springdoc.version>2.7.0</springdoc.version>
-        <testcontainers.version>1.19.3</testcontainers.version>
+<!--        <testcontainers.version>1.19.3</testcontainers.version>-->
         <pact.version>4.6.8</pact.version>
         <wiremock.version>2.35.0</wiremock.version>
         <owasp.version>8.4.0</owasp.version>
@@ -46,13 +46,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-docker-compose</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>dotenv-spring-boot</artifactId>
+            <version>0.2.0</version>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-docker-compose</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--            <optional>true</optional>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

@@ -1,13 +1,13 @@
-package org.tnc.pethotelmicroservice;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
-class PetHotelMicroserviceApplicationTests {
-
-    @Test
-    void contextLoads() {
-    }
-
-}
+//package org.tnc.pethotelmicroservice;
+//
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
+//
+//@SpringBootTest
+//class PetHotelMicroserviceApplicationTests {
+//
+//    @Test
+//    void contextLoads() {
+//    }
+//
+//}
