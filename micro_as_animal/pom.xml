@@ -363,11 +363,11 @@
             </plugin>
             
             <!-- TestContainers Plugin -->
-            <plugin>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-maven-plugin</artifactId>
-                <version>1.19.3</version>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.testcontainers</groupId>-->
+<!--                <artifactId>testcontainers-maven-plugin</artifactId>-->
+<!--                <version>1.19.3</version>-->
+<!--            </plugin>-->
             
             <!-- Surefire Report Plugin -->
             <plugin>
