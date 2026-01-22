@@ -1,0 +1,24 @@
+package org.tnc.pethotelmicroservice.service.domain;
+
+import org.tnc.pethotelmicroservice.repository.entities.BookingStatus;
+
+import java.time.LocalDateTime;
+
+public class BookingDomain {
+    private Long id;
+    private String userId;
+
+    private RoomDomain roomId;
+    private String petName;
+    private String petSpecies;
+    private String petBreed;
+
+    private LocalDateTime checkInDate;
+    private LocalDateTime checkOutDate;
+
+    private Integer totalDays;
+    private BookingStatus status;
+    private LocalDateTime startDate;
+    private LocalDateTime updatedDate;
+    private LocalDateTime endDate;
+}

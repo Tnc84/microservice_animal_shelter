@@ -1,0 +1,7 @@
+package org.tnc.pethotelmicroservice.service.impl;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class PetHotelService {
+}
