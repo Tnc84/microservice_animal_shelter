@@ -35,6 +35,12 @@ spring:
             - Path=/shelter-microservice/**
           filters:
             - RewritePath=/shelter-microservice/(?<segment>.*), /$\{segment}
+        - id: pet-hotel-microservice
+          uri: lb://pet-hotel-microservice
+          predicates:
+            - Path=/pet-hotel-microservice/**
+          filters:
+            - RewritePath=/pet-hotel-microservice/(?<segment>.*), /$\{segment}
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers
       globalcors:
@@ -147,10 +153,10 @@ management:
   endpoint:
     health:
       show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   tracing:
     sampling:
       probability: 1.0  # 100% sampling rate (use 0.1 for production)
+  prometheus:
+    metrics:
+      export:
+        enabled: true

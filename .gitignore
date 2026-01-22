@@ -97,6 +97,7 @@ $RECYCLE.BIN/
 
 # Application specific
 application-local.yml
+application-*-local.yaml
 application-local.properties
 application-dev.yml
 application-dev.properties
@@ -113,6 +114,7 @@ application-prod.properties
 
 # Environment variables
 .env
+.env.*
 .env.local
 .env.development
 .env.test
