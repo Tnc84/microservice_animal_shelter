@@ -14,6 +14,9 @@ start "Shelter Microservice" cmd /k "cd micro_as_shelter && mvn spring-boot:run"
 timeout /t 5 /nobreak > nul
 
 start "User Microservice" cmd /k "cd micro_as_user && mvn spring-boot:run"
+timeout /t 5 /nobreak > nul
+
+start "Pet Hotel Microservice" cmd /k "cd pet-hotel-microservice && mvn spring-boot:run"
 
 echo All microservices started!
 pause

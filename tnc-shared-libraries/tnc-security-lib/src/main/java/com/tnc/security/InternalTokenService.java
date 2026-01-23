@@ -10,9 +10,9 @@ import java.util.Map;
 /**
  * Service for managing internal tokens used for inter-microservice communication.
  * Provides token generation and validation for internal API calls.
+ * This class is configured as a Spring bean via SecurityAutoConfiguration.
  */
 @Slf4j
-@Service
 public class InternalTokenService {
 
     @Value("${internal.token.secret:internal-secret-key}")

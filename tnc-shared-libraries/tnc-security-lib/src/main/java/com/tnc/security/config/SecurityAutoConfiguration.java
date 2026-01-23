@@ -24,8 +24,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @AutoConfiguration
 public class SecurityAutoConfiguration {
 
-    @Autowired(required = false)
-    private InternalTokenService internalTokenService;
+    /**
+     * Creates InternalTokenService bean if not already defined.
+     * This ensures the service is available for dependency injection.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public InternalTokenService internalTokenService() {
+        return new InternalTokenService();
+    }
 
     /**
      * Default security filter chain configuration for servlet-based applications.
@@ -35,7 +42,7 @@ public class SecurityAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnClass(name = "jakarta.servlet.Filter")
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, InternalTokenService internalTokenService) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
