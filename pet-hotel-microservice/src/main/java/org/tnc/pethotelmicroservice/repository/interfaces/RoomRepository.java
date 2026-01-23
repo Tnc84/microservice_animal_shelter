@@ -6,5 +6,6 @@ import org.tnc.pethotelmicroservice.repository.entities.Room;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
+    Room getRoomById(long roomId);
 
 }
