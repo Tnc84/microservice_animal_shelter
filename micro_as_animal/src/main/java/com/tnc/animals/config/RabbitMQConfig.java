@@ -1,5 +1,6 @@
 package com.tnc.animals.config;
 
+import com.tnc.events.constants.RabbitMQConstants;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -15,19 +16,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class RabbitMQConfig {
-
-    // Exchange names
-    public static final String ANIMAL_EVENTS_EXCHANGE = "animal.events.exchange";
-    
-    // Queue names
-    public static final String USER_NOTIFICATIONS_QUEUE = "user.notifications.queue";
-    public static final String SHELTER_UPDATES_QUEUE = "shelter.updates.queue";
-    
-    // Routing keys
-    public static final String ROUTING_KEY_ANIMAL_CREATED = "animal.created";
-    public static final String ROUTING_KEY_ANIMAL_UPDATED = "animal.updated";
-    public static final String ROUTING_KEY_ANIMAL_ADOPTED = "animal.adopted";
-    public static final String ROUTING_KEY_ANIMAL_DELETED = "animal.deleted";
     
     /**
      * Configure JSON message converter for serializing/deserializing messages.
@@ -65,7 +53,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public TopicExchange animalEventsExchange() {
-        return new TopicExchange(ANIMAL_EVENTS_EXCHANGE, true, false);
+        return new TopicExchange(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE, true, false);
     }
     
     /**
@@ -74,9 +62,9 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue userNotificationsQueue() {
-        return QueueBuilder.durable(USER_NOTIFICATIONS_QUEUE)
-                .withArgument("x-dead-letter-exchange", "animal.events.dlx")
-                .withArgument("x-dead-letter-routing-key", "user.notifications.dlq")
+        return QueueBuilder.durable(RabbitMQConstants.USER_NOTIFICATIONS_QUEUE)
+                .withArgument("x-dead-letter-exchange", RabbitMQConstants.DEAD_LETTER_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", RabbitMQConstants.USER_NOTIFICATIONS_DLQ)
                 .build();
     }
     
@@ -86,9 +74,9 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue shelterUpdatesQueue() {
-        return QueueBuilder.durable(SHELTER_UPDATES_QUEUE)
-                .withArgument("x-dead-letter-exchange", "animal.events.dlx")
-                .withArgument("x-dead-letter-routing-key", "shelter.updates.dlq")
+        return QueueBuilder.durable(RabbitMQConstants.SHELTER_UPDATES_QUEUE)
+                .withArgument("x-dead-letter-exchange", RabbitMQConstants.DEAD_LETTER_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", RabbitMQConstants.SHELTER_UPDATES_DLQ)
                 .build();
     }
     
@@ -97,7 +85,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public TopicExchange deadLetterExchange() {
-        return new TopicExchange("animal.events.dlx", true, false);
+        return new TopicExchange(RabbitMQConstants.DEAD_LETTER_EXCHANGE, true, false);
     }
     
     /**
@@ -105,7 +93,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue userNotificationsDlq() {
-        return QueueBuilder.durable("user.notifications.dlq").build();
+        return QueueBuilder.durable(RabbitMQConstants.USER_NOTIFICATIONS_DLQ).build();
     }
     
     /**
@@ -113,7 +101,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue shelterUpdatesDlq() {
-        return QueueBuilder.durable("shelter.updates.dlq").build();
+        return QueueBuilder.durable(RabbitMQConstants.SHELTER_UPDATES_DLQ).build();
     }
     
     /**
@@ -125,7 +113,7 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(userNotificationsQueue())
                 .to(animalEventsExchange())
-                .with("animal.*");
+                .with(RabbitMQConstants.ROUTING_KEY_ANIMAL_ALL);
     }
     
     /**
@@ -137,7 +125,7 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(shelterUpdatesQueue())
                 .to(animalEventsExchange())
-                .with("animal.*");
+                .with(RabbitMQConstants.ROUTING_KEY_ANIMAL_ALL);
     }
     
     /**
@@ -148,7 +136,7 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(userNotificationsDlq())
                 .to(deadLetterExchange())
-                .with("user.notifications.dlq");
+                .with(RabbitMQConstants.USER_NOTIFICATIONS_DLQ);
     }
     
     @Bean
@@ -156,6 +144,6 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(shelterUpdatesDlq())
                 .to(deadLetterExchange())
-                .with("shelter.updates.dlq");
+                .with(RabbitMQConstants.SHELTER_UPDATES_DLQ);
     }
 }

@@ -28,6 +28,7 @@
         <module>tnc-resilience-lib</module>
         <module>tnc-swagger-lib</module>
         <module>tnc-docker-lib</module>
+        <module>tnc-events-lib</module>
     </modules>
 
     <dependencyManagement>

@@ -1,5 +1,6 @@
 package com.tnc.animals.events;
 
+import com.tnc.events.animal.AnimalEventDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.tnc.animals.service.impl;
 
-import com.tnc.animals.events.AnimalEventDTO;
 import com.tnc.animals.events.AnimalEventPublisher;
+import com.tnc.events.animal.AnimalEventDTO;
 import com.tnc.animals.service.CircuitBreakerService;
 import com.tnc.animals.service.domain.AnimalDomain;
 import com.tnc.animals.service.interfaces.AnimalService;

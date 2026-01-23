@@ -52,6 +52,11 @@
             <artifactId>tnc-security-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.tnc.events</groupId>
+            <artifactId>tnc-events-lib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- Spring Boot Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

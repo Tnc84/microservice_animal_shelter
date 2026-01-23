@@ -1,11 +1,15 @@
 package com.tnc.userManagement.events;
 
+import com.tnc.events.animal.AnimalEventDTO;
+import com.tnc.events.constants.RabbitMQConstants;
 import com.tnc.userManagement.repository.entity.Notification;
 import com.tnc.userManagement.service.NotificationService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Consumer for animal events from RabbitMQ.
@@ -24,7 +28,9 @@ public class AnimalEventConsumer {
      * 
      * @param eventDTO the animal event data
      */
-    @RabbitListener(queues = "user.notifications.queue")
+    @RabbitListener(queues = RabbitMQConstants.USER_NOTIFICATIONS_QUEUE)
+    @CircuitBreaker(name = "rabbitmq", fallbackMethod = "handleEventFallback")
+    @Transactional
     public void handleAnimalEvent(AnimalEventDTO eventDTO) {
         log.info("Received animal event: {} for animal ID: {}", eventDTO.getEventType(), eventDTO.getAnimalId());
         
@@ -171,5 +177,14 @@ public class AnimalEventConsumer {
         );
         
         log.info("Created notification for animal deleted event: {}", eventDTO.getAnimalName());
+    }
+
+    /**
+     * Fallback method when circuit breaker is open.
+     */
+    public void handleEventFallback(AnimalEventDTO event, Throwable t) {
+        log.error("Circuit breaker open - failed to process event: {}, error: {}",
+                event, t.getMessage());
+        // Could implement retry logic or store for later processing
     }
 }

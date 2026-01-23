@@ -1,6 +1,7 @@
 package com.tnc.animals.events;
 
-import com.tnc.animals.config.RabbitMQConfig;
+import com.tnc.events.animal.AnimalEventDTO;
+import com.tnc.events.constants.RabbitMQConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,8 +62,8 @@ class AnimalEventPublisherTest {
 
         // Then
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED),
                 eq(testEvent)
         );
     }
@@ -79,8 +80,8 @@ class AnimalEventPublisherTest {
 
         // Then
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED),
                 eq(testEvent)
         );
     }
@@ -98,8 +99,8 @@ class AnimalEventPublisherTest {
 
         // Then
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_ADOPTED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_ADOPTED),
                 eq(testEvent)
         );
     }
@@ -116,8 +117,8 @@ class AnimalEventPublisherTest {
 
         // Then
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_DELETED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_DELETED),
                 eq(testEvent)
         );
     }
@@ -134,8 +135,8 @@ class AnimalEventPublisherTest {
 
         // Verify that the method was called despite the exception
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED),
                 eq(testEvent)
         );
     }
@@ -152,8 +153,8 @@ class AnimalEventPublisherTest {
 
         // Verify that the method was called despite the exception
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED),
                 eq(testEvent)
         );
     }
@@ -170,8 +171,8 @@ class AnimalEventPublisherTest {
 
         // Verify that the method was called despite the exception
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_ADOPTED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_ADOPTED),
                 eq(testEvent)
         );
     }
@@ -188,8 +189,8 @@ class AnimalEventPublisherTest {
 
         // Verify that the method was called despite the exception
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_DELETED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_DELETED),
                 eq(testEvent)
         );
     }
@@ -273,13 +274,13 @@ class AnimalEventPublisherTest {
 
         // Then
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED),
                 eq(createdEvent)
         );
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE),
-                eq(RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED),
+                eq(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE),
+                eq(RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED),
                 eq(updatedEvent)
         );
         verify(rabbitTemplate, times(2)).convertAndSend(anyString(), anyString(), any(Object.class));

@@ -1,5 +1,6 @@
 package com.tnc.animals.config;
 
+import com.tnc.events.constants.RabbitMQConstants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,8 +11,6 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,23 +26,23 @@ class RabbitMQConfigTest {
     @Test
     @DisplayName("Should have correct exchange name constant")
     void exchangeName_ShouldBeCorrect() {
-        assertThat(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE).isEqualTo("animal.events.exchange");
+        assertThat(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE).isEqualTo("animal.events.exchange");
     }
 
     @Test
     @DisplayName("Should have correct queue name constants")
     void queueNames_ShouldBeCorrect() {
-        assertThat(RabbitMQConfig.USER_NOTIFICATIONS_QUEUE).isEqualTo("user.notifications.queue");
-        assertThat(RabbitMQConfig.SHELTER_UPDATES_QUEUE).isEqualTo("shelter.updates.queue");
+        assertThat(RabbitMQConstants.USER_NOTIFICATIONS_QUEUE).isEqualTo("user.notifications.queue");
+        assertThat(RabbitMQConstants.SHELTER_UPDATES_QUEUE).isEqualTo("shelter.updates.queue");
     }
 
     @Test
     @DisplayName("Should have correct routing key constants")
     void routingKeys_ShouldBeCorrect() {
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED).isEqualTo("animal.created");
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED).isEqualTo("animal.updated");
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_ADOPTED).isEqualTo("animal.adopted");
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_DELETED).isEqualTo("animal.deleted");
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED).isEqualTo("animal.created");
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED).isEqualTo("animal.updated");
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_ADOPTED).isEqualTo("animal.adopted");
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_DELETED).isEqualTo("animal.deleted");
     }
 
     @Test
@@ -100,7 +99,7 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(exchange).isNotNull();
-        assertThat(exchange.getName()).isEqualTo(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE);
+        assertThat(exchange.getName()).isEqualTo(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE);
         assertThat(exchange.isDurable()).isTrue();
         assertThat(exchange.isAutoDelete()).isFalse();
     }
@@ -116,10 +115,10 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(queue).isNotNull();
-        assertThat(queue.getName()).isEqualTo(RabbitMQConfig.USER_NOTIFICATIONS_QUEUE);
+        assertThat(queue.getName()).isEqualTo(RabbitMQConstants.USER_NOTIFICATIONS_QUEUE);
         assertThat(queue.isDurable()).isTrue();
-        assertThat(queue.getArguments()).containsEntry("x-dead-letter-exchange", "animal.events.dlx");
-        assertThat(queue.getArguments()).containsEntry("x-dead-letter-routing-key", "user.notifications.dlq");
+        assertThat(queue.getArguments()).containsEntry("x-dead-letter-exchange", RabbitMQConstants.DEAD_LETTER_EXCHANGE);
+        assertThat(queue.getArguments()).containsEntry("x-dead-letter-routing-key", RabbitMQConstants.USER_NOTIFICATIONS_DLQ);
     }
 
     @Test
@@ -133,10 +132,10 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(queue).isNotNull();
-        assertThat(queue.getName()).isEqualTo(RabbitMQConfig.SHELTER_UPDATES_QUEUE);
+        assertThat(queue.getName()).isEqualTo(RabbitMQConstants.SHELTER_UPDATES_QUEUE);
         assertThat(queue.isDurable()).isTrue();
-        assertThat(queue.getArguments()).containsEntry("x-dead-letter-exchange", "animal.events.dlx");
-        assertThat(queue.getArguments()).containsEntry("x-dead-letter-routing-key", "shelter.updates.dlq");
+        assertThat(queue.getArguments()).containsEntry("x-dead-letter-exchange", RabbitMQConstants.DEAD_LETTER_EXCHANGE);
+        assertThat(queue.getArguments()).containsEntry("x-dead-letter-routing-key", RabbitMQConstants.SHELTER_UPDATES_DLQ);
     }
 
     @Test
@@ -150,7 +149,7 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(exchange).isNotNull();
-        assertThat(exchange.getName()).isEqualTo("animal.events.dlx");
+        assertThat(exchange.getName()).isEqualTo(RabbitMQConstants.DEAD_LETTER_EXCHANGE);
         assertThat(exchange.isDurable()).isTrue();
         assertThat(exchange.isAutoDelete()).isFalse();
     }
@@ -167,11 +166,11 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(userDlq).isNotNull();
-        assertThat(userDlq.getName()).isEqualTo("user.notifications.dlq");
+        assertThat(userDlq.getName()).isEqualTo(RabbitMQConstants.USER_NOTIFICATIONS_DLQ);
         assertThat(userDlq.isDurable()).isTrue();
 
         assertThat(shelterDlq).isNotNull();
-        assertThat(shelterDlq.getName()).isEqualTo("shelter.updates.dlq");
+        assertThat(shelterDlq.getName()).isEqualTo(RabbitMQConstants.SHELTER_UPDATES_DLQ);
         assertThat(shelterDlq.isDurable()).isTrue();
     }
 
@@ -187,10 +186,10 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(userBinding).isNotNull();
-        assertThat(userBinding.getRoutingKey()).isEqualTo("animal.*");
+        assertThat(userBinding.getRoutingKey()).isEqualTo(RabbitMQConstants.ROUTING_KEY_ANIMAL_ALL);
 
         assertThat(shelterBinding).isNotNull();
-        assertThat(shelterBinding.getRoutingKey()).isEqualTo("animal.*");
+        assertThat(shelterBinding.getRoutingKey()).isEqualTo(RabbitMQConstants.ROUTING_KEY_ANIMAL_ALL);
     }
 
     @Test
@@ -205,27 +204,27 @@ class RabbitMQConfigTest {
 
         // Then
         assertThat(userDlqBinding).isNotNull();
-        assertThat(userDlqBinding.getRoutingKey()).isEqualTo("user.notifications.dlq");
+        assertThat(userDlqBinding.getRoutingKey()).isEqualTo(RabbitMQConstants.USER_NOTIFICATIONS_DLQ);
 
         assertThat(shelterDlqBinding).isNotNull();
-        assertThat(shelterDlqBinding.getRoutingKey()).isEqualTo("shelter.updates.dlq");
+        assertThat(shelterDlqBinding.getRoutingKey()).isEqualTo(RabbitMQConstants.SHELTER_UPDATES_DLQ);
     }
 
     @Test
     @DisplayName("Should have all required constants defined")
     void constants_ShouldBeDefined() {
         // Exchange
-        assertThat(RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE).isNotNull();
+        assertThat(RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE).isNotNull();
         
         // Queues
-        assertThat(RabbitMQConfig.USER_NOTIFICATIONS_QUEUE).isNotNull();
-        assertThat(RabbitMQConfig.SHELTER_UPDATES_QUEUE).isNotNull();
+        assertThat(RabbitMQConstants.USER_NOTIFICATIONS_QUEUE).isNotNull();
+        assertThat(RabbitMQConstants.SHELTER_UPDATES_QUEUE).isNotNull();
         
         // Routing Keys
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED).isNotNull();
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED).isNotNull();
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_ADOPTED).isNotNull();
-        assertThat(RabbitMQConfig.ROUTING_KEY_ANIMAL_DELETED).isNotNull();
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED).isNotNull();
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED).isNotNull();
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_ADOPTED).isNotNull();
+        assertThat(RabbitMQConstants.ROUTING_KEY_ANIMAL_DELETED).isNotNull();
     }
 
     @Test

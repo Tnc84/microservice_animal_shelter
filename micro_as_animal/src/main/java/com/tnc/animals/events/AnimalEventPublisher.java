@@ -1,9 +1,9 @@
 package com.tnc.animals.events;
 
-import com.tnc.animals.config.RabbitMQConfig;
+import com.tnc.events.animal.AnimalEventDTO;
+import com.tnc.events.constants.RabbitMQConstants;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -31,8 +31,8 @@ public class AnimalEventPublisher {
         try {
             log.info("Publishing animal created event for animal ID: {}", eventDTO.getAnimalId());
             rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY_ANIMAL_CREATED,
+                RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE,
+                RabbitMQConstants.ROUTING_KEY_ANIMAL_CREATED,
                 eventDTO
             );
             log.info("Successfully published animal created event for animal ID: {}", eventDTO.getAnimalId());
@@ -53,8 +53,8 @@ public class AnimalEventPublisher {
         try {
             log.info("Publishing animal updated event for animal ID: {}", eventDTO.getAnimalId());
             rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY_ANIMAL_UPDATED,
+                RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE,
+                RabbitMQConstants.ROUTING_KEY_ANIMAL_UPDATED,
                 eventDTO
             );
             log.info("Successfully published animal updated event for animal ID: {}", eventDTO.getAnimalId());
@@ -74,8 +74,8 @@ public class AnimalEventPublisher {
         try {
             log.info("Publishing animal adopted event for animal ID: {}", eventDTO.getAnimalId());
             rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY_ANIMAL_ADOPTED,
+                RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE,
+                RabbitMQConstants.ROUTING_KEY_ANIMAL_ADOPTED,
                 eventDTO
             );
             log.info("Successfully published animal adopted event for animal ID: {}", eventDTO.getAnimalId());
@@ -95,8 +95,8 @@ public class AnimalEventPublisher {
         try {
             log.info("Publishing animal deleted event for animal ID: {}", eventDTO.getAnimalId());
             rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ANIMAL_EVENTS_EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY_ANIMAL_DELETED,
+                RabbitMQConstants.ANIMAL_EVENTS_EXCHANGE,
+                RabbitMQConstants.ROUTING_KEY_ANIMAL_DELETED,
                 eventDTO
             );
             log.info("Successfully published animal deleted event for animal ID: {}", eventDTO.getAnimalId());
