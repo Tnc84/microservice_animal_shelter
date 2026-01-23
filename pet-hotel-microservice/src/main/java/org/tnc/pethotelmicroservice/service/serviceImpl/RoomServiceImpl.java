@@ -34,4 +34,36 @@ public class RoomServiceImpl implements RoomServiceInterface {
     public List<RoomDomain> getAllRooms() {
         return serviceMapper.ListRoomToRoomDomain(roomRepository.findAll());
     }
+
+    @Override
+    public List<RoomDomain> getAvailableRooms() {
+        return serviceMapper.ListRoomToRoomDomain(roomRepository.findByIsAvailableTrue());
+    }
+
+    @Override
+    public RoomDomain createRoom(RoomDomain roomDomain) {
+        var roomEntity = serviceMapper.roomDomainToRoom(roomDomain);
+        var savedRoom = roomRepository.save(roomEntity);
+        return serviceMapper.roomToRoomDomain(savedRoom);
+    }
+
+    @Override
+    public RoomDomain updateRoom(Integer roomId, RoomDomain roomDomain) {
+        var existingRoom = roomRepository.getRoomById(roomId.longValue());
+        if (existingRoom == null) {
+            return null;
+        }
+        var roomEntity = serviceMapper.roomDomainToRoom(roomDomain);
+        existingRoom.setCapacity(roomEntity.getCapacity());
+        existingRoom.setRoomType(roomEntity.getRoomType());
+        existingRoom.setAvailable(roomEntity.isAvailable());
+        existingRoom.setRoomDescription(roomEntity.getRoomDescription());
+        var updatedRoom = roomRepository.save(existingRoom);
+        return serviceMapper.roomToRoomDomain(updatedRoom);
+    }
+
+    @Override
+    public void deleteRoom(Integer roomId) {
+        roomRepository.deleteById(roomId.longValue());
+    }
 }

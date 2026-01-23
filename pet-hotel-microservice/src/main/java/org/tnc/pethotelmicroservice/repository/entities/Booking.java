@@ -16,7 +16,7 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    private String userId;
+    private Long userId;
 
     @OneToOne(cascade = CascadeType.ALL)
     private Room roomId;
@@ -26,8 +26,9 @@ public class Booking {
 
     private LocalDateTime checkInDate;
     private LocalDateTime checkOutDate;
-
     private Integer totalDays;
+
+    @Enumerated(EnumType.STRING)
     private BookingStatus status;
     private LocalDateTime startDate;
     private LocalDateTime updatedDate;

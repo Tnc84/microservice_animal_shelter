@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class BookingDomain {
     private Long id;
-    private String userId;
+    private Long userId;
 
     private RoomDomain roomId;
     private String petName;

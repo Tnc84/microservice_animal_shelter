@@ -1,6 +1,7 @@
 package org.tnc.pethotelmicroservice.controler.records;
 
-public record RoomDTO(int capacity,
+public record RoomDTO(Long id,
+                      int capacity,
                       String roomType,
                       boolean isAvailable,
                       String roomDescription) {
