@@ -1,6 +1,10 @@
 # RabbitMQ Event Flow Architecture
 
-## Complete Flow: Angular Frontend → RabbitMQ Event Processing
+This document describes the event-driven communication between microservices using RabbitMQ.
+
+---
+
+## Flow 1: Animal Events (Animal → Shelter & User Services)
 
 ### Example Scenario: User Creates a New Animal
 
@@ -159,7 +163,7 @@ This architecture ensures:
 - ✅ **Reliability**: Circuit breakers prevent cascading failures
 - ✅ **Consistency**: Events are published only after successful DB commits
 
-## RabbitMQ Configuration
+## Animal Events - RabbitMQ Details
 
 ### Exchange
 - **Name**: `animal.events.exchange`
@@ -175,20 +179,207 @@ This architecture ensures:
 - Failed messages are routed to DLQ for manual review
 - Prevents message loss and allows retry mechanisms
 
+---
+
+## Flow 2: Booking Events (Pet Hotel → User Service)
+
+### Example Scenario: User Books a Room for Their Dog (3-Day Stay)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│          PET HOTEL BOOKING FLOW WITH RABBITMQ                   │
+└─────────────────────────────────────────────────────────────────┘
+
+1. ANGULAR FRONTEND (Port 4200)
+   │
+   │ User fills booking form:
+   │   - Pet: "Max" (Dog, Golden Retriever)
+   │   - Room Type: "Standard"
+   │   - Check-in: 2026-01-25
+   │   - Check-out: 2026-01-28 (3 days)
+   │
+   └─> POST http://localhost:8765/pet-hotel/bookings
+       Headers: Authorization: Bearer <JWT_TOKEN>
+       Body: {
+         "userId": 456,
+         "roomId": 10,
+         "petName": "Max",
+         "petSpecies": "Dog",
+         "petBreed": "Golden Retriever",
+         "checkInDate": "2026-01-25T14:00:00",
+         "checkOutDate": "2026-01-28T11:00:00"
+       }
+
+2. API GATEWAY (Port 8765)
+   │
+   │ • Validates JWT token (user authenticated)
+   │ • Routes to: lb://pet-hotel (via Eureka)
+   │
+   └─> Forward to Pet Hotel Service
+
+3. PET HOTEL SERVICE (Port 8094)
+   │
+   │ BookingController.createBooking()
+   │   ↓
+   │ BookingServiceImpl.createBooking()
+   │   ↓
+   │ @Transactional
+   │   ├─> Check room availability (no overlapping bookings)
+   │   ├─> Calculate totalDays = 3
+   │   ├─> Set status = PENDING
+   │   ├─> Save to MySQL (booking table)
+   │   │   └─> Transaction COMMITS ✅
+   │   │
+   │   └─> bookingEventPublisher.publishBookingCreated(booking)
+   │       ↓
+   │       @CircuitBreaker + @Retry
+   │       ↓
+   │       RabbitTemplate.convertAndSend(
+   │         Exchange: "booking.events.exchange"
+   │         Routing Key: "booking.created"
+   │         Message: BookingEventDTO {
+   │           bookingId: 789,
+   │           eventType: "BOOKING_CREATED",
+   │           userId: 456,
+   │           roomId: 10,
+   │           roomType: "Standard",
+   │           petName: "Max",
+   │           petSpecies: "Dog",
+   │           checkInDate: "2026-01-25T14:00:00",
+   │           checkOutDate: "2026-01-28T11:00:00",
+   │           totalDays: 3,
+   │           bookingStatus: "PENDING"
+   │         }
+   │       )
+   │
+   └─> Return 201 Created to Gateway → Angular ✅
+
+4. RABBITMQ BROKER (Port 5672)
+   │
+   │ Topic Exchange: "booking.events.exchange"
+   │   │
+   │   └─> Routing Key: "booking.created"
+   │       │
+   │       └─> Queue: "booking.notifications.queue" (bound with "booking.*")
+   │           └─> Message delivered to User Service
+   │
+   └─> Event ready for consumption
+
+5. USER SERVICE (Port 8091) - ASYNCHRONOUS PROCESSING
+   │
+   │ @RabbitListener(queues = "booking.notifications.queue")
+   │ BookingEventConsumer.handleBookingEvent()
+   │   ↓
+   │ @CircuitBreaker + @Transactional
+   │   ↓
+   │ switch (eventType) {
+   │   case "BOOKING_CREATED":
+   │     └─> notificationService.createBookingNotification()
+   │         └─> Save to MySQL (notification table)
+   │             └─> Title: "Booking Received"
+   │             └─> Message: "Your booking for Max (Dog) has been received!
+   │                          Room: Standard
+   │                          Check-in: Jan 25, 2026 at 2:00 PM
+   │                          Check-out: Jan 28, 2026 at 11:00 AM
+   │                          Duration: 3 days"
+   │             └─> User ID: 456
+   │ }
+   │
+   └─> User notification created ✅
+
+6. RESULT
+   │
+   ├─> User sees booking confirmation in Angular UI
+   ├─> User receives notification in their notification center
+   └─> Booking stored with PENDING status (awaiting confirmation)
+```
+
+### Booking Lifecycle Events
+
+| User Action | Pet Hotel Publishes | User Service Creates |
+|-------------|--------------------|--------------------|
+| Creates booking | `BOOKING_CREATED` | "Booking Received" notification |
+| Confirms/Pays | `BOOKING_CONFIRMED` | "Booking Confirmed" notification |
+| Cancels booking | `BOOKING_CANCELLED` | "Booking Cancelled" notification |
+| Checks out | `BOOKING_COMPLETED` | "Thank You" notification |
+| Modifies booking | `BOOKING_UPDATED` | "Booking Updated" notification |
+
+### Example: Complete Booking Lifecycle
+
+```
+1. User creates booking → BOOKING_CREATED → "Your booking has been received"
+2. User pays online → BOOKING_CONFIRMED → "Payment received, booking confirmed!"
+3. Pet stays 3 days at hotel
+4. User picks up pet → BOOKING_COMPLETED → "Thank you! We hope Max enjoyed the stay"
+```
+
+### Example: Cancelled Booking
+
+```
+1. User creates booking → BOOKING_CREATED → "Your booking has been received"
+2. User cancels → BOOKING_CANCELLED → "Your booking has been cancelled"
+```
+
+---
+
+## RabbitMQ Configuration Summary
+
+### Animal Events Exchange
+- **Exchange**: `animal.events.exchange` (Topic)
+- **Queues**:
+  - `shelter.updates.queue` → Shelter Service
+  - `user.notifications.queue` → User Service
+- **Routing**: `animal.*` (matches all animal events)
+
+### Booking Events Exchange
+- **Exchange**: `booking.events.exchange` (Topic)
+- **Queues**:
+  - `booking.notifications.queue` → User Service
+- **Routing**: `booking.*` (matches all booking events)
+
+### Dead Letter Queues
+| Main Queue | Dead Letter Queue |
+|------------|-------------------|
+| `shelter.updates.queue` | `shelter.updates.dlq` |
+| `user.notifications.queue` | `user.notifications.dlq` |
+| `booking.notifications.queue` | `booking.notifications.dlq` |
+
+---
+
 ## Service Ports
 
-- **API Gateway**: 8765
-- **Eureka Server**: 8761
-- **Animal Service**: 8093
-- **Shelter Service**: 8092
-- **User Service**: 8091
-- **RabbitMQ**: 5672
-- **Angular Frontend**: 4200
+| Service | Port |
+|---------|------|
+| API Gateway | 8765 |
+| Eureka Server | 8761 |
+| User Service | 8091 |
+| Shelter Service | 8092 |
+| Animal Service | 8093 |
+| Pet Hotel Service | 8094 |
+| RabbitMQ | 5672 |
+| RabbitMQ Management | 15672 |
+| Angular Frontend | 4200 |
+
+---
 
 ## Shared Library
 
 All services use `tnc-events-lib` for:
-- `AnimalEventDTO`: Shared event data structure
+- `AnimalEventDTO`: Animal event data structure
+- `BookingEventDTO`: Booking event data structure
 - `RabbitMQConstants`: Shared queue/exchange names and routing keys
 
 This ensures consistency across all microservices and prevents configuration drift.
+
+---
+
+## Architecture Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| **Loose Coupling** | Services communicate via events, not direct calls |
+| **Scalability** | Each service processes events independently |
+| **Reliability** | Circuit breakers prevent cascading failures |
+| **Consistency** | Events published only after DB commits |
+| **Fault Tolerance** | DLQ captures failed messages for retry |
+| **Observability** | Events provide audit trail of actions |

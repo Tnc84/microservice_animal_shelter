@@ -18,7 +18,8 @@ public class Booking {
     private Long id;
     private Long userId;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
+    @JoinColumn(name = "room_id")
     private Room roomId;
     private String petName;
     private String petSpecies;

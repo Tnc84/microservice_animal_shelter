@@ -57,6 +57,11 @@
             <artifactId>tnc-events-lib</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.tnc.resilience</groupId>
+            <artifactId>tnc-resilience-lib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- Spring Boot Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

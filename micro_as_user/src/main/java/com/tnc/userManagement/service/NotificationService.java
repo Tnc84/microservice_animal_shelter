@@ -56,6 +56,39 @@ public class NotificationService {
         
         return savedNotification;
     }
+
+    /**
+     * Create a booking-related notification for a user.
+     * 
+     * @param userId the user ID
+     * @param title the notification title
+     * @param message the notification message
+     * @param type the notification type
+     * @param bookingId the booking ID
+     * @return the created notification
+     */
+    @Transactional
+    public Notification createBookingNotification(Long userId, String title, String message, 
+                                                   String type, Long bookingId) {
+        log.info("Creating booking notification for user ID: {}, bookingId: {}, type: {}", 
+                userId, bookingId, type);
+        
+        Notification notification = Notification.builder()
+                .userId(userId)
+                .title(title)
+                .message(message)
+                .type(type)
+                .bookingId(bookingId)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        
+        Notification savedNotification = notificationRepository.save(notification);
+        log.info("Successfully created booking notification ID: {} for user ID: {}", 
+                savedNotification.getId(), userId);
+        
+        return savedNotification;
+    }
     
     /**
      * Get paginated notifications for a user.
