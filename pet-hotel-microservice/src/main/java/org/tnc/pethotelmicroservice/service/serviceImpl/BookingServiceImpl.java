@@ -8,6 +8,9 @@ import io.github.resilience4j.retry.RetryRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.tnc.pethotelmicroservice.events.BookingEventPublisher;
+import org.tnc.pethotelmicroservice.repository.entities.Booking;
 import org.tnc.pethotelmicroservice.repository.entities.BookingStatus;
 import org.tnc.pethotelmicroservice.repository.interfaces.BookingRepository;
 import org.tnc.pethotelmicroservice.repository.interfaces.RoomRepository;
@@ -33,6 +36,7 @@ public class BookingServiceImpl implements BookingServiceInterface {
     private final ServiceMapper serviceMapper;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
     private final RetryRegistry retryRegistry;
+    private final BookingEventPublisher bookingEventPublisher;
 
     /**
      * Execute a database operation with circuit breaker and retry protection.
@@ -77,10 +81,11 @@ public class BookingServiceImpl implements BookingServiceInterface {
     }
 
     @Override
+    @Transactional
     public BookingDomain addBooking(BookingDomain bookingDomain) {
         log.info("Adding new booking for pet: {}", bookingDomain.getPetName());
         
-        return executeDatabase(() -> {
+        BookingDomain savedBookingDomain = executeDatabase(() -> {
             var bookingEntity = serviceMapper.bookingDomainToBooking(bookingDomain);
             
             // Fetch the actual room entity by ID
@@ -101,13 +106,28 @@ public class BookingServiceImpl implements BookingServiceInterface {
             log.info("Booking created with ID: {}", savedBooking.getId());
             return serviceMapper.bookingToBookingDomain(savedBooking);
         });
+        
+        // Publish booking created event after successful DB commit
+        if (savedBookingDomain != null) {
+            Booking savedBooking = bookingRepository.getBookingById(savedBookingDomain.getId());
+            if (savedBooking != null) {
+                bookingEventPublisher.publishBookingCreated(savedBooking);
+            }
+        }
+        
+        return savedBookingDomain;
     }
 
     @Override
+    @Transactional
     public BookingDomain updateBooking(Long bookingId, BookingDomain bookingDomain) {
         log.info("Updating booking ID: {}", bookingId);
         
-        return executeDatabase(() -> {
+        // Get old status before update
+        Booking existingBookingBefore = bookingRepository.getBookingById(bookingId);
+        BookingStatus oldStatus = existingBookingBefore != null ? existingBookingBefore.getStatus() : null;
+        
+        BookingDomain updatedBookingDomain = executeDatabase(() -> {
             var existingBooking = bookingRepository.getBookingById(bookingId);
             if (existingBooking == null) {
                 log.warn("Booking not found with ID: {}", bookingId);
@@ -140,9 +160,42 @@ public class BookingServiceImpl implements BookingServiceInterface {
             log.info("Booking updated successfully: {}", bookingId);
             return serviceMapper.bookingToBookingDomain(updatedBooking);
         });
+        
+        // Publish appropriate event after successful DB commit based on status change
+        if (updatedBookingDomain != null) {
+            Booking updatedBooking = bookingRepository.getBookingById(bookingId);
+            if (updatedBooking != null) {
+                BookingStatus newStatus = updatedBooking.getStatus();
+                
+                // Publish specific event if status changed to a lifecycle state
+                if (newStatus != oldStatus && newStatus != null) {
+                    switch (newStatus) {
+                        case CONFIRMED:
+                            bookingEventPublisher.publishBookingConfirmed(updatedBooking);
+                            break;
+                        case COMPLETED:
+                            bookingEventPublisher.publishBookingCompleted(updatedBooking);
+                            break;
+                        case CANCELLED:
+                            bookingEventPublisher.publishBookingCancelled(updatedBooking);
+                            break;
+                        default:
+                            // For other status changes or non-status updates, publish generic update event
+                            bookingEventPublisher.publishBookingUpdated(updatedBooking);
+                            break;
+                    }
+                } else {
+                    // No status change, publish generic update event
+                    bookingEventPublisher.publishBookingUpdated(updatedBooking);
+                }
+            }
+        }
+        
+        return updatedBookingDomain;
     }
 
     @Override
+    @Transactional
     public void cancelBooking(Long bookingId) {
         log.info("Cancelling booking ID: {}", bookingId);
         
@@ -157,6 +210,70 @@ public class BookingServiceImpl implements BookingServiceInterface {
             }
             return null;
         });
+        
+        // Publish booking cancelled event after successful DB commit
+        Booking cancelledBooking = bookingRepository.getBookingById(bookingId);
+        if (cancelledBooking != null) {
+            bookingEventPublisher.publishBookingCancelled(cancelledBooking);
+        }
+    }
+
+    @Override
+    @Transactional
+    public BookingDomain confirmBooking(Long bookingId) {
+        log.info("Confirming booking ID: {}", bookingId);
+        
+        BookingDomain confirmedBookingDomain = executeDatabase(() -> {
+            var existingBooking = bookingRepository.getBookingById(bookingId);
+            if (existingBooking == null) {
+                log.warn("Booking not found with ID: {}", bookingId);
+                return null;
+            }
+            
+            existingBooking.setStatus(BookingStatus.CONFIRMED);
+            var confirmedBooking = bookingRepository.save(existingBooking);
+            log.info("Booking confirmed: {}", bookingId);
+            return serviceMapper.bookingToBookingDomain(confirmedBooking);
+        });
+        
+        // Publish booking confirmed event after successful DB commit
+        if (confirmedBookingDomain != null) {
+            Booking confirmedBooking = bookingRepository.getBookingById(bookingId);
+            if (confirmedBooking != null) {
+                bookingEventPublisher.publishBookingConfirmed(confirmedBooking);
+            }
+        }
+        
+        return confirmedBookingDomain;
+    }
+
+    @Override
+    @Transactional
+    public BookingDomain completeBooking(Long bookingId) {
+        log.info("Completing booking ID: {}", bookingId);
+        
+        BookingDomain completedBookingDomain = executeDatabase(() -> {
+            var existingBooking = bookingRepository.getBookingById(bookingId);
+            if (existingBooking == null) {
+                log.warn("Booking not found with ID: {}", bookingId);
+                return null;
+            }
+            
+            existingBooking.setStatus(BookingStatus.COMPLETED);
+            var completedBooking = bookingRepository.save(existingBooking);
+            log.info("Booking completed: {}", bookingId);
+            return serviceMapper.bookingToBookingDomain(completedBooking);
+        });
+        
+        // Publish booking completed event after successful DB commit
+        if (completedBookingDomain != null) {
+            Booking completedBooking = bookingRepository.getBookingById(bookingId);
+            if (completedBooking != null) {
+                bookingEventPublisher.publishBookingCompleted(completedBooking);
+            }
+        }
+        
+        return completedBookingDomain;
     }
 
     @Override

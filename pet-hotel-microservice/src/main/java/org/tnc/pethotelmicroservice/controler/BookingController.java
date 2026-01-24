@@ -76,6 +76,24 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<BookingDTO> confirmBooking(@PathVariable Long id) {
+        var bookingDomain = bookingService.confirmBooking(id);
+        if (bookingDomain == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoMapper.bookingDomainToBookingDto(bookingDomain));
+    }
+
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<BookingDTO> completeBooking(@PathVariable Long id) {
+        var bookingDomain = bookingService.completeBooking(id);
+        if (bookingDomain == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(dtoMapper.bookingDomainToBookingDto(bookingDomain));
+    }
+
     @GetMapping("/availability")
     public ResponseEntity<Map<String, Object>> checkRoomAvailability(
             @RequestParam Long roomId,

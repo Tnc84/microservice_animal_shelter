@@ -13,5 +13,7 @@ public interface BookingServiceInterface {
     BookingDomain addBooking(BookingDomain booking);
     BookingDomain updateBooking(Long bookingId, BookingDomain booking);
     void cancelBooking(Long bookingId);
+    BookingDomain confirmBooking(Long bookingId);
+    BookingDomain completeBooking(Long bookingId);
     boolean checkRoomAvailability(Long roomId, LocalDateTime checkIn, LocalDateTime checkOut);
 }
