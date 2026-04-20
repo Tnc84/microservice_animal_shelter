@@ -10,27 +10,7 @@
 CREATE DATABASE IF NOT EXISTS `animal`;
 CREATE DATABASE IF NOT EXISTS `shelter`;
 CREATE DATABASE IF NOT EXISTS `user_management`;
-CREATE DATABASE IF NOT EXISTS `pet-hotel`;
-
--- =====================================================
--- 2. CREATE DEDICATED USER AND GRANT PRIVILEGES
--- =====================================================
--- Create user for the application (production-ready)
-CREATE USER IF NOT EXISTS 'animalshelter'@'localhost' IDENTIFIED BY 'SecurePassword123!';
-CREATE USER IF NOT EXISTS 'animalshelter'@'%' IDENTIFIED BY 'SecurePassword123!';
-
--- Grant privileges on all databases
-GRANT ALL PRIVILEGES ON `animal`.* TO 'animalshelter'@'localhost';
-GRANT ALL PRIVILEGES ON `shelter`.* TO 'animalshelter'@'localhost';
-GRANT ALL PRIVILEGES ON `user_management`.* TO 'animalshelter'@'localhost';
-GRANT ALL PRIVILEGES ON `pet-hotel`.* TO 'animalshelter'@'localhost';
-
-GRANT ALL PRIVILEGES ON `animal`.* TO 'animalshelter'@'%';
-GRANT ALL PRIVILEGES ON `shelter`.* TO 'animalshelter'@'%';
-GRANT ALL PRIVILEGES ON `user_management`.* TO 'animalshelter'@'%';
-GRANT ALL PRIVILEGES ON `pet-hotel`.* TO 'animalshelter'@'%';
-
-FLUSH PRIVILEGES;
+CREATE DATABASE IF NOT EXISTS `pet_hotel`;
 
 -- =====================================================
 -- 3. ANIMAL DATABASE SCHEMA
@@ -162,12 +142,8 @@ USE `user_management`;
 SHOW TABLES;
 
 SELECT 'Pet Hotel Database Tables:' as info;
-USE `pet-hotel`;
+USE `pet_hotel`;
 SHOW TABLES;
-
--- Show user privileges
-SELECT 'Database Users:' as info;
-SELECT User, Host FROM mysql.user WHERE User = 'animalshelter';
 
 -- =====================================================
 -- 9. SECURITY RECOMMENDATIONS

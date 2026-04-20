@@ -1,185 +1,192 @@
-version: '3.8'
-
 services:
-  # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: animal_shelter_mysql
+    container_name: ${MYSQL_CONTAINER_NAME}
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: animal_shelter
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DEFAULT_DATABASE}
     ports:
-      - "3307:3306"
+      - "${MYSQL_HOST_PORT}:${MYSQL_CONTAINER_PORT}"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./setup-databases.sql:/docker-entrypoint-initdb.d/setup-databases.sql
     networks:
       - animal_shelter
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
       retries: 10
+      start_period: 20s
 
-  # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3.13-management
-    container_name: animal_shelter_rabbitmq
+    container_name: ${RABBITMQ_CONTAINER_NAME}
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI port
+      - "${RABBITMQ_AMQP_PORT}:${RABBITMQ_AMQP_PORT}"
+      - "${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - animal_shelter
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      timeout: 20s
+      interval: 10s
+      timeout: 5s
       retries: 10
+      start_period: 20s
 
-  # Zipkin Distributed Tracing
   zipkin:
     image: openzipkin/zipkin:latest
-    container_name: zipkin
+    container_name: ${ZIPKIN_CONTAINER_NAME}
     ports:
-      - "9411:9411"
+      - "${ZIPKIN_HOST_PORT}:${ZIPKIN_CONTAINER_PORT}"
     networks:
       - animal_shelter
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9411/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${ZIPKIN_CONTAINER_PORT}/health"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Eureka Naming Server
   naming-server:
     build:
       context: .
       dockerfile: ./naming-server-as/Dockerfile
-    container_name: naming-server
+    container_name: ${NAMING_SERVER_CONTAINER_NAME}
     ports:
-      - "8761:8761"
+      - "${NAMING_SERVER_HOST_PORT}:${NAMING_SERVER_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
       mysql:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
 
-  # API Gateway
   api-gateway:
     build:
       context: .
       dockerfile: ./api-gateway-as/Dockerfile
-    container_name: api-gateway
+    container_name: ${API_GATEWAY_CONTAINER_NAME}
     ports:
-      - "8765:8765"
+      - "${API_GATEWAY_HOST_PORT}:${API_GATEWAY_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
-      - naming-server
+      naming-server:
+        condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
 
-  # Animal Microservice
   animal-microservice:
     build:
       context: .
       dockerfile: ./micro_as_animal/Dockerfile
-    container_name: animal-microservice
+    container_name: ${ANIMAL_SERVICE_CONTAINER_NAME}
     ports:
-      - "8093:8093"
+      - "${ANIMAL_SERVICE_HOST_PORT}:${ANIMAL_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
-      - naming-server
-      - mysql
-      - rabbitmq
+      naming-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/animal
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=admin
-      - SPRING_RABBITMQ_PASSWORD=admin123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${ANIMAL_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
-  # Shelter Microservice
   shelter-microservice:
     build:
       context: .
       dockerfile: ./micro_as_shelter/Dockerfile
-    container_name: shelter-microservice
+    container_name: ${SHELTER_SERVICE_CONTAINER_NAME}
     ports:
-      - "8092:8092"
+      - "${SHELTER_SERVICE_HOST_PORT}:${SHELTER_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
-      - naming-server
-      - animal-microservice
-      - mysql
-      - rabbitmq
+      naming-server:
+        condition: service_healthy
+      animal-microservice:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/shelter
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=admin
-      - SPRING_RABBITMQ_PASSWORD=admin123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${SHELTER_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
-  # User Management Microservice
   user-microservice:
     build:
       context: .
       dockerfile: ./micro_as_user/Dockerfile
-    container_name: user-microservice
+    container_name: ${USER_SERVICE_CONTAINER_NAME}
     ports:
-      - "8091:8091"
+      - "${USER_SERVICE_HOST_PORT}:${USER_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
-      - naming-server
-      - mysql
-      - rabbitmq
+      naming-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_management
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=admin
-      - SPRING_RABBITMQ_PASSWORD=admin123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${USER_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
-  # Pet Hotel Microservice
   pet-hotel-microservice:
     build:
       context: .
       dockerfile: ./pet-hotel-microservice/Dockerfile
-    container_name: pet-hotel-microservice
+    container_name: ${PET_HOTEL_SERVICE_CONTAINER_NAME}
     ports:
-      - "8096:8096"
+      - "${PET_HOTEL_SERVICE_HOST_PORT}:${PET_HOTEL_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
     depends_on:
-      - naming-server
-      - mysql
-      - rabbitmq
+      naming-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/pet-hotel
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=rootpassword
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=admin
-      - SPRING_RABBITMQ_PASSWORD=admin123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${PET_HOTEL_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
 volumes:
   mysql_data:
