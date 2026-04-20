@@ -61,11 +61,10 @@ services:
       - "${NAMING_SERVER_HOST_PORT}:${NAMING_SERVER_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      mysql:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
   api-gateway:
     build:
@@ -76,11 +75,11 @@ services:
       - "${API_GATEWAY_HOST_PORT}:${API_GATEWAY_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      naming-server:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
   animal-microservice:
     build:
@@ -91,15 +90,9 @@ services:
       - "${ANIMAL_SERVICE_HOST_PORT}:${ANIMAL_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      naming-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${ANIMAL_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -107,6 +100,8 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
   shelter-microservice:
     build:
@@ -117,17 +112,9 @@ services:
       - "${SHELTER_SERVICE_HOST_PORT}:${SHELTER_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      naming-server:
-        condition: service_healthy
-      animal-microservice:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${SHELTER_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -135,6 +122,8 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
   user-microservice:
     build:
@@ -145,15 +134,9 @@ services:
       - "${USER_SERVICE_HOST_PORT}:${USER_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      naming-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${USER_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -161,6 +144,8 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
   pet-hotel-microservice:
     build:
@@ -171,15 +156,9 @@ services:
       - "${PET_HOTEL_SERVICE_HOST_PORT}:${PET_HOTEL_SERVICE_CONTAINER_PORT}"
     networks:
       - animal_shelter
-    depends_on:
-      naming-server:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_CONTAINER_PORT}/${PET_HOTEL_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
@@ -187,6 +166,8 @@ services:
       SPRING_RABBITMQ_PORT: ${RABBITMQ_AMQP_PORT}
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_ZIPKIN_BASE_URL: ${ZIPKIN_BASE_URL}
+      SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
 
 volumes:
   mysql_data:

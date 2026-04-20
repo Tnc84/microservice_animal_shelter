@@ -390,8 +390,46 @@ cd naming-server-as && mvn clean install -DskipTests
 ### Docker Deployment
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
+# Build and run with Docker Compose v2
+docker compose up -d --build
+```
+
+### Docker Compose Configuration (.env)
+
+- Docker runtime configuration was centralized in `.env` (ports, container names, profile, MySQL/RabbitMQ credentials, database names).
+- `docker-compose.yml` now references environment variables instead of hardcoded values.
+- Keep `.env` local only (already ignored by `.gitignore`) and commit only a safe template for team usage.
+- `pet-hotel` database naming was normalized to `pet_hotel` for safer cross-tool compatibility.
+
+### Docker Prerequisites on Ubuntu
+
+```bash
+# Verify Docker engine
+docker --version
+
+# Verify Compose v2 plugin
+docker compose version
+```
+
+If `docker compose` is missing, install Compose v2 plugin:
+
+```bash
+sudo apt update
+sudo apt install docker-compose-v2
+```
+
+If you get Docker socket permission errors (`/var/run/docker.sock`):
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+docker ps
+```
+
+Then run:
+
+```bash
+docker compose up -d --build
 ```
 
 ## API Examples
@@ -820,6 +858,13 @@ It saves you time, prevents bugs, and helps you maintain high code quality stand
 - **Prometheus Metrics:** `http://localhost:8093/actuator/prometheus` (any service)
 
 ### Recent Changes (Resilience + Security)
+
+- Docker / DevOps updates
+  - Moved Compose runtime settings to `.env` and removed hardcoded secrets from `docker-compose.yml`.
+  - Updated service wiring to use environment-based datasource and RabbitMQ settings.
+  - Improved startup dependency behavior with health-based `depends_on` conditions where relevant.
+  - Normalized Pet Hotel DB naming to `pet_hotel` in Docker setup SQL and Compose environment.
+  - Updated runtime Dockerfiles to ensure `curl` is available for container `HEALTHCHECK` commands.
 
 - Resilience
   - Added `tnc-resilience-lib` helper `ResilienceExecutor` to centralize CircuitBreaker/Retry/TimeLimiter decoration.
