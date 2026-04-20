@@ -82,7 +82,8 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         return path.startsWith("/swagger-ui") || 
                path.startsWith("/v3/api-docs") || 
                path.startsWith("/actuator/health") ||
-               path.startsWith("/user-management/auth/");
+               path.startsWith("/user-management/auth/") ||
+               path.startsWith("/auth/");
     }
     
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {

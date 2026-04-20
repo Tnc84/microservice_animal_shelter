@@ -110,6 +110,7 @@ public class InternalTokenAuthorizationFilter extends OncePerRequestFilter {
         return requestPath.startsWith("/actuator/") ||
                requestPath.startsWith("/swagger-ui/") ||
                requestPath.startsWith("/v3/api-docs/") ||
+               requestPath.startsWith("/auth/") ||
                requestPath.equals("/animals/getAll"); // Specific public endpoint for animals
     }
 }
