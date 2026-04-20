@@ -1,4 +1,4 @@
-# Multi-stage build for API Gateway
+# Multi-stage build for Pet Hotel Microservice
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
 
@@ -14,11 +14,11 @@ COPY tnc-shared-libraries/tnc-docker-lib ./tnc-shared-libraries/tnc-docker-lib
 RUN cd tnc-shared-libraries && mvn clean install -DskipTests -T 4
 
 # Copy service POM and source
-COPY api-gateway-as/pom.xml ./api-gateway-as/
-COPY api-gateway-as/src ./api-gateway-as/src
+COPY pet-hotel-microservice/pom.xml ./pet-hotel-microservice/
+COPY pet-hotel-microservice/src ./pet-hotel-microservice/src
 
 # Build the application
-RUN cd api-gateway-as && mvn clean package -DskipTests -T 4
+RUN cd pet-hotel-microservice && mvn clean package -DskipTests -T 4
 
 # Runtime stage
 FROM eclipse-temurin:17-jdk
@@ -26,14 +26,14 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copy the built jar from build stage
-COPY --from=build /app/api-gateway-as/target/*.jar app.jar
+COPY --from=build /app/pet-hotel-microservice/target/*.jar app.jar
 
 # Expose the port
-EXPOSE 8765
+EXPOSE 8096
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8765/actuator/health || exit 1
+  CMD curl -f http://localhost:8096/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8096}
 spring:
   application:
     name: pet-hotel
@@ -7,12 +7,12 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost/pet-hotel
 #    url: jdbc:mysql://${DB_HOST:localhost}/${DB_NAME:pet-hotel}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
   jpa:
     hibernate:
-      ddl-auto: create
-#      ddl-auto: validate
+      # ddl-auto: create
+     ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect

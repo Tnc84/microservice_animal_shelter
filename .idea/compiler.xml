@@ -27,11 +27,11 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="animals" options="-parameters" />
+      <module name="animals" options="" />
       <module name="api-gateway-as" options="-parameters" />
-      <module name="naming-server-as" options="-parameters" />
+      <module name="naming-server-as" options="" />
       <module name="shelter" options="-parameters" />
-      <module name="userManagement" options="-parameters" />
+      <module name="userManagement" options="" />
     </option>
   </component>
 </project>

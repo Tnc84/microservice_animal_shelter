@@ -67,7 +67,7 @@ cd ..
 echo ✓ Shelter Microservice built successfully
 
 echo.
-echo [6/6] Building User Management Microservice...
+echo [6/7] Building User Management Microservice...
 cd micro_as_user
 call mvn clean package -DskipTests
 if !errorlevel! neq 0 (
@@ -77,6 +77,18 @@ if !errorlevel! neq 0 (
 )
 cd ..
 echo ✓ User Management Microservice built successfully
+
+echo.
+echo [7/7] Building Pet Hotel Microservice...
+cd pet-hotel-microservice
+call mvn clean package -DskipTests
+if !errorlevel! neq 0 (
+    echo ERROR: Failed to build Pet Hotel Microservice
+    pause
+    exit /b 1
+)
+cd ..
+echo ✓ Pet Hotel Microservice built successfully
 
 echo.
 echo ========================================

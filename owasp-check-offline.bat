@@ -112,6 +112,22 @@ if %ERRORLEVEL% neq 0 (
 cd ..
 
 echo.
+echo Step 8: Running OWASP check for pet-hotel-microservice...
+cd pet-hotel-microservice
+call mvn org.owasp:dependency-check-maven:check \
+  -Dformat=ALL \
+  -Dformat=HTML \
+  -Dformat=JSON \
+  -Ddependency-check.offline=true \
+  -Ddependency-check.retryCount=3 \
+  -Ddependency-check.connectionTimeout=30000 \
+  -Ddependency-check.readTimeout=30000
+if %ERRORLEVEL% neq 0 (
+    echo WARNING: OWASP check failed for pet-hotel-microservice, continuing...
+)
+cd ..
+
+echo.
 echo ========================================
 echo OWASP dependency checks completed!
 echo ========================================
@@ -123,6 +139,7 @@ echo   - micro_as_animal/target/dependency-check-report.html
 echo   - micro_as_shelter/target/dependency-check-report.html
 echo   - api-gateway-as/target/dependency-check-report.html
 echo   - naming-server-as/target/dependency-check-report.html
+echo   - pet-hotel-microservice/target/dependency-check-report.html
 echo.
 echo Note: Offline mode uses cached vulnerability data.
 echo For latest data, run without offline mode when network is available.

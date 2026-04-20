@@ -10,6 +10,7 @@
 CREATE DATABASE IF NOT EXISTS `animal`;
 CREATE DATABASE IF NOT EXISTS `shelter`;
 CREATE DATABASE IF NOT EXISTS `user_management`;
+CREATE DATABASE IF NOT EXISTS `pet-hotel`;
 
 -- =====================================================
 -- 2. CREATE DEDICATED USER AND GRANT PRIVILEGES
@@ -22,10 +23,12 @@ CREATE USER IF NOT EXISTS 'animalshelter'@'%' IDENTIFIED BY 'SecurePassword123!'
 GRANT ALL PRIVILEGES ON `animal`.* TO 'animalshelter'@'localhost';
 GRANT ALL PRIVILEGES ON `shelter`.* TO 'animalshelter'@'localhost';
 GRANT ALL PRIVILEGES ON `user_management`.* TO 'animalshelter'@'localhost';
+GRANT ALL PRIVILEGES ON `pet-hotel`.* TO 'animalshelter'@'localhost';
 
 GRANT ALL PRIVILEGES ON `animal`.* TO 'animalshelter'@'%';
 GRANT ALL PRIVILEGES ON `shelter`.* TO 'animalshelter'@'%';
 GRANT ALL PRIVILEGES ON `user_management`.* TO 'animalshelter'@'%';
+GRANT ALL PRIVILEGES ON `pet-hotel`.* TO 'animalshelter'@'%';
 
 FLUSH PRIVILEGES;
 
@@ -156,6 +159,10 @@ SHOW TABLES;
 
 SELECT 'User Management Database Tables:' as info;
 USE `user_management`;
+SHOW TABLES;
+
+SELECT 'Pet Hotel Database Tables:' as info;
+USE `pet-hotel`;
 SHOW TABLES;
 
 -- Show user privileges
