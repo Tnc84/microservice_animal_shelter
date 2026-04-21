@@ -1,7 +1,7 @@
 package org.tnc.pethotelmicroservice.config;
 
-import com.tnc.security.InternalTokenAuthorizationFilter;
-import com.tnc.security.InternalTokenService;
+import com.tnc.security.GatewayUserAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,20 +13,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Security Configuration for Pet Hotel Microservice.
- * Handles internal token validation and role-based access control.
+ * Trusts the JWT-derived user context forwarded by the API Gateway via
+ * X-User-* headers and applies role-based access control.
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    public InternalTokenService internalTokenService() {
-        return new InternalTokenService();
-    }
+    private final GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, InternalTokenService internalTokenService) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.disable())
@@ -37,10 +36,9 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 console
-            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), 
-                UsernamePasswordAuthenticationFilter.class);
-        
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+            .addFilterBefore(gatewayUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

@@ -3,8 +3,7 @@ package com.tnc.userManagement.config;
 import com.tnc.userManagement.service.constant.SecurityConstant;
 import com.tnc.userManagement.service.security.filter.JwtAccessDeniedHandler;
 import com.tnc.userManagement.service.security.filter.JwtAuthenticationEntryPoint;
-import com.tnc.security.InternalTokenAuthorizationFilter;
-import com.tnc.security.InternalTokenService;
+import com.tnc.security.GatewayUserAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final InternalTokenService internalTokenService;
+    private final GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
@@ -57,7 +56,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
             )
-            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(gatewayUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }

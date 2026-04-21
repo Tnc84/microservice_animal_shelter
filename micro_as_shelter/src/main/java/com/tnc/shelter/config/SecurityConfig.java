@@ -1,7 +1,6 @@
 package com.tnc.shelter.config;
 
-import com.tnc.security.InternalTokenAuthorizationFilter;
-import com.tnc.security.InternalTokenService;
+import com.tnc.security.GatewayUserAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +10,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 /**
- * Security Configuration for Shelter Microservice
- * Handles internal token validation and role-based access control
+ * Security Configuration for Shelter Microservice.
+ * Trusts the JWT-derived user context forwarded by the API Gateway via
+ * X-User-* headers and applies role-based access control.
  */
 @Configuration
 @EnableWebSecurity
@@ -21,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final InternalTokenService internalTokenService;
+    private final GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,12 +31,12 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/**").permitAll() // Allow all actuator endpoints for monitoring
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class);
-        
+            .addFilterBefore(gatewayUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

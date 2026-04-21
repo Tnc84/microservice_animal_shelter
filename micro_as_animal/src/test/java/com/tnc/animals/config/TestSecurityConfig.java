@@ -1,6 +1,6 @@
 package com.tnc.animals.config;
 
-import com.tnc.security.InternalTokenService;
+import com.tnc.security.GatewayUserAuthenticationFilter;
 import com.tnc.security.util.JwtUtil;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +11,8 @@ public class TestSecurityConfig {
 
     @Bean
     @Primary
-    public InternalTokenService internalTokenService() {
-        return new InternalTokenService();
+    public GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter() {
+        return new GatewayUserAuthenticationFilter();
     }
 
     @Bean

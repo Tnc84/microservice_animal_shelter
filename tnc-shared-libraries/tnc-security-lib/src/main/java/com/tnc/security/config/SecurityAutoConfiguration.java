@@ -1,16 +1,11 @@
 package com.tnc.security.config;
 
-import com.tnc.security.InternalTokenAuthorizationFilter;
-import com.tnc.security.InternalTokenWebFluxFilter;
-import com.tnc.security.InternalTokenService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.tnc.security.GatewayUserAuthenticationFilter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,31 +13,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Auto-configuration for TNC Security components.
- * Provides default security configuration that can be customized by microservices.
- * Supports both servlet-based (Spring MVC) and reactive (WebFlux) applications.
+ *
+ * <p>Servlet-based microservices rely entirely on the JWT user token validated
+ * at the API Gateway. The Gateway forwards the authenticated user context via
+ * X-User-* headers, and {@link GatewayUserAuthenticationFilter} maps it into
+ * the Spring Security context for role-based authorization.</p>
  */
 @AutoConfiguration
 public class SecurityAutoConfiguration {
 
-    /**
-     * Creates InternalTokenService bean if not already defined.
-     * This ensures the service is available for dependency injection.
-     */
     @Bean
     @ConditionalOnMissingBean
-    public InternalTokenService internalTokenService() {
-        return new InternalTokenService();
+    @ConditionalOnClass(name = "jakarta.servlet.Filter")
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    public GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter() {
+        return new GatewayUserAuthenticationFilter();
     }
 
     /**
-     * Default security filter chain configuration for servlet-based applications.
-     * Can be overridden by microservices by providing their own SecurityFilterChain bean.
+     * Default servlet security filter chain. Microservices may override it
+     * by defining their own {@link SecurityFilterChain} bean.
      */
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(name = "jakarta.servlet.Filter")
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, InternalTokenService internalTokenService) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http,
+                                                          GatewayUserAuthenticationFilter gatewayUserAuthenticationFilter) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,27 +49,7 @@ public class SecurityAutoConfiguration {
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new InternalTokenAuthorizationFilter(internalTokenService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(gatewayUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    /**
-     * Nested configuration for WebFlux/Gateway security.
-     * Only loaded when Spring Cloud Gateway is on the classpath.
-     * This isolation prevents ClassNotFoundException in servlet applications.
-     */
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(GlobalFilter.class)
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    protected static class WebFluxSecurityConfiguration {
-
-        /**
-         * WebFlux filter for reactive applications.
-         * Automatically registered when running in a WebFlux Gateway context.
-         */
-        @Bean
-        public InternalTokenWebFluxFilter internalTokenWebFluxFilter(InternalTokenService internalTokenService) {
-            return new InternalTokenWebFluxFilter(internalTokenService);
-        }
     }
 }

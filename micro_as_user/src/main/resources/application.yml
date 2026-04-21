@@ -40,14 +40,11 @@ spring:
     sampler:
       probability: 1.0  # 1.0 = 100% sampling (use 0.1 for production)
 
-# JWT Configuration
+# JWT Configuration (access + refresh user tokens issued at login)
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:900000} # 15 minutes in milliseconds
   refresh-expiration: 604800000 # 7 days in milliseconds
-  internal:
-    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
-    expiration: 600000  # 10 minutes
 
 # Swagger/OpenAPI Configuration
 springdoc:
