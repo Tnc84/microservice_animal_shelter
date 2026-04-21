@@ -84,6 +84,8 @@ services:
       SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
       EUREKA_INSTANCE_HOSTNAME: api-gateway
       EUREKA_INSTANCE_NON_SECURE_PORT: ${API_GATEWAY_HOST_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
 
   animal-microservice:
     build:
@@ -156,6 +158,8 @@ services:
       SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
       EUREKA_INSTANCE_HOSTNAME: user-microservice
       EUREKA_INSTANCE_NON_SECURE_PORT: ${USER_SERVICE_HOST_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
 
   pet-hotel-microservice:
     build:

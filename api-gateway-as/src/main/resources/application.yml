@@ -141,8 +141,8 @@ resilience4j:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:mySecretKey}
-  expiration: 900000  # 15 minutes
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:900000}  # 15 minutes
 
 # Management endpoints for monitoring
 management:
