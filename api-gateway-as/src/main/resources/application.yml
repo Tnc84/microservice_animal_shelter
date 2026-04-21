@@ -36,7 +36,7 @@ spring:
           filters:
             - RewritePath=/shelter-microservice/(?<segment>.*), /$\{segment}
         - id: pet-hotel-microservice
-          uri: lb://pet-hotel-microservice
+          uri: lb://pet-hotel
           predicates:
             - Path=/pet-hotel-microservice/**
           filters:

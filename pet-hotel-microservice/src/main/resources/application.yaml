@@ -28,11 +28,11 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
 
-# JWT Configuration - Internal tokens only
-jwt:
-  internal:
-    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
-    expiration: 600000  # 10 minutes
+# Internal tokens (InternalTokenService in tnc-security-lib reads these keys, not jwt.internal.*)
+internal:
+  token:
+    secret: ${INTERNAL_TOKEN_SECRET:${INTERNAL_JWT_SECRET:internal-secret-key}}
+    expiration: ${INTERNAL_TOKEN_EXPIRATION:3600000}
 
 # Swagger/OpenAPI Configuration
 springdoc:
