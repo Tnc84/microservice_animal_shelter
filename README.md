@@ -40,11 +40,11 @@ This is a **Java 17 microservices application** for managing an animal shelter s
   - Programming model conflicts (reactive vs imperative)
 
 ### **Security Architecture by Service Type:**
-- **API Gateway (WebFlux):** Custom JWT service and WebFlux security configuration
-- **Business Microservices (Servlet):** Shared security library with servlet-based filters
-- **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
-- **Performance Benefits:** WebFlux gateway handles thousands of concurrent connections
-- **Maintainability:** Architecture-specific security implementations for optimal performance
+- **API Gateway (WebFlux):** Single `JwtAuthenticationFilter` handles auth + role-based authorization
+- **Business Microservices (Servlet):** Shared security library maps `X-User-*` headers to Spring `Authentication`
+- **JWT-only flow:** Client -> API Gateway -> microservices (no internal token layer)
+- **Performance Benefits:** WebFlux gateway handles high concurrency with non-blocking routing
+- **Maintainability:** One source of truth for public/protected endpoints and role rules
 
 ### **Development Tools:**
 - **Lombok** for reducing boilerplate code
@@ -66,18 +66,17 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 ### 2. **API Gateway**
 - **Port:** 8765
 - **Purpose:** Single entry point for all microservices with JWT security
-- **Technology:** Spring Cloud Gateway with WebFlux Security
+- **Technology:** Spring Cloud Gateway (WebFlux)
 - **Architecture:** Reactive (WebFlux) - non-blocking, high-performance gateway
 - **Features:** 
   - Service discovery integration and routing
   - JWT token validation and role-based access control
   - CORS configuration for frontend integration
   - Centralized security management
-  - Reactive security filters for non-blocking authentication
+  - Single reactive filter for authentication and authorization
 - **Security Implementation:**
   - Custom `JwtService` for WebFlux compatibility
-  - `WebFluxSecurityConfig` for reactive security configuration
-  - `JwtAuthenticationFilter` for non-blocking token validation
+  - `JwtAuthenticationFilter` for token validation + role checks + `X-User-*` forwarding
 - **Security Endpoints:**
   - `POST /user-management/auth/login` - User authentication
   - `POST /user-management/auth/register` - User registration
@@ -159,13 +158,12 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 
 ## Security Implementation
 
-### **🔐 Hybrid Security Architecture:**
-- **API Gateway Security:** WebFlux-compatible JWT service for reactive gateway
-- **Microservices Security:** Shared security library for servlet-based services
-- **Architecture-Specific Implementation:** Different security approaches for different architectures
-- **WebFlux Gateway:** Custom `JwtService` and `WebFluxSecurityConfig` for reactive applications
-- **Servlet Microservices:** Shared `tnc-security-lib` for traditional Spring MVC services
-- **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
+### **🔐 JWT Security Architecture:**
+- **API Gateway Security:** WebFlux `JwtAuthenticationFilter` validates JWT and enforces path-role rules
+- **Microservices Security:** Shared servlet filter (`GatewayUserAuthenticationFilter`) builds authentication from gateway headers
+- **Single policy point:** Gateway decides public/protected paths and required roles
+- **Servlet Microservices:** Keep method-level security (`@PreAuthorize`) based on propagated roles
+- **Dependency Management:** Avoid parallel security chains that can drift
 
 ### **📚 Shared Libraries Architecture:**
 - **tnc-security-lib:** JWT authentication and authorization for servlet-based services
@@ -183,7 +181,7 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - **Password Security:** BCrypt encryption for password storage
 - **Stateless Authentication:** JWT-based stateless security
 - **Token Management:** Automatic refresh and proper token revocation
-- **Internal Token System:** Secure inter-service communication with internal tokens
+- **No Internal Token Layer:** Removed to avoid duplicated/conflicting auth logic
 
 ### **Enhanced Security Flow:**
 1. **User Authentication:** `POST /user-management/auth/login`
@@ -200,10 +198,11 @@ This is a **Java 17 microservices application** for managing an animal shelter s
 - `POST /auth/logout` - Revokes tokens and clears cookies
 
 ### **Access Control Matrix:**
-- **Public Endpoints:** `/auth/**`, `/swagger-ui/**`, `/actuator/health`
-- **User Management:** Requires `USER` role
-- **Shelter Management:** Requires `ADMIN` or `SHELTER_MANAGER` role
-- **Animal Management:** Requires `ADMIN`, `SHELTER_MANAGER`, or `VET` role
+- **Public Endpoints:** `/user-management/auth/**`, `/auth/**`, `/swagger-ui/**`, `/v3/api-docs/**`, `/actuator/**`, `/animal-microservice/animals/getAll`
+- **User Management:** `ROLE_USER`, `ROLE_ADMIN`, `ROLE_SHELTER_MANAGER`, `ROLE_VET`
+- **Shelter Management:** `ROLE_ADMIN` or `ROLE_SHELTER_MANAGER`
+- **Animal Management:** `ROLE_ADMIN`, `ROLE_SHELTER_MANAGER`, or `ROLE_VET`
+- **Pet Hotel:** `ROLE_USER`, `ROLE_ADMIN`, or `ROLE_SHELTER_MANAGER`
 
 ### **Security Features:**
 - **Token Blacklisting:** Proper token revocation on logout
@@ -390,8 +389,46 @@ cd naming-server-as && mvn clean install -DskipTests
 ### Docker Deployment
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
+# Build and run with Docker Compose v2
+docker compose up -d --build
+```
+
+### Docker Compose Configuration (.env)
+
+- Docker runtime configuration was centralized in `.env` (ports, container names, profile, MySQL/RabbitMQ credentials, database names).
+- `docker-compose.yml` now references environment variables instead of hardcoded values.
+- Keep `.env` local only (already ignored by `.gitignore`) and commit only a safe template for team usage.
+- `pet-hotel` database naming was normalized to `pet_hotel` for safer cross-tool compatibility.
+
+### Docker Prerequisites on Ubuntu
+
+```bash
+# Verify Docker engine
+docker --version
+
+# Verify Compose v2 plugin
+docker compose version
+```
+
+If `docker compose` is missing, install Compose v2 plugin:
+
+```bash
+sudo apt update
+sudo apt install docker-compose-v2
+```
+
+If you get Docker socket permission errors (`/var/run/docker.sock`):
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+docker ps
+```
+
+Then run:
+
+```bash
+docker compose up -d --build
 ```
 
 ## API Examples
@@ -528,17 +565,15 @@ microservice_animal_shelter/
 ├── tnc-shared-libraries/     # 🔐 Shared Libraries (Standalone)
 │   ├── tnc-security-lib/     # Security library for servlet-based services
 │   │   ├── JwtService.java                    # JWT service for servlet apps
-│   │   ├── InternalTokenService.java          # Internal token management
-│   │   ├── SecurityAutoConfiguration.java     # Auto-configuration
-│   │   └── InternalTokenWebFluxFilter.java    # WebFlux-compatible filter
+│   │   ├── GatewayUserAuthenticationFilter.java # Maps X-User-* to Authentication
+│   │   └── SecurityAutoConfiguration.java     # Auto-configuration
 │   ├── tnc-resilience-lib/   # Circuit breaker library
 │   ├── tnc-swagger-lib/      # Swagger/OpenAPI documentation library
 │   └── tnc-docker-lib/       # Docker utilities and templates
 ├── api-gateway-as/           # 🌐 API Gateway (WebFlux - Reactive)
 │   ├── security/
 │   │   ├── JwtService.java                    # WebFlux JWT service
-│   │   ├── WebFluxSecurityConfig.java         # Reactive security config
-│   │   └── JwtAuthenticationFilter.java       # Reactive auth filter
+│   │   └── JwtAuthenticationFilter.java       # Reactive auth + authorization filter
 │   └── config/
 ├── micro_as_animal/          # 🐕 Animal service (Servlet - Spring MVC)
 ├── micro_as_shelter/         # 🏠 Shelter service (Servlet - Spring MVC)
@@ -556,10 +591,10 @@ Each microservice follows a clean architecture with:
 - **Domain Layer:** Business entities and models
 - **Mapper Layer:** Object transformation using MapStruct
 - **Security Layer:** Architecture-specific security implementation
-  - **API Gateway:** WebFlux-compatible JWT service and reactive filters
-  - **Business Services:** Shared security library with servlet-based filters
+  - **API Gateway:** JWT validation + role authorization in `JwtAuthenticationFilter`
+  - **Business Services:** Shared security library with servlet `GatewayUserAuthenticationFilter`
 - **Dependency Management:** Proper exclusions to prevent servlet/WebFlux conflicts
-- **Internal Security:** Inter-service communication with internal tokens
+- **Internal Security:** Gateway-propagated user context via `X-User-*` headers
 
 ## Frontend Integration
 
@@ -606,7 +641,7 @@ A comprehensive guide for frontend teams is available in `FRONTEND_SECURITY_GUID
 - **Dependency Management:** Proper exclusions prevent servlet/WebFlux conflicts
 - **Shared Libraries:** Modular libraries for security, resilience, documentation, and Docker
 - **Enhanced JWT Security:** Dual token system with automatic refresh
-- **Internal Token System:** Secure inter-service communication
+- **Single JWT Path:** No duplicated internal token flow
 - **Password Encryption:** BCrypt for secure password storage
 - **CORS Configuration:** Frontend integration support
 - **Clean Architecture:** SOLID principles with architecture-specific security layers
@@ -821,6 +856,13 @@ It saves you time, prevents bugs, and helps you maintain high code quality stand
 
 ### Recent Changes (Resilience + Security)
 
+- Docker / DevOps updates
+  - Moved Compose runtime settings to `.env` and removed hardcoded secrets from `docker-compose.yml`.
+  - Updated service wiring to use environment-based datasource and RabbitMQ settings.
+  - Improved startup dependency behavior with health-based `depends_on` conditions where relevant.
+  - Normalized Pet Hotel DB naming to `pet_hotel` in Docker setup SQL and Compose environment.
+  - Updated runtime Dockerfiles to ensure `curl` is available for container `HEALTHCHECK` commands.
+
 - Resilience
   - Added `tnc-resilience-lib` helper `ResilienceExecutor` to centralize CircuitBreaker/Retry/TimeLimiter decoration.
   - Renamed methods for clarity:
@@ -829,20 +871,21 @@ It saves you time, prevents bugs, and helps you maintain high code quality stand
   - `micro_as_animal`: `AnimalServiceImpl` now delegates DB calls to `CircuitBreakerService`.
   - `micro_as_shelter`: migrated to shared base resilience; added `findByName`, `getAllShelters`, `saveShelter`, `deleteShelter` in its `CircuitBreakerService`.
 
-- Security (shared lib)
-  - `tnc-security-lib` auto-config now isolates servlet vs reactive:
-    - Servlet (MVC services): default `SecurityFilterChain` with `InternalTokenAuthorizationFilter`.
-    - Reactive (API Gateway): nested `WebFluxSecurityConfiguration` registers `InternalTokenWebFluxFilter` only when Spring Cloud Gateway is on classpath.
-  - Marked WebFlux/Gateway dependencies as optional in `tnc-security-lib`.
+- Security (JWT-only flow)
+  - API Gateway now uses a single `JwtAuthenticationFilter` for:
+    - public endpoint bypass
+    - JWT validation (401 on invalid/missing token)
+    - role-based authorization by route (403 on insufficient role)
+    - forwarding `X-User-*` context to downstream services
+  - Removed gateway `WebFluxSecurityConfig`/`SecurityConfig` to prevent policy conflicts.
+  - Removed internal token filters/services from shared security flow.
 
 - Architecture
   - API Gateway uses WebFlux (reactive). Business services (Animal, Shelter, User) use Spring MVC (servlet). This mix is intentional and follows best practice.
 
 - Build/Test notes
-  - JJWT requires HS256 keys >= 256 bits. For tests:
-    - Windows CMD: `set INTERNAL_JWT_SECRET=0123456789ABCDEF0123456789ABCDEF`
-    - PowerShell: `$env:INTERNAL_JWT_SECRET="0123456789ABCDEF0123456789ABCDEF"`
-    - Then run: `mvn -f tnc-shared-libraries/tnc-security-lib clean test`
+  - JJWT requires HS256 keys >= 256 bits.
+  - Use `JWT_SECRET` consistently in user-service + gateway.
 
 ## 🏗️ System Architecture
 

@@ -40,14 +40,11 @@ spring:
     sampler:
       probability: 1.0  # 1.0 = 100% sampling (use 0.1 for production)
 
-# JWT Configuration
+# JWT Configuration (access + refresh user tokens issued at login)
 jwt:
-  secret: mySecretKey123456789012345678901234567890
-  expiration: 900000 # 15 minutes in milliseconds
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:900000} # 15 minutes in milliseconds
   refresh-expiration: 604800000 # 7 days in milliseconds
-  internal:
-    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
-    expiration: 600000  # 10 minutes
 
 # Swagger/OpenAPI Configuration
 springdoc:
@@ -123,3 +120,11 @@ management:
   tracing:
     sampling:
       probability: 1.0  # 100% sampling rate (use 0.1 for production)
+
+app:
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:true}
+    first-name: ${BOOTSTRAP_ADMIN_FIRST_NAME:Admin}
+    last-name: ${BOOTSTRAP_ADMIN_LAST_NAME:System}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:admin@animalshelter.com}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:Admin123!}

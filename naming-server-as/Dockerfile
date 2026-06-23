@@ -25,6 +25,11 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
+# Install curl for container healthcheck
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy the built jar from build stage
 COPY --from=build /app/naming-server-as/target/*.jar app.jar
 

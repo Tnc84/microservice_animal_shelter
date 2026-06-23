@@ -11,8 +11,8 @@ spring:
     password: ${DB_PASSWORD:root}
   jpa:
     hibernate:
-      # ddl-auto: create
-     ddl-auto: validate
+      ddl-auto: update
+    #  ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -27,12 +27,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
-
-# JWT Configuration - Internal tokens only
-jwt:
-  internal:
-    secret: ${INTERNAL_JWT_SECRET:internalSecretKey}
-    expiration: 600000  # 10 minutes
 
 # Swagger/OpenAPI Configuration
 springdoc:
