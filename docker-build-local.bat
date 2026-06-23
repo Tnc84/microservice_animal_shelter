@@ -61,6 +61,15 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
+echo Step 7: Building Pet Hotel Service Docker image...
+docker build -f pet-hotel-microservice/Dockerfile -t animal-shelter-pet-hotel-service:latest .
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed to build Pet Hotel Service Docker image
+    pause
+    exit /b 1
+)
+
+echo.
 echo ========================================
 echo All Docker images built successfully!
 echo ========================================
@@ -71,6 +80,7 @@ echo   - animal-shelter-user-service:latest
 echo   - animal-shelter-animal-service:latest
 echo   - animal-shelter-shelter-service:latest
 echo   - animal-shelter-naming-server:latest
+echo   - animal-shelter-pet-hotel-service:latest
 echo.
 echo To run with docker-compose:
 echo   docker-compose up -d

@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: animal_shelter
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./setup-databases.sql:/docker-entrypoint-initdb.d/setup-databases.sql
@@ -55,7 +55,9 @@ services:
 
   # Eureka Naming Server
   naming-server:
-    build: ./naming-server-as
+    build:
+      context: .
+      dockerfile: ./naming-server-as/Dockerfile
     container_name: naming-server
     ports:
       - "8761:8761"
@@ -69,7 +71,9 @@ services:
 
   # API Gateway
   api-gateway:
-    build: ./api-gateway-as
+    build:
+      context: .
+      dockerfile: ./api-gateway-as/Dockerfile
     container_name: api-gateway
     ports:
       - "8765:8765"
@@ -82,7 +86,9 @@ services:
 
   # Animal Microservice
   animal-microservice:
-    build: ./micro_as_animal
+    build:
+      context: .
+      dockerfile: ./micro_as_animal/Dockerfile
     container_name: animal-microservice
     ports:
       - "8093:8093"
@@ -104,7 +110,9 @@ services:
 
   # Shelter Microservice
   shelter-microservice:
-    build: ./micro_as_shelter
+    build:
+      context: .
+      dockerfile: ./micro_as_shelter/Dockerfile
     container_name: shelter-microservice
     ports:
       - "8092:8092"
@@ -127,7 +135,9 @@ services:
 
   # User Management Microservice
   user-microservice:
-    build: ./micro_as_user
+    build:
+      context: .
+      dockerfile: ./micro_as_user/Dockerfile
     container_name: user-microservice
     ports:
       - "8091:8091"
@@ -140,6 +150,30 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_management
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=admin123
+
+  # Pet Hotel Microservice
+  pet-hotel-microservice:
+    build:
+      context: .
+      dockerfile: ./pet-hotel-microservice/Dockerfile
+    container_name: pet-hotel-microservice
+    ports:
+      - "8096:8096"
+    networks:
+      - animal_shelter
+    depends_on:
+      - naming-server
+      - mysql
+      - rabbitmq
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/pet-hotel
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=rootpassword
       - SPRING_RABBITMQ_HOST=rabbitmq

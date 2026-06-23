@@ -64,6 +64,7 @@ echo - API Gateway: http://localhost:8765
 echo - Animal Service: http://localhost:8093
 echo - Shelter Service: http://localhost:8092
 echo - User Service: http://localhost:8091
+echo - Pet Hotel Service: http://localhost:8096
 pause
 goto menu
 

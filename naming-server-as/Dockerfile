@@ -7,6 +7,7 @@ COPY tnc-shared-libraries/pom.xml ./tnc-shared-libraries/
 COPY tnc-shared-libraries/tnc-security-lib ./tnc-shared-libraries/tnc-security-lib
 COPY tnc-shared-libraries/tnc-resilience-lib ./tnc-shared-libraries/tnc-resilience-lib
 COPY tnc-shared-libraries/tnc-swagger-lib ./tnc-shared-libraries/tnc-swagger-lib
+COPY tnc-shared-libraries/tnc-events-lib ./tnc-shared-libraries/tnc-events-lib
 COPY tnc-shared-libraries/tnc-docker-lib ./tnc-shared-libraries/tnc-docker-lib
 
 # Build all shared libraries first
